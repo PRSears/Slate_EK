@@ -6,7 +6,25 @@
       <Value Profile="(Default)">FASTener</Value>
     </Setting>
     <Setting Name="ShortTitle" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">F</Value>
+      <Value Profile="(Default)">FASTener</Value>
+    </Setting>
+    <Setting Name="DefaultFastenersFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Fasteners</Value>
+    </Setting>
+    <Setting Name="DefaultPropertiesFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Properties</Value>
+    </Setting>
+    <Setting Name="DefaultAssembliesFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Assemblies</Value>
+    </Setting>
+    <Setting Name="Debug" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="SizesFilename" Type="System.String" Scope="User">
+      <Value Profile="(Default)">sizes.xml</Value>
+    </Setting>
+    <Setting Name="PitchesFilename" Type="System.String" Scope="User">
+      <Value Profile="(Default)">pitches.xml</Value>
     </Setting>
   </Settings>
 </SettingsFile>

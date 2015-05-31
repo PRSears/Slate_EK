@@ -34,10 +34,82 @@ namespace Slate_EK.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("F")]
+        [global::System.Configuration.DefaultSettingValueAttribute("FASTener")]
         public string ShortTitle {
             get {
                 return ((string)(this["ShortTitle"]));
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Fasteners")]
+        public string DefaultFastenersFolder {
+            get {
+                return ((string)(this["DefaultFastenersFolder"]));
+            }
+            set {
+                this["DefaultFastenersFolder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Properties")]
+        public string DefaultPropertiesFolder {
+            get {
+                return ((string)(this["DefaultPropertiesFolder"]));
+            }
+            set {
+                this["DefaultPropertiesFolder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Assemblies")]
+        public string DefaultAssembliesFolder {
+            get {
+                return ((string)(this["DefaultAssembliesFolder"]));
+            }
+            set {
+                this["DefaultAssembliesFolder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool Debug {
+            get {
+                return ((bool)(this["Debug"]));
+            }
+            set {
+                this["Debug"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("sizes.xml")]
+        public string SizesFilename {
+            get {
+                return ((string)(this["SizesFilename"]));
+            }
+            set {
+                this["SizesFilename"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("pitches.xml")]
+        public string PitchesFilename {
+            get {
+                return ((string)(this["PitchesFilename"]));
+            }
+            set {
+                this["PitchesFilename"] = value;
             }
         }
     }

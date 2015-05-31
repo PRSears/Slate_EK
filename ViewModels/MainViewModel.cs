@@ -31,6 +31,7 @@ namespace Slate_EK.ViewModels
         public ICommand CreateNewBomCommand         { get; private set; }
         public ICommand OpenSettingsEditorCommand   { get; private set; }
         public ICommand ExitAllCommand              { get; private set; }
+        public ICommand TestHarnessCommand          { get; private set; }
 
         public bool WindowsMenuEnabled
         {
@@ -50,6 +51,8 @@ namespace Slate_EK.ViewModels
 
             this.WindowManager.WindowOpened += (s, w) => OnPropertyChanged("WindowsMenuEnabled");
             this.WindowManager.WindowClosed += (s, w) => OnPropertyChanged("WindowsMenuEnabled");
+
+            TestHarnessCommand = new RelayCommand(() => Models.IO.Sizes.TestHarness());
 
             LoadExistingCommand = new RelayCommand
             (
@@ -85,5 +88,23 @@ namespace Slate_EK.ViewModels
 
             this.AssemblyNumber = string.Empty;
         }
+
+        #region #settings.settings aliases
+        public bool DEBUG
+        {
+            get
+            {
+                return Properties.Settings.Default.Debug;
+            }
+        }
+
+        public System.Windows.Visibility DebugControlsVisibility
+        {
+            get
+            {
+                return DEBUG ? System.Windows.Visibility.Visible : System.Windows.Visibility.Hidden;
+            }
+        }
+        #endregion
     }
 }

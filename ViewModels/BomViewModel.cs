@@ -22,7 +22,7 @@ namespace Slate_EK.ViewModels
                 return string.Format
                 (
                     "Assembly #{1} [{2}] - {0}",
-                    Properties.Settings.Default.AppTitle,
+                    Properties.Settings.Default.ShortTitle,
                     Bom.AssemblyNumber,
                     Bom.Fasteners.Count.ToString()
                 );

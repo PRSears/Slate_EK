@@ -61,6 +61,7 @@
     </ApplicationDefinition>
     <Compile Include="Models\Bom.cs" />
     <Compile Include="Models\IO\Pitches.cs" />
+    <Compile Include="Models\IO\PropertyList.cs" />
     <Compile Include="Models\IO\Sizes.cs" />
     <Compile Include="Models\Pitch.cs" />
     <Compile Include="Models\Size.cs" />

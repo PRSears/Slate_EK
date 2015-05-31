@@ -73,5 +73,11 @@
                     Command="{Binding CreateNewBomCommand}"
                     TabIndex="2"/>
         </StackPanel>
+        <Button Content="(Test)"
+                Style="{StaticResource FlatActionButtonStyle}"
+                Grid.Row="2" Grid.Column="0"
+                Command="{Binding TestHarnessCommand}"
+                Visibility="{Binding DebugControlsVisibility}"
+                Margin="0,0,10,0"/>
     </Grid>
 </Window>
