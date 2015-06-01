@@ -26,5 +26,8 @@
     <Setting Name="PitchesFilename" Type="System.String" Scope="User">
       <Value Profile="(Default)">pitches.xml</Value>
     </Setting>
+    <Setting Name="SerializedUpdateInterval" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1000</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -112,5 +112,17 @@ namespace Slate_EK.Properties {
                 this["PitchesFilename"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1000")]
+        public int SerializedUpdateInterval {
+            get {
+                return ((int)(this["SerializedUpdateInterval"]));
+            }
+            set {
+                this["SerializedUpdateInterval"] = value;
+            }
+        }
     }
 }

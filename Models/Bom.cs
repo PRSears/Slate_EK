@@ -4,9 +4,11 @@ using System.ComponentModel;
 
 namespace Slate_EK.Models
 {
-    public class Bom
+    // TODOh Bom could implement SerializedArray as well
+    //       That would make save-as-you-type much less prone to error
+    public class Bom : INotifyPropertyChanged
     {
-        public string AssemblyNumber
+        public string           AssemblyNumber
         {
             get
             {
@@ -18,7 +20,7 @@ namespace Slate_EK.Models
                 OnPropertyChanged("AssemblyNumber");
             }
         }
-        public List<Fastener> Fasteners
+        public List<Fastener>   Fasteners
         {
             get
             {
@@ -32,8 +34,8 @@ namespace Slate_EK.Models
         }
 
 
-        private List<Fastener>  _Fasteners;
         private string          _AssemblyNumber;
+        private List<Fastener>  _Fasteners;
 
         public Bom() : this("none")
         {

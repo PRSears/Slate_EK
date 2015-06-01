@@ -82,7 +82,6 @@ namespace Slate_EK.ViewModels
 
         public BomViewModel(string assemblyNumber)
         {
-
             this.Bom = new Models.Bom(assemblyNumber);
 
             Bom.PropertyChanged += (s, e) =>

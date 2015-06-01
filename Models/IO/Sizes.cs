@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Extender.IO;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -6,7 +8,7 @@ using System.Xml.Serialization;
 
 namespace Slate_EK.Models.IO
 {
-    public class Sizes : PropertyList<Size>
+    public class Sizes : SerializedArray<Size>
     {
         public Sizes()
         {
@@ -22,11 +24,30 @@ namespace Slate_EK.Models.IO
             this.SourceList = sourceList;
         }
 
+        public override void Reload()
+        {
+            FileInfo xmlFile = new FileInfo(this.FilePath);
+
+            SizesXmlOperationsQueue.Enqueue
+            (
+                new SerializeTask<Size>(xmlFile, this, SerializeOperations.Load)
+            );
+        }
+
+        public override void Save()
+        {
+            FileInfo xmlFile = new FileInfo(this.FilePath);
+
+            SizesXmlOperationsQueue.Enqueue
+            (
+                new SerializeTask<Size>(xmlFile, this, SerializeOperations.Save)
+            );
+        }
+
         #region TestHarnesses
         public static void TestHarness()
         {
-            Test_Deserialze();
-            //Test_GenericImplementation();
+            Test_GenericImplementation();
         }
 
         private static void Test_Deserialze()
@@ -179,5 +200,36 @@ namespace Slate_EK.Models.IO
             }
         }
         #endregion
+    }
+
+    /// <summary>
+    /// Use a static constructor and blocking collection to handle reads/writes to XML file
+    /// to minimize IOExceptions and avoid blocking the main thread.
+    /// </summary>
+    static class SizesXmlOperationsQueue
+    {
+        private static BlockingCollection<SerializeTask<Size>> TaskQueue = new BlockingCollection<SerializeTask<Size>>();
+
+        static SizesXmlOperationsQueue()
+        {
+            var thread = new System.Threading.Thread
+            (
+                () =>
+                {
+                    while(true)
+                    {
+                        TaskQueue.Take().Execute();
+                    }
+                }
+            );
+
+            thread.IsBackground = true;
+            thread.Start();
+        }
+
+        public static void Enqueue(SerializeTask<Size> operation)
+        {
+            TaskQueue.Add(operation);
+        }
     }
 }

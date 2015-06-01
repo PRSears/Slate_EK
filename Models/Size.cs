@@ -85,7 +85,7 @@ namespace Slate_EK.Models
             else
                 return string.Format("{0}mm", OuterDiameter.ToString());
 
-            // TODO Check on this later to make sure it's actually what we want
+            // TODO_ Check on this later to make sure it's actually what we want
         }
 
 
