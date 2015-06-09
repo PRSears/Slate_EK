@@ -1,14 +1,16 @@
-﻿using System;
+﻿using Extender.IO;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.IO;
 
 namespace Slate_EK.Models
 {
     // TODOh Bom could implement SerializedArray as well
     //       That would make save-as-you-type much less prone to error
-    public class Bom : INotifyPropertyChanged
+    public class Bom : SerializedArray<Fastener>
     {
-        public string           AssemblyNumber
+        public string AssemblyNumber
         {
             get
             {
@@ -20,40 +22,47 @@ namespace Slate_EK.Models
                 OnPropertyChanged("AssemblyNumber");
             }
         }
-        public List<Fastener>   Fasteners
-        {
-            get
-            {
-                return _Fasteners;
-            }
-            set
-            {
-                _Fasteners = value;
-                OnPropertyChanged("Fasteners");
-            }
-        }
 
-
-        private string          _AssemblyNumber;
-        private List<Fastener>  _Fasteners;
+        private string _AssemblyNumber;
 
         public Bom() : this("none")
         {
 
         }
 
-        public Bom(string assemblyNumber) : this(assemblyNumber, new List<Fastener>())
+        public Bom(string assemblyNumber) : this(assemblyNumber, new Fastener[] { new Fastener() })
         {
             this.AssemblyNumber = assemblyNumber;
         }
 
-        public Bom(string assemblyNumber, List<Fastener> fasteners)
+        public Bom(string assemblyNumber, Fastener[] fasteners)
         {
             this.AssemblyNumber = assemblyNumber;
-            this.Fasteners      = fasteners;
+            this.SourceList     = fasteners;
         }
+
 
         # region operators & overrides
+        public override void Reload()
+        {
+            FileInfo xmlFile = new FileInfo(this.FilePath);
+
+            BomXmlOperationsQueue.Enqueue
+            (
+                new SerializeTask<Fastener>(xmlFile, this, SerializeOperations.Load)
+            );
+        }
+
+        public override void Save()
+        {
+            FileInfo xmlFile = new FileInfo(this.FilePath);
+
+            BomXmlOperationsQueue.Enqueue
+            (
+                new SerializeTask<Fastener>(xmlFile, this, SerializeOperations.Save)
+            );
+        }
+
         public override bool Equals(object obj)
         {
             if (!(obj is Bom))
@@ -68,7 +77,7 @@ namespace Slate_EK.Models
             List<byte[]> blocks = new List<byte[]>();
 
             blocks.Add(System.Text.Encoding.Default.GetBytes(AssemblyNumber));
-            foreach(Fastener f in Fasteners)
+            foreach(Fastener f in SourceList)
             {
                 blocks.Add(f.GetHashData());
             }
@@ -82,7 +91,7 @@ namespace Slate_EK.Models
             (
                 "Assembly #{0} [{1} Fasteners]",
                 AssemblyNumber,
-                Fasteners.Count
+                SourceList.Length
             );
         }
 
@@ -99,21 +108,32 @@ namespace Slate_EK.Models
             return !(a == b);
         }
         #endregion
+    }
 
-        #region INotifyPropertyChanged Members
+    static class BomXmlOperationsQueue
+    {
+        private static BlockingCollection<SerializeTask<Fastener>> TaskQueue = new BlockingCollection<SerializeTask<Fastener>>();
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged(string propertyName)
+        static BomXmlOperationsQueue()
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
+            var thread = new System.Threading.Thread
+            (
+                () =>
+                {
+                    while(true)
+                    {
+                        TaskQueue.Take().Execute();
+                    }
+                }
+            );
 
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            thread.IsBackground = true;
+            thread.Start();
         }
 
-        #endregion
+        public static void Enqueue(SerializeTask<Fastener> operation)
+        {
+            TaskQueue.Add(operation);
+        }
     }
 }

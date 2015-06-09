@@ -45,6 +45,8 @@ namespace Slate_EK.ViewModels
 
         private string _AssemblyNumber;
 
+        //TODO Make closing the main window close all children. Make sure to get confirmation from user.
+
         public MainViewModel()
         {
             this.WindowManager = new Extender.WPF.WindowManager();
@@ -52,7 +54,7 @@ namespace Slate_EK.ViewModels
             this.WindowManager.WindowOpened += (s, w) => OnPropertyChanged("WindowsMenuEnabled");
             this.WindowManager.WindowClosed += (s, w) => OnPropertyChanged("WindowsMenuEnabled");
 
-            TestHarnessCommand = new RelayCommand(() => Models.IO.Sizes.TestHarness());
+            TestHarnessCommand = new RelayCommand(() => Models.Fastener.TestHarness());
 
             LoadExistingCommand = new RelayCommand
             (

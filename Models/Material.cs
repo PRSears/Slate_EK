@@ -22,7 +22,7 @@ namespace Slate_EK.Models
         private Material(string material) : this(material, 1d) 
         { }
 
-        public Material Parse(string material)
+        public static Material Parse(string material)
         {
             foreach (Material m in Materials)
                 if (m._Material.Equals(material.ToLower()))
@@ -30,21 +30,23 @@ namespace Slate_EK.Models
 
             // try to find partial match
             foreach (Material m in Materials)
+            {
                 if (m._Material.Contains(material.ToLower()))
                 {
                     Extender.Debugging.Debug.WriteMessage
                     (
-                        string.Format("Material.Parse found only a partial match. {0} -> {1}", material, m.ToString()), 
+                        string.Format("Material.Parse found only a partial match. {0} -> {1}", material, m.ToString()),
                         "warn"
                     );
 
                     return m;
                 }
+            }
 
             throw new ArgumentException(string.Format(@"Material name ""{0}"" is not a valid material.", material));
         }
 
-        public Material TryParse(string material)
+        public static Material TryParse(string material)
         {
             try
             {

@@ -24,7 +24,7 @@ namespace Slate_EK.ViewModels
                     "Assembly #{1} [{2}] - {0}",
                     Properties.Settings.Default.ShortTitle,
                     Bom.AssemblyNumber,
-                    Bom.Fasteners.Count.ToString()
+                    Bom.SourceList.Length.ToString()
                 );
             }
         }

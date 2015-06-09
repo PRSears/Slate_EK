@@ -1,6 +1,8 @@
 ﻿using Extender.ObjectUtils;
 using System;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Slate_EK.Models
@@ -21,15 +23,28 @@ namespace Slate_EK.Models
             }
         }
 
-        public string Family
+        public string ID
         {
             get
             {
-                return _Family;
+                return _ID;
             }
             set
             {
-                _Family = value;
+                _ID = value;
+                OnPropertyChanged("ID");
+            }
+        }
+
+        public string FamilyType
+        {
+            get
+            {
+                return _FamilyType;
+            }
+            set
+            {
+                _FamilyType = value;
                 OnPropertyChanged("Family");
             }
         }
@@ -99,7 +114,7 @@ namespace Slate_EK.Models
             }
         }
 
-        public float Price
+        public decimal Price
         {
             get
             {
@@ -126,13 +141,14 @@ namespace Slate_EK.Models
         }
 
         #region Boxed properties
-        private float       _Price;
+        private decimal     _Price;
         private double      _Mass;
         private double      _Length;
         private double      _Thickness;
         private double      _Pitch;
-        private string      _Family;
+        private string      _FamilyType;
         private string      _AssemblyNumber;
+        private string      _ID;
         private int         _Quantity;
         private Material    _Material;
         #endregion
@@ -149,7 +165,7 @@ namespace Slate_EK.Models
 
             Fastener b = (Fastener)obj;
 
-            return  this.Family.Equals(b.Family)        &&
+            return  this.FamilyType.Equals(b.FamilyType)        &&
                     this.Material.Equals(b.Material)    &&
                     this.Pitch.Equals(b.Pitch)          &&
                     this.Thickness.Equals(b.Thickness)  &&
@@ -166,7 +182,7 @@ namespace Slate_EK.Models
         {
             byte[][] blocks = new byte[6][];
 
-            blocks[0] = Encoding.Default.GetBytes(this.Family);
+            blocks[0] = Encoding.Default.GetBytes(this.FamilyType);
             blocks[1] = Encoding.Default.GetBytes(this.Material.ToString());
             blocks[2] = BitConverter.GetBytes(this.Pitch);
             blocks[2] = BitConverter.GetBytes(this.Thickness);
@@ -176,9 +192,97 @@ namespace Slate_EK.Models
             return Hashing.GenerateHashCode(blocks);
         }
 
+        public static string[] GetPropertyNames()
+        {
+            System.Reflection.PropertyInfo[] properties = typeof(Fastener).GetProperties(Fastener._BindingFlags);
+
+            return properties.Select(p => p.Name)
+                             .ToArray();
+        }
+
+        private static System.Reflection.BindingFlags _BindingFlags = System.Reflection.BindingFlags.Public |
+                                                                      System.Reflection.BindingFlags.Instance |
+                                                                      System.Reflection.BindingFlags.GetProperty;
+
         public override string ToString()
         {
-            return base.ToString();
+            System.Reflection.PropertyInfo[] properties = this.GetType().GetProperties(Fastener._BindingFlags);
+
+            StringBuilder buffer = new StringBuilder();
+
+            for (int i = 0; i < properties.Length; i++)
+            {
+                var propertyValue = properties[i].GetValue(this);
+
+                if(propertyValue != null)
+                    buffer.Append(propertyValue.ToString());
+
+                if(i != (properties.Length - 1)) // the last property
+                    buffer.Append(",");
+            }
+
+            return buffer.ToString();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data">data must be aligned with headers.</param>
+        /// <param name="header">headers must be aligned with data.</param>
+        public void LoadFromString(string data, string header)
+        {
+            System.Reflection.PropertyInfo[] properties = this.GetType().GetProperties(Fastener._BindingFlags);
+
+            string[] dataValues     = data.Split(',');
+            string[] headerValues   = header.Split(',');
+
+            for(int i = 0; i < dataValues.Length; i++)
+            {
+                System.Reflection.PropertyInfo property = properties.First(p => p.Name == headerValues[i]);
+
+                if (property != null && property.CanWrite)
+                {
+                    if(property.PropertyType.Equals(typeof(string)))
+                    {
+                        property.SetValue(this, dataValues[i]);
+                    }
+                    else if (property.PropertyType.Equals(typeof(int)))
+                    {
+                        property.SetValue(this, int.Parse(dataValues[i]));
+                    }
+                    else if (property.PropertyType.Equals(typeof(double)))
+                    {
+                        property.SetValue(this, double.Parse(dataValues[i]));
+                    }
+                    else if (property.PropertyType.Equals(typeof(decimal)))
+                    {
+                        property.SetValue(this, decimal.Parse(dataValues[i]));
+                    }
+                    else if (property.PropertyType.Equals(typeof(Material)))
+                    {
+                        property.SetValue(this, Models.Material.Parse(dataValues[i]));
+                    }
+                    else
+                    {
+                        throw new ArgumentException
+                        (
+                            string.Format
+                            (
+                                "Type of data[{0}] not a valid property type for Fastener. ({1})",
+                                i.ToString(),
+                                property.PropertyType.ToString()
+                            )
+                        );
+                    }
+                }
+            }
+        }
+
+        public static Fastener FromString(string data, string header)
+        {
+            Fastener newFastener = new Fastener();
+            newFastener.LoadFromString(data, header);
+            return newFastener;
         }
 
         #region INotifyPropertyChanged Members
@@ -196,5 +300,49 @@ namespace Slate_EK.Models
         }
 
         #endregion
+
+        public static void TestHarness()
+        {
+            // --- Test to/from string
+
+            Fastener f1 = new Fastener();
+            f1.ID = "0000-0001";
+            f1.FamilyType = "long screw";
+            f1.Length = 2d;
+            f1.Mass = 0.3;
+            f1.Material = Material.Steel;
+            f1.Pitch = 0.25;
+            f1.Price = 0.1M;
+            f1.Quantity = 1;
+            f1.Thickness = 1d;
+
+            string asString = f1.ToString();
+            string headers = string.Join(",", Fastener.GetPropertyNames());
+
+            Console.WriteLine(asString);
+
+            Fastener f2 = Fastener.FromString(asString, headers);
+
+            Console.WriteLine(f2.ToString());
+
+            // --- Test to/from file
+
+            string testHarnessFile = "TestHarness.txt";
+
+            using(StreamWriter stream = File.CreateText(testHarnessFile))
+            {
+                stream.WriteLine(headers);
+                stream.WriteLine(f1.ToString());
+            }
+
+            using(StreamReader stream = File.OpenText(testHarnessFile))
+            {
+                string readHeader = stream.ReadLine();
+                string fastenerString = stream.ReadLine();
+
+                Fastener f3 = Fastener.FromString(fastenerString, readHeader);
+                Console.WriteLine(f3.ToString());
+            }
+        }
     }
 }
