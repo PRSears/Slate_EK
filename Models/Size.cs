@@ -36,7 +36,7 @@ namespace Slate_EK.Models
             OuterDiameter = this.TryParse(designation);
         }
 
-        protected double TryParse(string designation)
+        public double TryParse(string designation)
         {
             double parsed;
 

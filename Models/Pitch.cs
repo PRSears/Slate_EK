@@ -1,5 +1,6 @@
 ﻿using Extender;
 using System;
+using System.Text.RegularExpressions;
 
 namespace Slate_EK.Models
 {
@@ -31,6 +32,17 @@ namespace Slate_EK.Models
         public override int GetHashCode()
         {
             return Distance.GetHashCode();
+        }
+
+        public static Pitch TryParse(string pitch)
+        {
+            Regex query = new Regex("([^0-9.-])");
+            string cleaned = query.Replace(pitch, "");
+
+            double distance = 0d;
+            double.TryParse(cleaned, out distance);
+
+            return new Pitch(distance);
         }
 
         public override bool Equals(object obj)

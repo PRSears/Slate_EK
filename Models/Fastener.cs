@@ -1,4 +1,5 @@
-﻿using Extender.ObjectUtils;
+﻿using Extender.IO;
+using Extender.ObjectUtils;
 using System;
 using System.ComponentModel;
 using System.IO;
@@ -23,16 +24,34 @@ namespace Slate_EK.Models
             }
         }
 
-        public string ID
+        [System.Xml.Serialization.XmlIgnore]
+        public Guid ID
         {
             get
             {
+                if (_ID == null || _ID.Equals(Guid.Empty))
+                    this._ID = new Guid(GetHashData().Take(16).ToArray()); // first 16 bytes from SHA256 
                 return _ID;
+            }
+            protected set
+            {
+                _ID = value;
+            }
+        }
+
+        /// <summary>
+        /// Contains a string representation of the ID.
+        /// This property is used for serialization only. Use this.ID directly, instead.
+        /// </summary>
+        public string UniqueID
+        {
+            get
+            {
+                return this.ID.ToString();
             }
             set
             {
-                _ID = value;
-                OnPropertyChanged("ID");
+                this.ID = new Guid(value);
             }
         }
 
@@ -49,6 +68,7 @@ namespace Slate_EK.Models
             }
         }
 
+        [System.Xml.Serialization.XmlIgnore]
         public Material Material
         {
             get
@@ -59,6 +79,22 @@ namespace Slate_EK.Models
             {
                 _Material = value;
                 OnPropertyChanged("Material");
+            }
+        }
+
+        /// <summary>
+        /// Contains a string representation of the Material. 
+        /// This property is used for serialization only. Use this.Material directly, instead.
+        /// </summary>
+        public string MaterialString
+        {
+            get
+            {
+                return this.Material.ToString();
+            }
+            set
+            {
+                this.Material = Material.Parse(value);
             }
         }
         
@@ -148,14 +184,19 @@ namespace Slate_EK.Models
         private double      _Pitch;
         private string      _FamilyType;
         private string      _AssemblyNumber;
-        private string      _ID;
         private int         _Quantity;
         private Material    _Material;
+        private Guid        _ID;
         #endregion
 
         public Fastener()
         {
 
+        }
+
+        public void RefreshID()
+        {
+            _ID = new Guid(GetHashData().Take(16).ToArray());
         }
 
         public override bool Equals(object obj)
@@ -165,12 +206,7 @@ namespace Slate_EK.Models
 
             Fastener b = (Fastener)obj;
 
-            return  this.FamilyType.Equals(b.FamilyType)        &&
-                    this.Material.Equals(b.Material)    &&
-                    this.Pitch.Equals(b.Pitch)          &&
-                    this.Thickness.Equals(b.Thickness)  &&
-                    this.Length.Equals(b.Length)        &&
-                    this.Mass.Equals(b.Mass);
+            return this.ID.Equals(b.ID);
         }
 
         public override int GetHashCode()
@@ -180,110 +216,19 @@ namespace Slate_EK.Models
 
         public byte[] GetHashData()
         {
-            byte[][] blocks = new byte[6][];
+            byte[][] blocks = new byte[7][];
 
             blocks[0] = Encoding.Default.GetBytes(this.FamilyType);
             blocks[1] = Encoding.Default.GetBytes(this.Material.ToString());
             blocks[2] = BitConverter.GetBytes(this.Pitch);
-            blocks[2] = BitConverter.GetBytes(this.Thickness);
-            blocks[2] = BitConverter.GetBytes(this.Length);
-            blocks[2] = BitConverter.GetBytes(this.Mass);
+            blocks[3] = BitConverter.GetBytes(this.Thickness);
+            blocks[4] = BitConverter.GetBytes(this.Length);
+            blocks[5] = BitConverter.GetBytes(this.Mass);
+            blocks[6] = BitConverter.GetBytes(Convert.ToDouble(this.Price));
 
-            return Hashing.GenerateHashCode(blocks);
+            return Hashing.GenerateSHA256(blocks);
         }
 
-        public static string[] GetPropertyNames()
-        {
-            System.Reflection.PropertyInfo[] properties = typeof(Fastener).GetProperties(Fastener._BindingFlags);
-
-            return properties.Select(p => p.Name)
-                             .ToArray();
-        }
-
-        private static System.Reflection.BindingFlags _BindingFlags = System.Reflection.BindingFlags.Public |
-                                                                      System.Reflection.BindingFlags.Instance |
-                                                                      System.Reflection.BindingFlags.GetProperty;
-
-        public override string ToString()
-        {
-            System.Reflection.PropertyInfo[] properties = this.GetType().GetProperties(Fastener._BindingFlags);
-
-            StringBuilder buffer = new StringBuilder();
-
-            for (int i = 0; i < properties.Length; i++)
-            {
-                var propertyValue = properties[i].GetValue(this);
-
-                if(propertyValue != null)
-                    buffer.Append(propertyValue.ToString());
-
-                if(i != (properties.Length - 1)) // the last property
-                    buffer.Append(",");
-            }
-
-            return buffer.ToString();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="data">data must be aligned with headers.</param>
-        /// <param name="header">headers must be aligned with data.</param>
-        public void LoadFromString(string data, string header)
-        {
-            System.Reflection.PropertyInfo[] properties = this.GetType().GetProperties(Fastener._BindingFlags);
-
-            string[] dataValues     = data.Split(',');
-            string[] headerValues   = header.Split(',');
-
-            for(int i = 0; i < dataValues.Length; i++)
-            {
-                System.Reflection.PropertyInfo property = properties.First(p => p.Name == headerValues[i]);
-
-                if (property != null && property.CanWrite)
-                {
-                    if(property.PropertyType.Equals(typeof(string)))
-                    {
-                        property.SetValue(this, dataValues[i]);
-                    }
-                    else if (property.PropertyType.Equals(typeof(int)))
-                    {
-                        property.SetValue(this, int.Parse(dataValues[i]));
-                    }
-                    else if (property.PropertyType.Equals(typeof(double)))
-                    {
-                        property.SetValue(this, double.Parse(dataValues[i]));
-                    }
-                    else if (property.PropertyType.Equals(typeof(decimal)))
-                    {
-                        property.SetValue(this, decimal.Parse(dataValues[i]));
-                    }
-                    else if (property.PropertyType.Equals(typeof(Material)))
-                    {
-                        property.SetValue(this, Models.Material.Parse(dataValues[i]));
-                    }
-                    else
-                    {
-                        throw new ArgumentException
-                        (
-                            string.Format
-                            (
-                                "Type of data[{0}] not a valid property type for Fastener. ({1})",
-                                i.ToString(),
-                                property.PropertyType.ToString()
-                            )
-                        );
-                    }
-                }
-            }
-        }
-
-        public static Fastener FromString(string data, string header)
-        {
-            Fastener newFastener = new Fastener();
-            newFastener.LoadFromString(data, header);
-            return newFastener;
-        }
 
         #region INotifyPropertyChanged Members
 
@@ -303,46 +248,86 @@ namespace Slate_EK.Models
 
         public static void TestHarness()
         {
-            // --- Test to/from string
-
-            Fastener f1 = new Fastener();
-            f1.ID = "0000-0001";
-            f1.FamilyType = "long screw";
-            f1.Length = 2d;
-            f1.Mass = 0.3;
-            f1.Material = Material.Steel;
-            f1.Pitch = 0.25;
-            f1.Price = 0.1M;
-            f1.Quantity = 1;
-            f1.Thickness = 1d;
-
-            string asString = f1.ToString();
-            string headers = string.Join(",", Fastener.GetPropertyNames());
-
-            Console.WriteLine(asString);
-
-            Fastener f2 = Fastener.FromString(asString, headers);
-
-            Console.WriteLine(f2.ToString());
-
-            // --- Test to/from file
-
-            string testHarnessFile = "TestHarness.txt";
-
-            using(StreamWriter stream = File.CreateText(testHarnessFile))
+            Fastener[] fasteners = new Fastener[2500];
+            for(int i = 0; i < 2500; i++)
             {
-                stream.WriteLine(headers);
-                stream.WriteLine(f1.ToString());
+                fasteners[i] = new Fastener();
+                fasteners[i].FamilyType = "some screw " + i.ToString("D4");
+                fasteners[i].Length = 2d + (i / 1000d);
+                fasteners[i].Mass = 0.3d + (Math.PI * i / 1000d);
+                fasteners[i].Material = (i % 5 == 0) ? Material.Steel : Material.Aluminum;
+                fasteners[i].Pitch = 0.25d;
+                fasteners[i].Price = 0.01M;
+                fasteners[i].Quantity = 1;
+                fasteners[i].Thickness = 0.25d;
+                fasteners[i].RefreshID();
             }
 
-            using(StreamReader stream = File.OpenText(testHarnessFile))
-            {
-                string readHeader = stream.ReadLine();
-                string fastenerString = stream.ReadLine();
 
-                Fastener f3 = Fastener.FromString(fastenerString, readHeader);
-                Console.WriteLine(f3.ToString());
+            using (FileStream stream = new FileStream("TestHarness.csv", FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            {
+                System.Diagnostics.Stopwatch t = new System.Diagnostics.Stopwatch();
+
+                t.Start();
+                CsvSerializer<Fastener> csv = new CsvSerializer<Fastener>();
+                csv.Serialize(stream, fasteners);
+                t.Stop();
+
+                Extender.Debugging.Debug.WriteMessage
+                (
+                    string.Format("Fastener.TestHarness() took {0}ms to serialize the array.", t.ElapsedMilliseconds.ToString()),
+                    "debug"
+                );
             }
         }
+
+        //public static void TestHarness()
+        //{
+        //    Console.WriteLine(string.Join(",", Fastener.GetPropertyNames()));
+        //}
+
+        //public static void TestHarness_1()
+        //{
+        //    // --- Test to/from string
+
+        //    Fastener f1 = new Fastener();
+        //    f1.ID = "0000-0001";
+        //    f1.FamilyType = "long screw";
+        //    f1.Length = 2d;
+        //    f1.Mass = 0.3;
+        //    f1.Material = Material.Steel;
+        //    f1.Pitch = 0.25;
+        //    f1.Price = 0.1M;
+        //    f1.Quantity = 1;
+        //    f1.Thickness = 1d;
+
+        //    string asString = f1.ToString();
+        //    string headers = string.Join(",", Fastener.GetPropertyNames());
+
+        //    Console.WriteLine(asString);
+
+        //    Fastener f2 = Fastener.FromString(asString, headers);
+
+        //    Console.WriteLine(f2.ToString());
+
+        //    // --- Test to/from file
+
+        //    string testHarnessFile = "TestHarness.csv";
+
+        //    using(StreamWriter stream = File.CreateText(testHarnessFile))
+        //    {
+        //        stream.WriteLine(headers);
+        //        stream.WriteLine(f1.ToString());
+        //    }
+
+        //    using(StreamReader stream = File.OpenText(testHarnessFile))
+        //    {
+        //        string readHeader = stream.ReadLine();
+        //        string fastenerString = stream.ReadLine();
+
+        //        Fastener f3 = Fastener.FromString(fastenerString, readHeader);
+        //        Console.WriteLine(f3.ToString());
+        //    }
+        //}
     }
 }
