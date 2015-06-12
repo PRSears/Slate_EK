@@ -89,9 +89,43 @@ namespace Slate_EK.ViewModels
             );
 
             this.AssemblyNumber = string.Empty;
+
+            this.CheckXML();
+        }
+
+        public void CheckXML()
+        {
+            Slate_EK.Models.IO.Sizes xmlSizes = new Models.IO.Sizes();
+            Slate_EK.Models.IO.Pitches xmlPitches = new Models.IO.Pitches();
+
+            if(!System.IO.File.Exists(xmlSizes.FilePath))
+            {
+                xmlSizes.Add(new Models.Size(DefaultSize));
+            }
+
+            if(!System.IO.File.Exists(xmlPitches.FilePath))
+            {
+                xmlPitches.Add(new Models.Pitch(DefaultPitch));
+            }
         }
 
         #region #settings.settings aliases
+        public double DefaultSize
+        {
+            get
+            {
+                return Properties.Settings.Default.DefaultSize;
+            }
+        }
+
+        public double DefaultPitch
+        {
+            get
+            {
+                return Properties.Settings.Default.DefaultPitch;
+            }
+        }
+
         public bool DEBUG
         {
             get

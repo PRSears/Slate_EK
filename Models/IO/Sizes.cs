@@ -12,11 +12,9 @@ namespace Slate_EK.Models.IO
     {
         public Sizes()
         {
-            this.FilePath = Path.Combine
-            (
-                PropertiesPath,
-                Filename
-            );
+            //TODOh Hook up sizes
+            //TODOh & fix memory leak (something to do with file IO 
+            //      somewhere along the line, I think.
         }
 
         public Sizes(Models.Size[] sourceList) : this()
@@ -200,6 +198,14 @@ namespace Slate_EK.Models.IO
             }
         }
         #endregion
+
+        public override string FilePath
+        {
+            get
+            {
+                return Path.Combine(PropertiesPath, Filename);
+            }
+        }
     }
 
     /// <summary>

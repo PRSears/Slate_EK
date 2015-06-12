@@ -72,6 +72,7 @@
                        DockPanel.Dock="Left"/>
                 <ComboBox Style="{StaticResource Dropdown}"
                           TabIndex="2"
+                          ItemsSource="{Binding MaterialsList}"
                           DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
@@ -80,6 +81,7 @@
                        DockPanel.Dock="Left"/>
                 <ComboBox Style="{StaticResource Dropdown}"
                           TabIndex="3"
+                          ItemsSource="{Binding XmlSizes.SourceList}"
                           DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
@@ -88,6 +90,7 @@
                        DockPanel.Dock="Left"/>
                 <ComboBox Style="{StaticResource Dropdown}"
                           TabIndex="4"
+                          ItemsSource="{Binding XmlPitches.SourceList}"
                           DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>

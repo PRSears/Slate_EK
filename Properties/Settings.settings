@@ -29,5 +29,17 @@
     <Setting Name="SerializedUpdateInterval" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">1000</Value>
     </Setting>
+    <Setting Name="BomFilenameFormat" Type="System.String" Scope="User">
+      <Value Profile="(Default)">bom-{0}.xml</Value>
+    </Setting>
+    <Setting Name="DefaultSize" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">4</Value>
+    </Setting>
+    <Setting Name="DefaultPitch" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0.01</Value>
+    </Setting>
+    <Setting Name="PropertyRefreshInterval" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">3000</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

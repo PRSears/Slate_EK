@@ -25,6 +25,14 @@ namespace Slate_EK.Models
 
         private string _AssemblyNumber;
 
+        public override string FilePath
+        {
+            get
+            {
+                return Path.Combine(FolderPath, Filename);
+            }
+        }
+
         public Bom() : this("none")
         {
 
@@ -32,7 +40,6 @@ namespace Slate_EK.Models
 
         public Bom(string assemblyNumber) : this(assemblyNumber, new Fastener[] { new Fastener() })
         {
-            this.AssemblyNumber = assemblyNumber;
         }
 
         public Bom(string assemblyNumber, Fastener[] fasteners)
@@ -40,7 +47,6 @@ namespace Slate_EK.Models
             this.AssemblyNumber = assemblyNumber;
             this.SourceList     = fasteners;
         }
-
 
         # region operators & overrides
         public override void Reload()
@@ -106,6 +112,27 @@ namespace Slate_EK.Models
                 return object.ReferenceEquals(null, b);
 
             return !(a == b);
+        }
+        #endregion
+
+        #region Settings.Settings aliases
+        private string FolderPath
+        {
+            get
+            {
+                return Properties.Settings.Default.DefaultAssembliesFolder;
+            }
+        }
+        private string Filename
+        {
+            get
+            {
+                return string.Format
+                (
+                    Properties.Settings.Default.BomFilenameFormat,
+                    AssemblyNumber
+                );
+            }
         }
         #endregion
     }

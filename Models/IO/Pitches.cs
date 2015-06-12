@@ -1,18 +1,19 @@
 ﻿using Extender.IO;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Timers;
 
 namespace Slate_EK.Models.IO
 {
     public class Pitches : SerializedArray<Pitch>
     {
+        public override string FilePath
+        {
+            get { return Path.Combine(PropertiesPath, Filename); }
+        }
+
         public Pitches()
         {
-            this.FilePath = Path.Combine
-            (
-                PropertiesPath,
-                Filename
-            );
         }
 
         public Pitches(Models.Pitch[] sourceList) : this()
