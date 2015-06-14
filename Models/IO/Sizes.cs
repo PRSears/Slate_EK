@@ -12,9 +12,6 @@ namespace Slate_EK.Models.IO
     {
         public Sizes()
         {
-            //TODOh Hook up sizes
-            //TODOh & fix memory leak (something to do with file IO 
-            //      somewhere along the line, I think.
         }
 
         public Sizes(Models.Size[] sourceList) : this()

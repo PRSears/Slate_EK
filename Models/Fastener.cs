@@ -95,6 +95,7 @@ namespace Slate_EK.Models
             set
             {
                 this.Material = Material.Parse(value);
+                OnPropertyChanged("MaterialString");
             }
         }
         
@@ -111,7 +112,21 @@ namespace Slate_EK.Models
             }
         }
 
-        public double Thickness
+        [System.Xml.Serialization.XmlIgnore]
+        public string PitchString
+        {
+            get
+            {
+                return Pitch.ToString();
+            }
+            set
+            {
+                Pitch = double.Parse(value);
+                OnPropertyChanged("PitchString");
+            }
+        }
+
+        public double PlateThickness
         {
             get
             {
@@ -121,6 +136,20 @@ namespace Slate_EK.Models
             {
                 _Thickness = value;
                 OnPropertyChanged("Thickness");
+            }
+        }
+
+        [System.Xml.Serialization.XmlIgnore]
+        public string PlateThicknessString
+        {
+            get
+            {
+                return PlateThickness.ToString();
+            }
+            set
+            {
+                PlateThickness = double.Parse(value);
+                OnPropertyChanged("ThicknessString");
             }
         }
 
@@ -137,6 +166,46 @@ namespace Slate_EK.Models
             }
         }
 
+        [System.Xml.Serialization.XmlIgnore]
+        public string LengthString
+        {
+            get
+            {
+                return Length.ToString();
+            }
+            set
+            {
+                Length = double.Parse(value);
+                OnPropertyChanged("LengthString");
+            }
+        }
+
+        public double Size
+        {
+            get
+            {
+                return _Size;
+            }
+            set
+            {
+                _Size = value;
+                OnPropertyChanged("Size");
+            }
+        }
+
+        [System.Xml.Serialization.XmlIgnore]
+        public string SizeString
+        {
+            get
+            {
+                return Size.ToString();
+            }
+            set
+            {
+                Size = Models.Size.TryParse(value).OuterDiameter;
+            }
+        }
+
         public double Mass
         {
             get
@@ -150,7 +219,21 @@ namespace Slate_EK.Models
             }
         }
 
-        public decimal Price
+        [System.Xml.Serialization.XmlIgnore]
+        public string MassString
+        {
+            get
+            {
+                return Mass.ToString();
+            }
+            set
+            {
+                Mass = double.Parse(value);
+                OnPropertyChanged("MassString");
+            }
+        }
+
+        public double Price
         {
             get
             {
@@ -160,6 +243,20 @@ namespace Slate_EK.Models
             {
                 _Price = value;
                 OnPropertyChanged("Price");
+            }
+        }
+
+        [System.Xml.Serialization.XmlIgnore]
+        public string PriceString
+        {
+            get
+            {
+                return Price.ToString();
+            }
+            set
+            {
+                Price = double.Parse(value);
+                OnPropertyChanged("PriceString");
             }
         }
 
@@ -176,11 +273,26 @@ namespace Slate_EK.Models
             }
         }
 
+        [System.Xml.Serialization.XmlIgnore]
+        public string QuantityString
+        {
+            get
+            {
+                return Quantity.ToString();
+            }
+            set
+            {
+                Quantity = int.Parse(value);
+                OnPropertyChanged("QuantityString");
+            }
+        }
+
         #region Boxed properties
-        private decimal     _Price;
+        private double      _Price;
         private double      _Mass;
         private double      _Length;
         private double      _Thickness;
+        private double      _Size;
         private double      _Pitch;
         private string      _FamilyType;
         private string      _AssemblyNumber;
@@ -189,9 +301,35 @@ namespace Slate_EK.Models
         private Guid        _ID;
         #endregion
 
-        public Fastener()
+        public Fastener() 
+            : this(string.Empty, Material.NotSpecified, 0, 0)
         {
 
+        }
+
+        public Fastener(string assemblyNumber) 
+            : this()
+        {
+            this.AssemblyNumber = assemblyNumber;
+        }
+
+        public Fastener(string type, Material material, double size, double pitch)
+        {
+            this.Price          = 0d;
+            this.Mass           = 0d;
+            this.Length         = 0d;
+            this.PlateThickness = size;
+            this.Pitch          = pitch;
+            this.FamilyType     = type;
+            this.AssemblyNumber = "0";
+            this.Quantity       = 0;
+            this.Material       = material;
+        }
+
+        public Fastener(string assemblyNumber, string type, Material material, double size, double pitch)
+            : this(type, material, size, pitch)
+        {
+            this.AssemblyNumber = assemblyNumber;
         }
 
         public void RefreshID()
@@ -216,17 +354,31 @@ namespace Slate_EK.Models
 
         public byte[] GetHashData()
         {
-            byte[][] blocks = new byte[7][];
+            byte[][] blocks = new byte[8][];
 
             blocks[0] = Encoding.Default.GetBytes(this.FamilyType);
             blocks[1] = Encoding.Default.GetBytes(this.Material.ToString());
             blocks[2] = BitConverter.GetBytes(this.Pitch);
-            blocks[3] = BitConverter.GetBytes(this.Thickness);
+            blocks[3] = BitConverter.GetBytes(this.PlateThickness);
             blocks[4] = BitConverter.GetBytes(this.Length);
             blocks[5] = BitConverter.GetBytes(this.Mass);
-            blocks[6] = BitConverter.GetBytes(Convert.ToDouble(this.Price));
+            blocks[6] = BitConverter.GetBytes(this.Price);
+            blocks[7] = BitConverter.GetBytes(this.Size);
 
             return Hashing.GenerateSHA256(blocks);
+        }
+
+        public override string ToString()
+        {
+            return string.Format
+            (
+                "[Fastener] {0}, {1}, {2}, {3}, {4}",
+                FamilyType,
+                Material.ToString(),
+                PlateThickness,
+                Pitch, 
+                Length
+            );
         }
 
 
@@ -257,9 +409,9 @@ namespace Slate_EK.Models
                 fasteners[i].Mass = 0.3d + (Math.PI * i / 1000d);
                 fasteners[i].Material = (i % 5 == 0) ? Material.Steel : Material.Aluminum;
                 fasteners[i].Pitch = 0.25d;
-                fasteners[i].Price = 0.01M;
+                fasteners[i].Price = 0.01d;
                 fasteners[i].Quantity = 1;
-                fasteners[i].Thickness = 0.25d;
+                fasteners[i].PlateThickness = 0.25d;
                 fasteners[i].RefreshID();
             }
 

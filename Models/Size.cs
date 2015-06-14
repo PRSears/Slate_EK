@@ -1,6 +1,6 @@
 ﻿using Extender;
 using System;
-using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Slate_EK.Models
 {
@@ -33,48 +33,18 @@ namespace Slate_EK.Models
         /// <param name="designation">Size designation. Ie: M6. Cannot contain decimal values.</param>
         public Size(string designation)
         {
-            OuterDiameter = this.TryParse(designation);
+            OuterDiameter = Size.TryParse(designation).OuterDiameter;
         }
 
-        public double TryParse(string designation)
+        public static Size TryParse(string pitch)
         {
-            double parsed;
+            Regex query = new Regex("([^0-9.-])");
+            string cleaned = query.Replace(pitch, "");
 
-            if (designation.Contains('M'))
-            {
-                bool result = double.TryParse
-                (
-                    new string(designation.Where(Char.IsDigit).ToArray()),
-                    out parsed
-                );
+            double distance = 0d;
+            double.TryParse(cleaned, out distance);
 
-                if (result) return parsed;
-                else
-                {
-                    Extender.Debugging.Debug.WriteMessage
-                    (
-                        string.Format(@"Could not parse Size designation string: ""{0}""", designation),
-                        "error"
-                    );
-
-                    return 0d;
-                }
-            }
-            else
-            {
-                bool result = double.TryParse(designation, out parsed);
-
-                if (result) return parsed;
-                else
-                {
-                    Extender.Debugging.Debug.WriteMessage
-                    (
-                        string.Format(@"Could not parse Size designation string: ""{0}""", designation),
-                        "error"
-                    );
-                    return 0d;
-                }
-            }
+            return new Size(distance);
         }
 
         public override string ToString()
@@ -87,7 +57,6 @@ namespace Slate_EK.Models
 
             // TODO_ Check on this later to make sure it's actually what we want
         }
-
 
         public override bool Equals(object obj)
         {

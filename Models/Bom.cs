@@ -6,8 +6,6 @@ using System.IO;
 
 namespace Slate_EK.Models
 {
-    // TODOh Bom could implement SerializedArray as well
-    //       That would make save-as-you-type much less prone to error
     public class Bom : SerializedArray<Fastener>
     {
         public string AssemblyNumber
@@ -38,8 +36,9 @@ namespace Slate_EK.Models
 
         }
 
-        public Bom(string assemblyNumber) : this(assemblyNumber, new Fastener[] { new Fastener() })
+        public Bom(string assemblyNumber)
         {
+            this.AssemblyNumber = assemblyNumber;
         }
 
         public Bom(string assemblyNumber, Fastener[] fasteners)
@@ -85,6 +84,7 @@ namespace Slate_EK.Models
             blocks.Add(System.Text.Encoding.Default.GetBytes(AssemblyNumber));
             foreach(Fastener f in SourceList)
             {
+                if(f != null)
                 blocks.Add(f.GetHashData());
             }
 

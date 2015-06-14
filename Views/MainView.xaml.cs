@@ -33,8 +33,6 @@ namespace Slate_EK.Views
             ViewModel = new MainViewModel();
             ViewModel.RegisterCloseAction(() => this.Close());
 
-            //TODO Fix MenuItem showing out-of-date information when a BOM's Assembly# changes
-
             ViewModel.WindowManager.WindowOpened += (s, w) =>
             {
                 MenuItem newWindow = new MenuItem();
@@ -45,6 +43,11 @@ namespace Slate_EK.Views
                 );
 
                 WindowsMenu.Items.Add(newWindow);
+
+                w.MouseLeave += (sender, args) => // Make sure the MenuItem stays uptodate
+                {
+                    newWindow.Header = w.Title;
+                };
             };
 
             ViewModel.WindowManager.WindowClosed += (s, w) =>

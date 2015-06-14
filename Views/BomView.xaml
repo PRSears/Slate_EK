@@ -22,6 +22,12 @@
         <KeyBinding Modifiers="Control"
                     Key="S"
                     Command="{Binding Shortcut_CtrlS}"/>
+        <KeyBinding Modifiers="Control"
+                    Key="E"
+                    Command="{Binding Shortcut_CtrlE}"/>
+        <KeyBinding Modifiers="Control"
+                    Key="A"
+                    Command="{Binding AddToListCommand}"/>
     </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
@@ -62,6 +68,7 @@
                        Style="{StaticResource LabelStyle}"
                        DockPanel.Dock="Left"/>
                 <ComboBox Style="{StaticResource Dropdown}"
+                          SelectedValue="{Binding WorkingFastener.FamilyType}"
                           x:Name="TypeDropdown"
                           TabIndex="1"
                           DockPanel.Dock="Right"/>
@@ -73,6 +80,7 @@
                 <ComboBox Style="{StaticResource Dropdown}"
                           TabIndex="2"
                           ItemsSource="{Binding MaterialsList}"
+                          SelectedValue="{Binding WorkingFastener.MaterialString}"
                           DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
@@ -82,6 +90,7 @@
                 <ComboBox Style="{StaticResource Dropdown}"
                           TabIndex="3"
                           ItemsSource="{Binding XmlSizes.SourceList}"
+                          SelectedValue="{Binding WorkingFastener.SizeString}"
                           DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
@@ -91,15 +100,18 @@
                 <ComboBox Style="{StaticResource Dropdown}"
                           TabIndex="4"
                           ItemsSource="{Binding XmlPitches.SourceList}"
+                          SelectedValue="{Binding WorkingFastener.PitchString}"
                           DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
                 <Label Content="Plate Thickness"
                        Style="{StaticResource LabelStyle}"
                        DockPanel.Dock="Left"/>
-                <ComboBox Style="{StaticResource Dropdown}"
-                          TabIndex="5"
-                          DockPanel.Dock="Right"/>
+                <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                         Text="{Binding WorkingFastener.PlateThicknessString}"
+                         Width="250" Height="22"
+                         TabIndex="5"
+                         DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
                 <CheckBox Style="{StaticResource CenteredCheckbox}"
@@ -114,11 +126,19 @@
                        Style="{StaticResource LabelStyle}"/>
                 <TextBox x:Name="LengthTextbox"
                          Style="{StaticResource FlatTextFieldStyle}"
+                         Text="{Binding WorkingFastener.LengthString}"
                          IsEnabled="{Binding OverrideLength}"
                          Width="250" Height="22"
                          TabIndex="6"
                          DockPanel.Dock="Right"/>
+                
             </DockPanel>
+            <Button Style="{StaticResource FlatActionButtonStyle}"
+                    Content="Add  -->"
+                    Command="{Binding AddToListCommand}"
+                    HorizontalAlignment="Right"
+                    Margin="0"
+                    TabIndex="7"/> 
         </StackPanel>
         
         <ScrollViewer Grid.Row="1" Grid.Column="1"
@@ -132,5 +152,13 @@
         <Border Grid.Row="2" Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Background="#505753"/>
+        
+        <DockPanel Grid.Row="2" Grid.Column="0"
+                   Grid.ColumnSpan="2"
+                   Margin="20,0,20,0">
+            <Button Style="{StaticResource FlatActionButtonStyle}"
+                    Command="{Binding SaveAsCommand}"
+                    Content="Save as..."/>
+        </DockPanel>
     </Grid>
 </Window>

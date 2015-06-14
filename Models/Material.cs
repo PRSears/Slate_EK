@@ -25,13 +25,13 @@ namespace Slate_EK.Models
         public static Material Parse(string material)
         {
             foreach (Material m in Materials)
-                if (m._Material.Equals(material.ToLower()))
+                if (m._Material.ToLower().Equals(material.ToLower()))
                     return m;
 
             // try to find partial match
             foreach (Material m in Materials)
             {
-                if (m._Material.Contains(material.ToLower()))
+                if (m._Material.ToLower().Contains(material.ToLower()))
                 {
                     Extender.Debugging.Debug.WriteMessage
                     (
@@ -119,7 +119,14 @@ namespace Slate_EK.Models
                 return new Material("aluminum", 1.5d);
             }
         }
+        public static Material NotSpecified
+        {
+            get
+            {
+                return new Material("NotSpecified", 0d);
+            }
+        }
 
-        public static Material[] Materials = { Steel, Aluminum };
+        public static Material[] Materials = { Steel, Aluminum, NotSpecified };
     }
 }
