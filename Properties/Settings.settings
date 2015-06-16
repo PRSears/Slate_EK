@@ -41,5 +41,17 @@
     <Setting Name="PropertyRefreshInterval" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">3000</Value>
     </Setting>
+    <Setting Name="ItemSelectedBackgroundColor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">#585A77</Value>
+    </Setting>
+    <Setting Name="ItemHoverBackgroundColor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">#606C72</Value>
+    </Setting>
+    <Setting Name="ItemDefaultBackgroundColor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">#4c565b</Value>
+    </Setting>
+    <Setting Name="ItemAltnernateBackgroundColor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">#50595E</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

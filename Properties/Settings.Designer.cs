@@ -172,5 +172,53 @@ namespace Slate_EK.Properties {
                 this["PropertyRefreshInterval"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("#585A77")]
+        public string ItemSelectedBackgroundColor {
+            get {
+                return ((string)(this["ItemSelectedBackgroundColor"]));
+            }
+            set {
+                this["ItemSelectedBackgroundColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("#606C72")]
+        public string ItemHoverBackgroundColor {
+            get {
+                return ((string)(this["ItemHoverBackgroundColor"]));
+            }
+            set {
+                this["ItemHoverBackgroundColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("#4c565b")]
+        public string ItemDefaultBackgroundColor {
+            get {
+                return ((string)(this["ItemDefaultBackgroundColor"]));
+            }
+            set {
+                this["ItemDefaultBackgroundColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("#50595E")]
+        public string ItemAltnernateBackgroundColor {
+            get {
+                return ((string)(this["ItemAltnernateBackgroundColor"]));
+            }
+            set {
+                this["ItemAltnernateBackgroundColor"] = value;
+            }
+        }
     }
 }

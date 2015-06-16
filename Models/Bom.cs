@@ -31,7 +31,8 @@ namespace Slate_EK.Models
             }
         }
 
-        public Bom() : this("none")
+        public Bom() 
+            : this("none")
         {
 
         }
@@ -39,12 +40,11 @@ namespace Slate_EK.Models
         public Bom(string assemblyNumber)
         {
             this.AssemblyNumber = assemblyNumber;
-        }
 
-        public Bom(string assemblyNumber, Fastener[] fasteners)
-        {
-            this.AssemblyNumber = assemblyNumber;
-            this.SourceList     = fasteners;
+            if(File.Exists(FilePath)) // there's an existing BOM with the same name
+            {
+                base.Reload();
+            }
         }
 
         # region operators & overrides

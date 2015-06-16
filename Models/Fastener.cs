@@ -198,7 +198,7 @@ namespace Slate_EK.Models
         {
             get
             {
-                return Size.ToString();
+                return new Models.Size(Size).ToString();
             }
             set
             {
@@ -375,12 +375,26 @@ namespace Slate_EK.Models
                 "[Fastener] {0}, {1}, {2}, {3}, {4}",
                 FamilyType,
                 Material.ToString(),
-                PlateThickness,
+                Size,
                 Pitch, 
                 Length
             );
         }
 
+        public string Description
+        {
+            get
+            {
+                return string.Format
+                (
+                    "{0} - {1} - {2}   {3}",
+                    this.SizeString,
+                    this.Pitch,
+                    this.Length,
+                    this.Material.ToString()
+                );
+            }
+        }
 
         #region INotifyPropertyChanged Members
 

@@ -7,6 +7,11 @@
         Icon="/Slate_EK;component/icon_25.ico"
         Background="#494d4f"
         FocusManager.FocusedElement="{Binding ElementName=AssemblyNumField}">
+    <Window.InputBindings>
+        <KeyBinding Modifiers="Control"
+                    Key="O"
+                    Command="{Binding LoadExistingCommand}"/>
+    </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="30"/>

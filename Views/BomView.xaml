@@ -108,7 +108,7 @@
                        Style="{StaticResource LabelStyle}"
                        DockPanel.Dock="Left"/>
                 <TextBox Style="{StaticResource FlatTextFieldStyle}"
-                         Text="{Binding WorkingFastener.PlateThicknessString}"
+                         Text="{Binding WorkingFastener.PlateThickness}"
                          Width="250" Height="22"
                          TabIndex="5"
                          DockPanel.Dock="Right"/>
@@ -126,7 +126,7 @@
                        Style="{StaticResource LabelStyle}"/>
                 <TextBox x:Name="LengthTextbox"
                          Style="{StaticResource FlatTextFieldStyle}"
-                         Text="{Binding WorkingFastener.LengthString}"
+                         Text="{Binding WorkingFastener.Length}"
                          IsEnabled="{Binding OverrideLength}"
                          Width="250" Height="22"
                          TabIndex="6"
@@ -146,7 +146,75 @@
                       VerticalScrollBarVisibility="Visible"
                       Margin="20"
                       Background="#4c565b">
-            
+            <StackPanel Orientation="Vertical"
+                        Margin="0,0,0,5"
+                        MouseLeftButtonUp="FastenersPanel_LeftMouseUp"
+                        MouseLeftButtonDown="FastenersPanel_MouseDown"
+                        MouseMove="FastenersPanel_MouseMove">
+                <StackPanel.Resources>
+                    <Style TargetType="TextBlock"
+                           BasedOn="{StaticResource CheckboxLabelStyle}">
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                    </Style>
+                </StackPanel.Resources>
+                <Grid>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60*"/>
+                        <ColumnDefinition Width="40*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Grid.ColumnSpan="2"
+                        Background="#4F626D"
+                        Height="30"
+                        VerticalAlignment="Top"/>
+                    <TextBlock Grid.Column="0" Grid.Row="0"
+                               Text="Fastener Description"/>
+                    <TextBlock Grid.Column="1" Grid.Row="0"
+                               Text="Quantity"/>
+                </Grid>
+
+                <ItemsControl x:Name="FastenerItemsControl"
+                              AlternationCount="2">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid x:Name="ItemRowGrid"
+                                  Background="{Binding Background}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="60*"/>
+                                    <ColumnDefinition Width="40*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.Resources>
+                                    <Style TargetType="TextBlock"
+                                           BasedOn="{StaticResource CheckboxLabelStyle}">
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="HorizontalAlignment" Value="Left"/>
+                                        <Setter Property="Foreground" Value="#c6c6c6"/>
+                                        <Setter Property="Padding" Value="0,4,0,4"/>
+                                    </Style>
+                                </Grid.Resources>
+                                <TextBlock Grid.Column="0"
+                                           Text="{Binding Fastener.Description}"
+                                           Margin="10,0,0,0"/>
+                                <TextBlock Grid.Column="1"
+                                           HorizontalAlignment="Center"
+                                           Text="{Binding Fastener.Quantity}"/>
+                            </Grid>
+                            
+                            <DataTemplate.Triggers>
+                                <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                                    <Setter Property="Background" Value="{Binding AltBackground}" TargetName="ItemRowGrid"/>
+                                </Trigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
         </ScrollViewer>
         
         <Border Grid.Row="2" Grid.Column="0"

@@ -2,8 +2,11 @@
 using Slate_EK.Models;
 using Slate_EK.Models.IO;
 using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Timers;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Slate_EK.ViewModels
 {
@@ -99,12 +102,26 @@ namespace Slate_EK.ViewModels
             }
         }
 
+        public ObservableCollection<FastenerControl> ObservableFasteners
+        {
+            get
+            {
+                return _ObservableFasteners;
+            }
+            set
+            {
+                _ObservableFasteners = value;
+                OnPropertyChanged("ObservableFasteners");
+            }
+        }
+
         #region boxed properties
 
         private Bom         _Bom;
         private Fastener    _WorkingFastener;
         private bool        _OverrideLength;
-        private string      _Thickness;
+
+        private ObservableCollection<FastenerControl> _ObservableFasteners;
 
         #endregion
         
@@ -113,10 +130,20 @@ namespace Slate_EK.ViewModels
 
         public BomViewModel(string assemblyNumber)
         {
-            this.WorkingFastener = new Fastener(assemblyNumber);
-            this.Bom             = new Models.Bom(assemblyNumber);
+            this.Bom                    = new Models.Bom(assemblyNumber);
+            this.WorkingFastener        = new Fastener(assemblyNumber);
+            this.ObservableFasteners    = Bom.SourceList != null ? new ObservableCollection<FastenerControl>(FastenerControl.FromArray(Bom.SourceList)) :
+                                                                   new ObservableCollection<FastenerControl>();
 
-            Bom.PropertyChanged += (s, e) => OnPropertyChanged("WindowTitle");
+            Bom.PropertyChanged += (s, e) =>
+            {
+                if(e.PropertyName.Equals("SourceList") && Bom.SourceList != null)
+                {
+                    this.ObservableFasteners = new ObservableCollection<FastenerControl>(FastenerControl.FromArray(Bom.SourceList));
+                }
+
+                OnPropertyChanged("WindowTitle"); // do this regardless of which property changed
+            };
 
             Initialize();
         }
@@ -147,6 +174,13 @@ namespace Slate_EK.ViewModels
                 }
             );
 
+            ShortcutPressed_CtrlS += () =>
+            {
+                SaveAs();
+            };
+
+            // ICommands
+
             AddToListCommand = new RelayCommand
             (
                 () =>
@@ -160,11 +194,6 @@ namespace Slate_EK.ViewModels
             (
                 () => SaveAs()
             );
-
-            ShortcutPressed_CtrlS += () =>
-            {
-                SaveAs();
-            };
 
             // Lists from XML
             XmlSizes    = new Sizes();
@@ -234,4 +263,173 @@ namespace Slate_EK.ViewModels
     }
 
     public delegate void ShortcutEventHandler();
+
+    public class FastenerControl : INotifyPropertyChanged
+    {
+        public Fastener Fastener
+        {
+            get;
+            set;
+        }
+        public bool IsSelected
+        {
+            get
+            {
+                return _IsSelected;
+            }
+            set
+            {
+                _IsSelected = value;
+                OnPropertyChanged("IsSelected");
+                OnPropertyChanged("Background");
+                OnPropertyChanged("AltBackground");
+            }
+        }
+
+        public SolidColorBrush Background
+        {
+            get
+            {
+                if (IsSelected)
+                    return (SolidColorBrush)(new BrushConverter().ConvertFrom(SelectedColor));
+                else
+                    return Brushes.Transparent;
+            }
+        }
+
+        public SolidColorBrush AltBackground
+        {
+            get
+            {
+                if (IsSelected)
+                    return Background;
+                else
+                    return (SolidColorBrush)(new BrushConverter().ConvertFrom(AltColor));
+            }
+        }
+
+        #region boxed properties
+        private bool _IsSelected;
+        #endregion
+
+        public ICommand SelectCommand       { get; private set; }
+        public ICommand DeselectCommand     { get; private set; }
+        public ICommand ToggleSelectCommand { get; private set; }
+        public ICommand RemoveCommand       { get; private set; }
+        public ICommand EditCommand         { get; private set; }
+
+        public event RemoveFromControlsEventHandler RemovingFromControls;
+        public event EditControlEventHandler EditingControl;
+
+        public FastenerControl()
+        {
+            SelectCommand = new RelayCommand
+            (
+                () => IsSelected = true
+            );
+
+            DeselectCommand = new RelayCommand
+            (
+                () => IsSelected = false
+            );
+
+            ToggleSelectCommand = new RelayCommand
+            (
+                () => IsSelected = !IsSelected
+            );
+
+            RemoveCommand = new RelayCommand
+            (
+                () => OnRemove(this)
+            );
+
+            EditCommand = new RelayCommand
+            (
+                () => OnEdit(this)
+            );
+        }
+
+        public FastenerControl(Fastener fastener)
+            : this()
+        {
+            this.Fastener = fastener;
+        }
+
+        /// <summary>
+        /// Creates an array of FastenerControls from an array of plain Fastener objects.
+        /// </summary>
+        public static FastenerControl[] FromArray(Fastener[] fasteners)
+        {
+            FastenerControl[] controls = new FastenerControl[fasteners.Length];
+            for (int i = 0; i < fasteners.Length; i++)
+                controls[i] = new FastenerControl(fasteners[i]);
+
+            return controls;
+        }
+
+        protected void OnRemove(object sender)
+        {
+            RemoveFromControlsEventHandler handler = this.RemovingFromControls;
+
+            if (handler != null)
+                handler(sender);
+        }
+
+        protected void OnEdit(object sender)
+        {
+            EditControlEventHandler handler = this.EditingControl;
+
+            if (handler != null)
+                handler(sender);
+        }
+
+        #region Settings.Settings aliases
+        protected string SelectedColor
+        {
+            get
+            {
+                return Properties.Settings.Default.ItemSelectedBackgroundColor;
+            }
+        }
+        protected string HoverColor
+        {
+            get
+            {
+                return Properties.Settings.Default.ItemHoverBackgroundColor;
+            }
+        }
+        protected string NormalColor
+        {
+            get
+            {
+                return Properties.Settings.Default.ItemDefaultBackgroundColor;
+            }
+        }
+        protected string AltColor
+        {
+            get
+            {
+                return Properties.Settings.Default.ItemAltnernateBackgroundColor;
+            }
+        }
+        #endregion
+        #region INotifyPropertyChanged Members
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        #endregion
+    }
+
+    public delegate void RemoveFromControlsEventHandler(object sender);
+    public delegate void EditControlEventHandler(object sender);
 }
