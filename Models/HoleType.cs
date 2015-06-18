@@ -48,7 +48,7 @@ namespace Slate_EK.Models
         public static HoleType Parse(string holeType)
         {
             foreach (HoleType t in HoleTypes)
-                if (t._HoleType.ToLower().Equals(holeType))
+                if (t._HoleType.ToLower().Equals(holeType.ToLower()))
                     return t;
 
             // try to find partial match

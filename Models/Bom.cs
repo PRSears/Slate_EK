@@ -74,7 +74,7 @@ namespace Slate_EK.Models
             if (SourceList != null && SourceList.Contains(item))
             {
                 SourceList.First(f => f.ID.Equals(item.ID))
-                          .Quantity++;
+                          .Quantity += item.Quantity;
                 Sort();
                 Save();
             }
@@ -88,21 +88,26 @@ namespace Slate_EK.Models
 
         public override bool Remove(Fastener item)
         {
+            return Remove(item, 1);
+        }
+
+        public bool Remove(Fastener item, int quantity)
+        {
             item.GetNewID();
 
             if (SourceList != null && SourceList.Contains(item))
             {
-                SourceList.First(f => f.ID.Equals(item.ID))
-                          .Quantity--;
+                if ((SourceList.First(f => f.ID.Equals(item.ID))
+                              .Quantity -= quantity) <= 0)
+                {
+                    base.Remove(item);
+                }
+
                 Sort();
                 Save();
                 return true;
             }
-            else
-            {
-                Sort();
-                return base.Remove(item);
-            }
+            else return false;
         }
 
         public override void Sort()

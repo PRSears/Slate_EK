@@ -51,7 +51,7 @@ namespace Slate_EK.Models
         {
             // If it is an integer
             if(OuterDiameter % 1 == 0)
-                return string.Format("M{0}", ((int)Math.Round(OuterDiameter)).ToString());
+                return string.Format("M{0,-2}", ((int)Math.Round(OuterDiameter)).ToString());
             else
                 return string.Format("{0}mm", OuterDiameter.ToString());
 

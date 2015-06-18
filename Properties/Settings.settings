@@ -56,5 +56,8 @@
     <Setting Name="DefaultFastenerFilePath" Type="System.String" Scope="User">
       <Value Profile="(Default)">Properties\\default_fastener.xml</Value>
     </Setting>
+    <Setting Name="BomListFontSize" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">12</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

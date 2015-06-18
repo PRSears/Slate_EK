@@ -395,7 +395,7 @@ namespace Slate_EK.Models
         {
             get
             {
-                return $"{SizeString} - {PitchString} x {Length.ToString()}  {this.Type.ToString()}";
+                return $"{SizeString} - {PitchString} x {Length,-4}  {Type.ToString()}";
             }
         }
 
@@ -439,12 +439,13 @@ namespace Slate_EK.Models
 
         private void OnPropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            //PropertyChangedEventHandler handler = PropertyChanged;
 
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            //if (handler != null)
+            //{
+            //    handler(this, new PropertyChangedEventArgs(propertyName));
+            //}
         }
         #endregion
     }

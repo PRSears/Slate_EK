@@ -1,10 +1,10 @@
-﻿using Extender.WPF;
-using Extender;
+﻿using Extender;
+using Extender.WPF;
 using Slate_EK.Models;
-using Slate_EK.Models.IO;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Timers;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -17,6 +17,7 @@ namespace Slate_EK.ViewModels
 
         #region commands
         public ICommand AddToListCommand    { get; private set; }
+        public ICommand RemoveItemCommand   { get; private set; }
         public ICommand SaveAsCommand       { get; private set; }
         public ICommand Shortcut_CtrlK      { get; private set; }
         public ICommand Shortcut_CtrlS      { get; private set; }
@@ -78,11 +79,11 @@ namespace Slate_EK.ViewModels
             }
         }
 
-        public FastenerType[] FastenerTypesList
+        public string[] FastenerTypesList
         {
             get
             {
-                return FastenerType.Types;
+                return FastenerType.Types.Select(t => $"{t.Callout} ({t.Type})").ToArray();
             }
         }
 
@@ -147,7 +148,7 @@ namespace Slate_EK.ViewModels
 
         public BomViewModel(string assemblyNumber)
         {
-            this.Bom                    = new Models.Bom(assemblyNumber);
+            this.Bom                    = new Models.Bom(assemblyNumber); // TODO fix saving when assembly # changes // Should it 'move' or just copy?
             this.WorkingFastener        = new Fastener(assemblyNumber);
             this.ObservableFasteners    = Bom.SourceList != null ? new ObservableCollection<FastenerControl>(FastenerControl.FromArray(Bom.SourceList)) :
                                                                    new ObservableCollection<FastenerControl>();
@@ -203,8 +204,26 @@ namespace Slate_EK.ViewModels
                 () =>
                 {
                     WorkingFastener.GetNewID();
-
                     Bom.Add(WorkingFastener.Copy<Fastener>());
+                }
+            );
+
+            RemoveItemCommand = new RelayCommand
+            (
+                () =>
+                {
+                    FastenerControl[] selected = ObservableFasteners.Where(c => c.IsSelected).ToArray();
+                    bool removeAll = (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift));
+
+                    foreach(FastenerControl fc in selected)
+                    {
+                        Bom.Remove(fc.Fastener, removeAll ? (Int32.MaxValue - 1) : 1);
+                    }
+
+                    foreach(FastenerControl item in ObservableFasteners.Where(of => selected.Count(s => s.Fastener.ID.Equals(of.Fastener.ID)) > 0))
+                    {
+                        item.IsSelected = true;
+                    }
                 }
             );
 
@@ -333,10 +352,8 @@ namespace Slate_EK.ViewModels
         public ICommand SelectCommand       { get; private set; }
         public ICommand DeselectCommand     { get; private set; }
         public ICommand ToggleSelectCommand { get; private set; }
-        public ICommand RemoveCommand       { get; private set; }
         public ICommand EditCommand         { get; private set; }
-
-        public event RemoveFromControlsEventHandler RemovingFromControls;
+        
         public event EditControlEventHandler EditingControl;
 
         public FastenerControl()
@@ -354,11 +371,6 @@ namespace Slate_EK.ViewModels
             ToggleSelectCommand = new RelayCommand
             (
                 () => IsSelected = !IsSelected
-            );
-
-            RemoveCommand = new RelayCommand
-            (
-                () => OnRemove(this)
             );
 
             EditCommand = new RelayCommand
@@ -383,14 +395,6 @@ namespace Slate_EK.ViewModels
                 controls[i] = new FastenerControl(fasteners[i]);
 
             return controls;
-        }
-
-        protected void OnRemove(object sender)
-        {
-            RemoveFromControlsEventHandler handler = this.RemovingFromControls;
-
-            if (handler != null)
-                handler(sender);
         }
 
         protected void OnEdit(object sender)
@@ -430,6 +434,13 @@ namespace Slate_EK.ViewModels
                 return Properties.Settings.Default.ItemAltnernateBackgroundColor;
             }
         }
+        public int BomFontSize
+        {
+            get
+            {
+                return Properties.Settings.Default.BomListFontSize;
+            }
+        }
         #endregion
         #region INotifyPropertyChanged Members
 
@@ -447,7 +458,6 @@ namespace Slate_EK.ViewModels
 
         #endregion
     }
-
-    public delegate void RemoveFromControlsEventHandler(object sender);
+    
     public delegate void EditControlEventHandler(object sender);
 }

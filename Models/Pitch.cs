@@ -26,7 +26,7 @@ namespace Slate_EK.Models
 
         public override string ToString()
         {
-            return Distance.ToString();
+            return Distance.ToString("#0.00");
         }
 
         public override int GetHashCode()

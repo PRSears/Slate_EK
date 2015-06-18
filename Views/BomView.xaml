@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding WindowTitle}" 
-        MinWidth="850" MinHeight="438"
+        MinWidth="850" MinHeight="444"
         Width="850" Height="640"
         Icon="/Slate_EK;component/icon_25.ico"
         Background="#494d4f">
@@ -125,6 +125,15 @@
                           DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
+                <Label Content="Quantity"
+                       Style="{StaticResource LabelStyle}"
+                       DockPanel.Dock="Left"/>
+                <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                         Text="{Binding WorkingFastener.Quantity, Mode=TwoWay}"
+                         Width="250" Height="22"
+                         DockPanel.Dock="Right"/>
+            </DockPanel>
+            <DockPanel>
                 <CheckBox Style="{StaticResource CenteredCheckbox}"
                           DockPanel.Dock="Left"
                           Margin="5,0,0,0"
@@ -204,7 +213,9 @@
                                 </Grid.ColumnDefinitions>
                                 <Grid.Resources>
                                     <Style TargetType="TextBlock"
-                                           BasedOn="{StaticResource CheckboxLabelStyle}">
+                                           BasedOn="{StaticResource DejaVu}">
+                                        <Setter Property="FontSize" Value="{Binding BomFontSize}"/>
+                                        <Setter Property="Foreground" Value="#dddddd"/>
                                         <Setter Property="VerticalAlignment" Value="Center"/>
                                         <Setter Property="HorizontalAlignment" Value="Left"/>
                                         <Setter Property="Foreground" Value="#c6c6c6"/>
@@ -243,6 +254,7 @@
                     Content="Save as..."/>
             <Button Style="{StaticResource FlatActionButtonStyle}"
                     DockPanel.Dock="Right"
+                    Margin="0"
                     Command="{Binding RemoveItemCommand}"
                     Content="Remove"/>
         </DockPanel>

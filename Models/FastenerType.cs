@@ -1,4 +1,5 @@
 ﻿using System;
+using Extender;
 using System.ComponentModel;
 using System.Linq;
 
@@ -43,11 +44,19 @@ namespace Slate_EK.Models
             }
         }
 
-        private string _FamilyType;
+        private string _Type;
+
+        public string Type
+        {
+            get
+            {
+                return _Type;
+            }
+        }
 
         private FastenerType(string familyType)
         {
-            this._FamilyType = familyType;
+            this._Type = familyType;
         }
 
         public string Callout
@@ -56,7 +65,7 @@ namespace Slate_EK.Models
             {
                 return new string
                 (
-                    _FamilyType.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                    _Type.Split(new char[] { ' ', '-' }, StringSplitOptions.RemoveEmptyEntries)
                                .Select(c => c[0])
                                .ToArray()
                 ).ToUpper();
@@ -68,7 +77,7 @@ namespace Slate_EK.Models
             // Check for exact _FamilyType match
             foreach(FastenerType f in Types)
             {
-                if(familyType.ToLower().Equals(f._FamilyType.ToLower()))
+                if(familyType.ToLower().Equals(f._Type.ToLower()))
                     return f;
             }
 
@@ -82,14 +91,14 @@ namespace Slate_EK.Models
             // Fuzzy check for _FamilyType match
             foreach(FastenerType f in Types)
             {
-                if (f._FamilyType.ToLower().Contains(familyType.ToLower()))
+                if (f._Type.ToLower().Contains(familyType.ToLower()))
                     return f;
             }
 
             // Fuzzy Callout match
             foreach(FastenerType f in Types)
             {
-                if (f.Callout.ToLower().Contains(familyType.ToLower()))
+                if (familyType.ToLower().Contains(f.Callout.ToLower()))
                     return f;
             }
 
@@ -104,17 +113,17 @@ namespace Slate_EK.Models
             if (!(obj is FastenerType))
                 return false;
 
-            return (obj as FastenerType)._FamilyType.ToLower().Equals(this._FamilyType.ToLower());
+            return (obj as FastenerType)._Type.ToLower().Equals(this._Type.ToLower());
         }
 
         public override string ToString()
         {
-            return _FamilyType;
+            return Callout;
         }
 
         public override int GetHashCode()
         {
-            return _FamilyType.GetHashCode();
+            return _Type.GetHashCode();
         }
 
         #region INotifyPropertyChanged Members
