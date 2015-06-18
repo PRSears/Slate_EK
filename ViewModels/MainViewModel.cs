@@ -1,6 +1,9 @@
 ﻿using Extender.WPF;
 using Slate_EK.Views;
+using System.IO;
 using System.Windows.Input;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace Slate_EK.ViewModels
 {
@@ -32,6 +35,7 @@ namespace Slate_EK.ViewModels
         public ICommand OpenSettingsEditorCommand   { get; private set; }
         public ICommand ExitAllCommand              { get; private set; }
         public ICommand TestHarnessCommand          { get; private set; }
+        public ICommand FileDroppedCommand          { get; private set; }
 
         public bool WindowsMenuEnabled
         {
@@ -54,7 +58,10 @@ namespace Slate_EK.ViewModels
             this.WindowManager.WindowOpened += (s, w) => OnPropertyChanged("WindowsMenuEnabled");
             this.WindowManager.WindowClosed += (s, w) => OnPropertyChanged("WindowsMenuEnabled");
 
-            TestHarnessCommand = new RelayCommand(() => Models.Fastener.TestHarness());
+            TestHarnessCommand = new RelayCommand
+            (
+                () => { throw new System.NotImplementedException(); }
+            );
 
             LoadExistingCommand = new RelayCommand
             (
@@ -88,6 +95,14 @@ namespace Slate_EK.ViewModels
                 }
             );
 
+            FileDroppedCommand = new RelayFunction
+            (
+                (file) =>
+                {
+                    return LoadExisting(file.ToString());
+                }
+            );
+
             this.AssemblyNumber = string.Empty;
 
             this.CheckXML();
@@ -95,8 +110,8 @@ namespace Slate_EK.ViewModels
 
         public void CheckXML()
         {
-            Slate_EK.Models.IO.Sizes xmlSizes = new Models.IO.Sizes();
-            Slate_EK.Models.IO.Pitches xmlPitches = new Models.IO.Pitches();
+            Slate_EK.Models.IO.Sizes    xmlSizes    = new Models.IO.Sizes();
+            Slate_EK.Models.IO.Pitches  xmlPitches  = new Models.IO.Pitches();
 
             if(!System.IO.File.Exists(xmlSizes.FilePath))
             {
@@ -109,6 +124,56 @@ namespace Slate_EK.ViewModels
             }
         }
 
+        protected bool LoadExisting(string file)
+        {
+            FileInfo f = new FileInfo(file);
+
+            if (!f.Exists || !f.Extension.ToLower().EndsWith("xml"))
+                return false;
+
+
+            using(FileStream stream = new FileStream(
+                file, 
+                FileMode.Open, 
+                FileAccess.Read, 
+                FileShare.ReadWrite))
+            {
+                XmlReader xml = XmlReader.Create(stream);
+                xml.MoveToContent();
+
+                if(xml.Name.ToLower().Equals("bom"))
+                {
+                    // seek to the assembly number
+                    do    xml.Read();
+                    while (!xml.Name.ToLower().Equals("assemblynumber"));
+
+                    string assemblyNumber = (XNode.ReadFrom(xml) as XElement).Value;
+
+                    string debug = Path.GetFullPath(Properties.Settings.Default.DefaultAssembliesFolder).ToLower();
+
+                    // if the file we're importing is not in the default assemblies folder...
+                    if(!f.DirectoryName.ToLower().Equals(Path.GetFullPath(Properties.Settings.Default.DefaultAssembliesFolder).ToLower()))
+                    {
+                        string destName = Path.Combine
+                        (
+                            Properties.Settings.Default.DefaultAssembliesFolder,
+                            string.Format(Properties.Settings.Default.BomFilenameFormat, assemblyNumber)
+                        );
+
+                        //if(File.Exists) // TODOh finish check for file already existing
+                        f.CopyTo(destName, false); // Copy it to the right folder
+                    }
+
+                    // now we can open a new BOM window with this one's assembly number
+                    this.AssemblyNumber = assemblyNumber;
+                    this.CreateNewBomCommand.Execute(null);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         #region #settings.settings aliases
         public double DefaultSize
         {
@@ -117,7 +182,6 @@ namespace Slate_EK.ViewModels
                 return Properties.Settings.Default.DefaultSize;
             }
         }
-
         public double DefaultPitch
         {
             get
@@ -125,7 +189,13 @@ namespace Slate_EK.ViewModels
                 return Properties.Settings.Default.DefaultPitch;
             }
         }
-
+        public string BomFilenameFormat
+        {
+            get
+            {
+                return Properties.Settings.Default.BomFilenameFormat;
+            }
+        }
         public bool DEBUG
         {
             get
@@ -133,7 +203,6 @@ namespace Slate_EK.ViewModels
                 return Properties.Settings.Default.Debug;
             }
         }
-
         public System.Windows.Visibility DebugControlsVisibility
         {
             get

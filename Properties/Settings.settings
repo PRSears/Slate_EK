@@ -53,5 +53,8 @@
     <Setting Name="ItemAltnernateBackgroundColor" Type="System.String" Scope="User">
       <Value Profile="(Default)">#50595E</Value>
     </Setting>
+    <Setting Name="DefaultFastenerFilePath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Properties\\default_fastener.xml</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

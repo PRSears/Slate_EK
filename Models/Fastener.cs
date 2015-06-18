@@ -1,8 +1,7 @@
-﻿using Extender.IO;
+﻿using Extender;
 using Extender.ObjectUtils;
 using System;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -20,7 +19,7 @@ namespace Slate_EK.Models
             set
             {
                 _AssemblyNumber = value;
-                OnPropertyChanged("AssemblyNumber");
+                OnPropertyChanged(nameof(AssemblyNumber));
             }
         }
 
@@ -39,32 +38,17 @@ namespace Slate_EK.Models
             }
         }
 
-        /// <summary>
-        /// Contains a string representation of the ID.
-        /// This property is used for serialization only. Use this.ID directly, instead.
-        /// </summary>
-        public string UniqueID
+        [System.Xml.Serialization.XmlIgnore]
+        public FastenerType Type
         {
             get
             {
-                return this.ID.ToString();
+                return _Type;
             }
             set
             {
-                this.ID = new Guid(value);
-            }
-        }
-
-        public string FamilyType
-        {
-            get
-            {
-                return _FamilyType;
-            }
-            set
-            {
-                _FamilyType = value;
-                OnPropertyChanged("Family");
+                _Type = value;
+                OnPropertyChanged(nameof(Type));
             }
         }
 
@@ -78,28 +62,12 @@ namespace Slate_EK.Models
             set
             {
                 _Material = value;
-                OnPropertyChanged("Material");
+                OnPropertyChanged(nameof(Material));
             }
         }
 
-        /// <summary>
-        /// Contains a string representation of the Material. 
-        /// This property is used for serialization only. Use this.Material directly, instead.
-        /// </summary>
-        public string MaterialString
-        {
-            get
-            {
-                return this.Material.ToString();
-            }
-            set
-            {
-                this.Material = Material.Parse(value);
-                OnPropertyChanged("MaterialString");
-            }
-        }
-        
-        public double Pitch
+        [System.Xml.Serialization.XmlIgnore]
+        public Pitch Pitch
         {
             get
             {
@@ -108,51 +76,52 @@ namespace Slate_EK.Models
             set
             {
                 _Pitch = value;
-                OnPropertyChanged("Pitch");
+                OnPropertyChanged(nameof(Pitch));
             }
         }
 
         [System.Xml.Serialization.XmlIgnore]
-        public string PitchString
+        public Size Size
         {
             get
             {
-                return Pitch.ToString();
+                return _Size;
             }
             set
             {
-                Pitch = double.Parse(value);
-                OnPropertyChanged("PitchString");
-            }
-        }
-
-        public double PlateThickness
-        {
-            get
-            {
-                return _Thickness;
-            }
-            set
-            {
-                _Thickness = value;
-                OnPropertyChanged("Thickness");
+                _Size = value;
+                OnPropertyChanged(nameof(Size));
             }
         }
 
         [System.Xml.Serialization.XmlIgnore]
-        public string PlateThicknessString
+        public Thickness PlateThickness
         {
             get
             {
-                return PlateThickness.ToString();
+                return _PlateThickness;
             }
             set
             {
-                PlateThickness = double.Parse(value);
-                OnPropertyChanged("ThicknessString");
+                _PlateThickness = value;
+                OnPropertyChanged(nameof(PlateThickness));
             }
         }
 
+        [System.Xml.Serialization.XmlIgnore]
+        public HoleType HoleType
+        {
+            get
+            {
+                return _HoleType;
+            }
+            set
+            {
+                _HoleType = value;
+                OnPropertyChanged(nameof(HoleType));
+            }
+        }
+        
         public double Length
         {
             get
@@ -162,77 +131,10 @@ namespace Slate_EK.Models
             set
             {
                 _Length = value;
-                OnPropertyChanged("Length");
+                OnPropertyChanged(nameof(Length));
             }
         }
-
-        [System.Xml.Serialization.XmlIgnore]
-        public string LengthString
-        {
-            get
-            {
-                return Length.ToString();
-            }
-            set
-            {
-                Length = double.Parse(value);
-                OnPropertyChanged("LengthString");
-            }
-        }
-
-        public double Size
-        {
-            get
-            {
-                return _Size;
-            }
-            set
-            {
-                _Size = value;
-                OnPropertyChanged("Size");
-            }
-        }
-
-        [System.Xml.Serialization.XmlIgnore]
-        public string SizeString
-        {
-            get
-            {
-                return new Models.Size(Size).ToString();
-            }
-            set
-            {
-                Size = Models.Size.TryParse(value).OuterDiameter;
-            }
-        }
-
-        public double Mass
-        {
-            get
-            {
-                return _Mass;
-            }
-            set
-            {
-                _Mass = value;
-                OnPropertyChanged("Mass");
-            }
-        }
-
-        [System.Xml.Serialization.XmlIgnore]
-        public string MassString
-        {
-            get
-            {
-                return Mass.ToString();
-            }
-            set
-            {
-                Mass = double.Parse(value);
-                OnPropertyChanged("MassString");
-            }
-        }
-
+        
         public double Price
         {
             get
@@ -242,24 +144,23 @@ namespace Slate_EK.Models
             set
             {
                 _Price = value;
-                OnPropertyChanged("Price");
+                OnPropertyChanged(nameof(Price));
             }
         }
-
-        [System.Xml.Serialization.XmlIgnore]
-        public string PriceString
+        
+        public double Mass
         {
             get
             {
-                return Price.ToString();
+                return _Mass;
             }
             set
             {
-                Price = double.Parse(value);
-                OnPropertyChanged("PriceString");
+                _Mass = value;
+                OnPropertyChanged(nameof(Mass));
             }
         }
-
+        
         public int Quantity
         {
             get
@@ -269,72 +170,260 @@ namespace Slate_EK.Models
             set
             {
                 _Quantity = value;
-                OnPropertyChanged("Quantity");
+                OnPropertyChanged(nameof(Quantity));
             }
         }
 
-        [System.Xml.Serialization.XmlIgnore]
-        public string QuantityString
+        #region string intermediaries 
+        public string SizeString
         {
             get
             {
-                return Quantity.ToString();
+                return this.Size.ToString();
             }
             set
             {
-                Quantity = int.Parse(value);
-                OnPropertyChanged("QuantityString");
+                this.Size = Size.TryParse(value);
+                OnPropertyChanged(nameof(SizeString));
             }
         }
 
-        #region Boxed properties
-        private double      _Price;
-        private double      _Mass;
-        private double      _Length;
-        private double      _Thickness;
-        private double      _Size;
-        private double      _Pitch;
-        private string      _FamilyType;
-        private string      _AssemblyNumber;
-        private int         _Quantity;
-        private Material    _Material;
-        private Guid        _ID;
+        public string PitchString
+        {
+            get
+            {
+                return this.Pitch.ToString();
+            }
+            set
+            {
+                this.Pitch = Pitch.TryParse(value);
+                OnPropertyChanged(nameof(PitchString));
+            }
+        }
+
+        public string PlateThicknessString
+        {
+            get
+            {
+                return this.PlateThickness.ToString();
+            }
+            set
+            {
+                this.PlateThickness = Thickness.TryParse(value);
+                OnPropertyChanged(nameof(PlateThicknessString));
+            }
+        }
+
+        public string MaterialString
+        {
+            get
+            {
+                return this.Material.ToString();
+            }
+            set
+            {
+                this.Material = Material.TryParse(value);
+                OnPropertyChanged(nameof(MaterialString));
+            }
+        }
+
+        public string TypeString
+        {
+            get
+            {
+                return this.Type.ToString();
+            }
+            set
+            {
+                this.Type = FastenerType.Parse(value);
+                OnPropertyChanged(nameof(TypeString));
+            }
+        }
+
+        public string HoleTypeString
+        {
+            get
+            {
+                return this.HoleType.ToString();
+            }
+            set
+            {
+                this.HoleType = HoleType.Parse(value);
+                OnPropertyChanged(nameof(HoleTypeString));
+            }
+        }
+
+        public string IdString
+        {
+            get
+            {
+                return this.ID.ToString();
+            }
+            set
+            {
+                this.ID = new Guid(value);
+                OnPropertyChanged(nameof(IdString));
+            }
+        }
         #endregion
 
-        public Fastener() 
-            : this(string.Empty, Material.NotSpecified, 0, 0)
-        {
+        #region boxed properties
+        private string          _AssemblyNumber;
+        private double          _Price;
+        private double          _Mass;
+        private double          _Length;
+        private int             _Quantity;
+        private Size            _Size;
+        private Pitch           _Pitch;       
+        private Thickness       _PlateThickness;
+        private Material        _Material;
+        private HoleType        _HoleType;
+        private FastenerType    _Type;
+        private Guid            _ID;
+        #endregion
 
-        }
-
-        public Fastener(string assemblyNumber) 
-            : this()
+        public Fastener(
+            string assemblyNumber,
+            Size size,
+            Pitch pitch,
+            Thickness plateThickness,
+            Material material,
+            HoleType holeType,
+            FastenerType type)
         {
             this.AssemblyNumber = assemblyNumber;
-        }
+            this.Size           = size;
+            this.Pitch          = pitch;
+            this.PlateThickness = plateThickness;
+            this.Material       = material;
+            this.HoleType       = holeType;
+            this.Type           = type;
 
-        public Fastener(string type, Material material, double size, double pitch)
-        {
             this.Price          = 0d;
             this.Mass           = 0d;
-            this.Length         = 0d;
-            this.PlateThickness = size;
-            this.Pitch          = pitch;
-            this.FamilyType     = type;
-            this.AssemblyNumber = "0";
-            this.Quantity       = 0;
-            this.Material       = material;
+            this.Quantity       = 1;
         }
 
-        public Fastener(string assemblyNumber, string type, Material material, double size, double pitch)
-            : this(type, material, size, pitch)
+        public Fastener(
+            Size size,
+            Pitch pitch,
+            Thickness plateThickness,
+            Material material,
+            HoleType holeType,
+            FastenerType type)
+            : this(string.Empty, 
+                   size, 
+                   pitch, 
+                   plateThickness, 
+                   material, 
+                   holeType, 
+                   type)
+        { }
+
+        public Fastener(string assemblyNumber)
+            : this(assemblyNumber, 
+                   new Size(1d),
+                   new Pitch(1d),
+                   new Thickness(1d),
+                   Material.Aluminum,
+                   HoleType.CBore,
+                   FastenerType.SocketHeadFlatScrew)
+        { }
+
+        public Fastener()
+            : this(string.Empty)
+        { }
+
+        protected void AnnouncePropertiesChanged()
         {
-            this.AssemblyNumber = assemblyNumber;
+            OnPropertyChanged(nameof(Price));
+            OnPropertyChanged(nameof(Mass));
+            OnPropertyChanged(nameof(Length));
+            OnPropertyChanged(nameof(Quantity));
+            OnPropertyChanged(nameof(SizeString));
+            OnPropertyChanged(nameof(PitchString));
+            OnPropertyChanged(nameof(MaterialString));
+            OnPropertyChanged(nameof(TypeString));
+            OnPropertyChanged(nameof(HoleTypeString));
+            OnPropertyChanged(nameof(PlateThicknessString));
         }
 
-        public void RefreshID()
+        public void ResetToDefault()
         {
-            _ID = new Guid(GetHashData().Take(16).ToArray());
+            System.IO.FileInfo defaultFile = new System.IO.FileInfo(System.IO.Path.GetFullPath(Properties.Settings.Default.DefaultFastenerFilePath));
+
+            using (System.IO.FileStream stream = new System.IO.FileStream(
+                defaultFile.FullName,
+                System.IO.FileMode.OpenOrCreate,
+                System.IO.FileAccess.ReadWrite,
+                System.IO.FileShare.Read))
+            {
+                System.Xml.Serialization.XmlSerializer xml = new System.Xml.Serialization.XmlSerializer(typeof(Fastener));
+
+                Fastener deserialized;
+                try
+                {
+                    deserialized = (Fastener)xml.Deserialize(stream);
+                }
+                catch (InvalidOperationException)
+                {
+                    // File was empty ... probably. I should implement something a little cleaner
+                    deserialized = new Fastener();
+                    xml.Serialize(stream, deserialized);
+                }
+
+                if (deserialized != null)
+                    this.UpdateFrom(deserialized);
+
+                this.GetNewID();
+                this.AnnouncePropertiesChanged();
+            }
+        }
+
+        public void ResetToDefault(string assemblyNumber)
+        {
+            ResetToDefault();
+            AssemblyNumber = assemblyNumber;
+        }
+
+        public void GetNewID()
+        {
+            ID = new Guid(GetHashData().Take(16).ToArray());
+        }
+
+        public string Description
+        {
+            get
+            {
+                return $"{SizeString} - {PitchString} x {Length.ToString()}  {this.Type.ToString()}";
+            }
+        }
+
+        public override string ToString()
+        {
+            return $"[Fastener] {this.SizeString}, {this.PitchString}, {this.TypeString}, {this.MaterialString}, {this.Length}";
+        }
+
+        public byte[] GetHashData()
+        {
+            byte[][] blocks = new byte[9][];
+
+            blocks[0] = Encoding.Default.GetBytes(this.TypeString);
+            blocks[1] = Encoding.Default.GetBytes(this.MaterialString);
+            blocks[2] = BitConverter.GetBytes(this.Size.OuterDiameter);
+            blocks[3] = BitConverter.GetBytes(this.Pitch.Distance);
+            blocks[4] = BitConverter.GetBytes(this.PlateThickness.PlateThickness);
+            blocks[5] = BitConverter.GetBytes(this.Length);
+            blocks[6] = BitConverter.GetBytes(this.Mass);
+            blocks[7] = BitConverter.GetBytes(this.Price);
+            blocks[8] = Encoding.Default.GetBytes(this.HoleTypeString);
+
+            return Hashing.GenerateSHA256(blocks);
+        }
+
+        public override int GetHashCode()
+        {
+            return BitConverter.ToInt32(GetHashData(), 0);
         }
 
         public override bool Equals(object obj)
@@ -342,62 +431,10 @@ namespace Slate_EK.Models
             if (!(obj is Fastener))
                 return false;
 
-            Fastener b = (Fastener)obj;
-
-            return this.ID.Equals(b.ID);
-        }
-
-        public override int GetHashCode()
-        {
-            return BitConverter.ToInt32(this.GetHashData(), 0);
-        }
-
-        public byte[] GetHashData()
-        {
-            byte[][] blocks = new byte[8][];
-
-            blocks[0] = Encoding.Default.GetBytes(this.FamilyType);
-            blocks[1] = Encoding.Default.GetBytes(this.Material.ToString());
-            blocks[2] = BitConverter.GetBytes(this.Pitch);
-            blocks[3] = BitConverter.GetBytes(this.PlateThickness);
-            blocks[4] = BitConverter.GetBytes(this.Length);
-            blocks[5] = BitConverter.GetBytes(this.Mass);
-            blocks[6] = BitConverter.GetBytes(this.Price);
-            blocks[7] = BitConverter.GetBytes(this.Size);
-
-            return Hashing.GenerateSHA256(blocks);
-        }
-
-        public override string ToString()
-        {
-            return string.Format
-            (
-                "[Fastener] {0}, {1}, {2}, {3}, {4}",
-                FamilyType,
-                Material.ToString(),
-                Size,
-                Pitch, 
-                Length
-            );
-        }
-
-        public string Description
-        {
-            get
-            {
-                return string.Format
-                (
-                    "{0} - {1} - {2}   {3}",
-                    this.SizeString,
-                    this.Pitch,
-                    this.Length,
-                    this.Material.ToString()
-                );
-            }
+            return this.GetHashCode().Equals((obj as Fastener).GetHashCode());
         }
 
         #region INotifyPropertyChanged Members
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void OnPropertyChanged(string propertyName)
@@ -409,91 +446,6 @@ namespace Slate_EK.Models
                 handler(this, new PropertyChangedEventArgs(propertyName));
             }
         }
-
         #endregion
-
-        public static void TestHarness()
-        {
-            Fastener[] fasteners = new Fastener[2500];
-            for(int i = 0; i < 2500; i++)
-            {
-                fasteners[i] = new Fastener();
-                fasteners[i].FamilyType = "some screw " + i.ToString("D4");
-                fasteners[i].Length = 2d + (i / 1000d);
-                fasteners[i].Mass = 0.3d + (Math.PI * i / 1000d);
-                fasteners[i].Material = (i % 5 == 0) ? Material.Steel : Material.Aluminum;
-                fasteners[i].Pitch = 0.25d;
-                fasteners[i].Price = 0.01d;
-                fasteners[i].Quantity = 1;
-                fasteners[i].PlateThickness = 0.25d;
-                fasteners[i].RefreshID();
-            }
-
-
-            using (FileStream stream = new FileStream("TestHarness.csv", FileMode.OpenOrCreate, FileAccess.ReadWrite))
-            {
-                System.Diagnostics.Stopwatch t = new System.Diagnostics.Stopwatch();
-
-                t.Start();
-                CsvSerializer<Fastener> csv = new CsvSerializer<Fastener>();
-                csv.Serialize(stream, fasteners);
-                t.Stop();
-
-                Extender.Debugging.Debug.WriteMessage
-                (
-                    string.Format("Fastener.TestHarness() took {0}ms to serialize the array.", t.ElapsedMilliseconds.ToString()),
-                    "debug"
-                );
-            }
-        }
-
-        //public static void TestHarness()
-        //{
-        //    Console.WriteLine(string.Join(",", Fastener.GetPropertyNames()));
-        //}
-
-        //public static void TestHarness_1()
-        //{
-        //    // --- Test to/from string
-
-        //    Fastener f1 = new Fastener();
-        //    f1.ID = "0000-0001";
-        //    f1.FamilyType = "long screw";
-        //    f1.Length = 2d;
-        //    f1.Mass = 0.3;
-        //    f1.Material = Material.Steel;
-        //    f1.Pitch = 0.25;
-        //    f1.Price = 0.1M;
-        //    f1.Quantity = 1;
-        //    f1.Thickness = 1d;
-
-        //    string asString = f1.ToString();
-        //    string headers = string.Join(",", Fastener.GetPropertyNames());
-
-        //    Console.WriteLine(asString);
-
-        //    Fastener f2 = Fastener.FromString(asString, headers);
-
-        //    Console.WriteLine(f2.ToString());
-
-        //    // --- Test to/from file
-
-        //    string testHarnessFile = "TestHarness.csv";
-
-        //    using(StreamWriter stream = File.CreateText(testHarnessFile))
-        //    {
-        //        stream.WriteLine(headers);
-        //        stream.WriteLine(f1.ToString());
-        //    }
-
-        //    using(StreamReader stream = File.OpenText(testHarnessFile))
-        //    {
-        //        string readHeader = stream.ReadLine();
-        //        string fastenerString = stream.ReadLine();
-
-        //        Fastener f3 = Fastener.FromString(fastenerString, readHeader);
-        //        Console.WriteLine(f3.ToString());
-        //    }
-        //}
     }
 }

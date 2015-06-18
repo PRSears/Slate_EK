@@ -31,10 +31,15 @@ namespace Slate_EK.Views
 
         public BomView(string assemblyNumber)
         {
-            InitializeComponent();
+            base.Activated += (sender, e) =>
+            {
+                this.PlateThicknessTextField.Focus();
+            };
 
             ViewModel = new BomViewModel(assemblyNumber);
             
+            InitializeComponent();
+
             ViewModel.RegisterCloseAction(() => this.Close());
             ViewModel.PropertyChanged += (s, e) =>
             {

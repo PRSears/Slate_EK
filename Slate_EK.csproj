@@ -58,10 +58,14 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Models\Bom.cs" />
+    <Compile Include="Models\FastenerType.cs" />
+    <Compile Include="Models\Fastener.cs" />
+    <Compile Include="Models\HoleType.cs" />
     <Compile Include="Models\IO\Pitches.cs" />
     <Compile Include="Models\IO\Sizes.cs" />
     <Compile Include="Models\Pitch.cs" />
     <Compile Include="Models\Size.cs" />
+    <Compile Include="Models\Thickness.cs" />
     <Compile Include="ViewModels\BomViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="Views\MainView.xaml.cs">
@@ -75,7 +79,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Models\Fastener.cs" />
     <Compile Include="Models\Material.cs" />
     <Compile Include="Views\BomView.xaml.cs">
       <DependentUpon>BomView.xaml</DependentUpon>

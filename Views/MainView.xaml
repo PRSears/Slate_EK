@@ -6,7 +6,10 @@
         ResizeMode="CanMinimize"
         Icon="/Slate_EK;component/icon_25.ico"
         Background="#494d4f"
-        FocusManager.FocusedElement="{Binding ElementName=AssemblyNumField}">
+        FocusManager.FocusedElement="{Binding ElementName=AssemblyNumField}"
+        AllowDrop="True"
+        DragEnter="Window_DragEnter"
+        Drop="MainWindow_Drop">
     <Window.InputBindings>
         <KeyBinding Modifiers="Control"
                     Key="O"

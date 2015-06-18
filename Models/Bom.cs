@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Slate_EK.Models
 {
@@ -17,7 +18,7 @@ namespace Slate_EK.Models
             set
             {
                 _AssemblyNumber = value;
-                OnPropertyChanged("AssemblyNumber");
+                OnPropertyChanged(nameof(AssemblyNumber));
             }
         }
 
@@ -44,10 +45,10 @@ namespace Slate_EK.Models
             if(File.Exists(FilePath)) // there's an existing BOM with the same name
             {
                 base.Reload();
+                Sort();
             }
         }
 
-        # region operators & overrides
         public override void Reload()
         {
             FileInfo xmlFile = new FileInfo(this.FilePath);
@@ -67,6 +68,56 @@ namespace Slate_EK.Models
                 new SerializeTask<Fastener>(xmlFile, this, SerializeOperations.Save)
             );
         }
+
+        public override void Add(Fastener item)
+        {
+            if (SourceList != null && SourceList.Contains(item))
+            {
+                SourceList.First(f => f.ID.Equals(item.ID))
+                          .Quantity++;
+                Sort();
+                Save();
+            }
+            else
+            {
+                base.Add(item);
+                Sort();
+                Save(); // THOUGHT This makes base.Add()'s Save redundant.
+            }
+        }
+
+        public override bool Remove(Fastener item)
+        {
+            item.GetNewID();
+
+            if (SourceList != null && SourceList.Contains(item))
+            {
+                SourceList.First(f => f.ID.Equals(item.ID))
+                          .Quantity--;
+                Sort();
+                Save();
+                return true;
+            }
+            else
+            {
+                Sort();
+                return base.Remove(item);
+            }
+        }
+
+        public override void Sort()
+        {
+            List<Fastener> sorted = new List<Fastener>();
+
+            foreach(var type_group in SourceList.OrderBy(f => f.Length).GroupBy(f => f.TypeString))
+            {
+                sorted.AddRange(type_group.OrderBy(f => f.SizeString));
+            }
+
+            SourceList = sorted.ToArray();
+        }
+
+        #region operators & overrides
 
         public override bool Equals(object obj)
         {

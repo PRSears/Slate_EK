@@ -220,5 +220,17 @@ namespace Slate_EK.Properties {
                 this["ItemAltnernateBackgroundColor"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Properties\\\\default_fastener.xml")]
+        public string DefaultFastenerFilePath {
+            get {
+                return ((string)(this["DefaultFastenerFilePath"]));
+            }
+            set {
+                this["DefaultFastenerFilePath"] = value;
+            }
+        }
     }
 }

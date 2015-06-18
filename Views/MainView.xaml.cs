@@ -72,5 +72,23 @@ namespace Slate_EK.Views
                 }
             };
         }
+
+        private void MainWindow_Drop(object sender, DragEventArgs e)
+        {
+            var items = e.Data.GetData(DataFormats.FileDrop);
+
+            if(items is string[])
+            {
+                string[] filenames = (items as string[]);
+
+                foreach (string filename in filenames)
+                    ViewModel.FileDroppedCommand.Execute(filename);
+            }
+        }
+
+        private void Window_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.Move | DragDropEffects.Link;
+        }
     }
 }

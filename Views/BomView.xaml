@@ -5,8 +5,7 @@
         MinWidth="850" MinHeight="438"
         Width="850" Height="640"
         Icon="/Slate_EK;component/icon_25.ico"
-        Background="#494d4f"
-        FocusManager.FocusedElement="{Binding ElementName=TypeDropdown}">
+        Background="#494d4f">
     <Window.Resources>
         <Style TargetType="DockPanel">
             <Setter Property="Margin" Value="10,10,0,10"/>
@@ -68,7 +67,8 @@
                        Style="{StaticResource LabelStyle}"
                        DockPanel.Dock="Left"/>
                 <ComboBox Style="{StaticResource Dropdown}"
-                          SelectedValue="{Binding WorkingFastener.FamilyType}"
+                          ItemsSource="{Binding FastenerTypesList}"
+                          SelectedValue="{Binding WorkingFastener.Type, Mode=TwoWay}"
                           x:Name="TypeDropdown"
                           TabIndex="1"
                           DockPanel.Dock="Right"/>
@@ -80,7 +80,28 @@
                 <ComboBox Style="{StaticResource Dropdown}"
                           TabIndex="2"
                           ItemsSource="{Binding MaterialsList}"
-                          SelectedValue="{Binding WorkingFastener.MaterialString}"
+                          SelectedValue="{Binding WorkingFastener.MaterialString, Mode=TwoWay}"
+                          DockPanel.Dock="Right"/>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Plate Thickness"
+                       Style="{StaticResource LabelStyle}"
+                       DockPanel.Dock="Left"/>
+                <TextBox x:Name="PlateThicknessTextField"
+                         Style="{StaticResource FlatTextFieldStyle}"
+                         Text="{Binding WorkingFastener.PlateThicknessString, Mode=TwoWay}"
+                         Width="250" Height="22"
+                         TabIndex="5"
+                         DockPanel.Dock="Right"/>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Hole Type"
+                       Style="{StaticResource LabelStyle}"
+                       DockPanel.Dock="Left"/>
+                <ComboBox Style="{StaticResource Dropdown}"
+                          TabIndex="2"
+                          ItemsSource="{Binding HoleTypesList}"
+                          SelectedValue="{Binding WorkingFastener.HoleTypeString, Mode=TwoWay}"
                           DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
@@ -90,7 +111,7 @@
                 <ComboBox Style="{StaticResource Dropdown}"
                           TabIndex="3"
                           ItemsSource="{Binding XmlSizes.SourceList}"
-                          SelectedValue="{Binding WorkingFastener.SizeString}"
+                          SelectedValue="{Binding WorkingFastener.SizeString, Mode=TwoWay}"
                           DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
@@ -100,18 +121,8 @@
                 <ComboBox Style="{StaticResource Dropdown}"
                           TabIndex="4"
                           ItemsSource="{Binding XmlPitches.SourceList}"
-                          SelectedValue="{Binding WorkingFastener.PitchString}"
+                          SelectedValue="{Binding WorkingFastener.PitchString, Mode=TwoWay}"
                           DockPanel.Dock="Right"/>
-            </DockPanel>
-            <DockPanel>
-                <Label Content="Plate Thickness"
-                       Style="{StaticResource LabelStyle}"
-                       DockPanel.Dock="Left"/>
-                <TextBox Style="{StaticResource FlatTextFieldStyle}"
-                         Text="{Binding WorkingFastener.PlateThickness}"
-                         Width="250" Height="22"
-                         TabIndex="5"
-                         DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
                 <CheckBox Style="{StaticResource CenteredCheckbox}"
@@ -126,7 +137,7 @@
                        Style="{StaticResource LabelStyle}"/>
                 <TextBox x:Name="LengthTextbox"
                          Style="{StaticResource FlatTextFieldStyle}"
-                         Text="{Binding WorkingFastener.Length}"
+                         Text="{Binding WorkingFastener.Length, Mode=TwoWay}"
                          IsEnabled="{Binding OverrideLength}"
                          Width="250" Height="22"
                          TabIndex="6"
@@ -134,7 +145,7 @@
                 
             </DockPanel>
             <Button Style="{StaticResource FlatActionButtonStyle}"
-                    Content="Add  -->"
+                    Content="Add"
                     Command="{Binding AddToListCommand}"
                     HorizontalAlignment="Right"
                     Margin="0"
@@ -176,7 +187,9 @@
                     <TextBlock Grid.Column="0" Grid.Row="0"
                                Text="Fastener Description"/>
                     <TextBlock Grid.Column="1" Grid.Row="0"
-                               Text="Quantity"/>
+                               Text="Quantity"
+                               HorizontalAlignment="Right"
+                               Margin="0,0,10,0"/>
                 </Grid>
 
                 <ItemsControl x:Name="FastenerItemsControl"
@@ -202,7 +215,8 @@
                                            Text="{Binding Fastener.Description}"
                                            Margin="10,0,0,0"/>
                                 <TextBlock Grid.Column="1"
-                                           HorizontalAlignment="Center"
+                                           HorizontalAlignment="Right"
+                                           Margin="0,0,10,0"
                                            Text="{Binding Fastener.Quantity}"/>
                             </Grid>
                             
@@ -227,6 +241,10 @@
             <Button Style="{StaticResource FlatActionButtonStyle}"
                     Command="{Binding SaveAsCommand}"
                     Content="Save as..."/>
+            <Button Style="{StaticResource FlatActionButtonStyle}"
+                    DockPanel.Dock="Right"
+                    Command="{Binding RemoveItemCommand}"
+                    Content="Remove"/>
         </DockPanel>
     </Grid>
 </Window>

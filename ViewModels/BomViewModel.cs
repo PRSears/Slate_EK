@@ -1,4 +1,5 @@
 ﻿using Extender.WPF;
+using Extender;
 using Slate_EK.Models;
 using Slate_EK.Models.IO;
 using System;
@@ -77,13 +78,29 @@ namespace Slate_EK.ViewModels
             }
         }
 
-        public Sizes XmlSizes
+        public FastenerType[] FastenerTypesList
+        {
+            get
+            {
+                return FastenerType.Types;
+            }
+        }
+
+        public HoleType[] HoleTypesList
+        {
+            get
+            {
+                return HoleType.HoleTypes;
+            }
+        }
+
+        public Models.IO.Sizes XmlSizes
         {
             get;
             protected set;
         }
 
-        public Pitches XmlPitches
+        public Models.IO.Pitches XmlPitches
         {
             get;
             protected set;
@@ -98,7 +115,7 @@ namespace Slate_EK.ViewModels
             set
             {
                 _Bom = value;
-                OnPropertyChanged("Bom");
+                OnPropertyChanged(nameof(Bom));
             }
         }
 
@@ -111,7 +128,7 @@ namespace Slate_EK.ViewModels
             set
             {
                 _ObservableFasteners = value;
-                OnPropertyChanged("ObservableFasteners");
+                OnPropertyChanged(nameof(ObservableFasteners));
             }
         }
 
@@ -185,8 +202,9 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-                    this.WorkingFastener.RefreshID();
-                    Bom.Add(this.WorkingFastener);
+                    WorkingFastener.GetNewID();
+
+                    Bom.Add(WorkingFastener.Copy<Fastener>());
                 }
             );
 
@@ -196,8 +214,8 @@ namespace Slate_EK.ViewModels
             );
 
             // Lists from XML
-            XmlSizes    = new Sizes();
-            XmlPitches  = new Pitches();
+            XmlSizes    = new Models.IO.Sizes();
+            XmlPitches  = new Models.IO.Pitches();
 
             XmlSizes.Reload();
             XmlPitches.Reload();
