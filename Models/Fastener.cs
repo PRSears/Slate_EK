@@ -391,11 +391,20 @@ namespace Slate_EK.Models
             ID = new Guid(GetHashData().Take(16).ToArray());
         }
 
+        public void CalculateLength()
+        {
+            // TODO got formula from Eric again
+            // TODO Make length update when size/pitch/etc are updated
+            //      Can call CalculateLength() in the ViewModel and have it check
+            //      if OverrideLength is selected, and do nothing if it is.
+        }
+
+        [System.Xml.Serialization.XmlIgnore]
         public string Description
         {
             get
             {
-                return $"{SizeString} - {PitchString} x {Length,-4}  {Type.ToString()}";
+                return $"{SizeString} - {PitchString} x {Length,-3} {Type.ToString()}";
             }
         }
 
@@ -440,12 +449,6 @@ namespace Slate_EK.Models
         private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            //PropertyChangedEventHandler handler = PropertyChanged;
-
-            //if (handler != null)
-            //{
-            //    handler(this, new PropertyChangedEventArgs(propertyName));
-            //}
         }
         #endregion
     }

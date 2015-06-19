@@ -1,5 +1,4 @@
-﻿using Extender.WPF;
-using Slate_EK.ViewModels;
+﻿using Slate_EK.ViewModels;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
@@ -59,6 +58,8 @@ namespace Slate_EK.Views
             ViewModel.OverrideLength = false;
 
             this.FastenerItemsControl.ItemsSource = ViewModel.ObservableFasteners;
+            this.MaterialsDropdown.SelectedIndex = 0; // HACK to fix a bug where the dropdown had no SelectedValue,
+                                                      // despite array being initialized, etc.
         }
 
         private bool SelectingFasteners = false;

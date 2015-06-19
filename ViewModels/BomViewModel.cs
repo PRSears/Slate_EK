@@ -4,6 +4,7 @@ using Slate_EK.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Timers;
 using System.Windows.Input;
@@ -22,10 +23,11 @@ namespace Slate_EK.ViewModels
         public ICommand Shortcut_CtrlK      { get; private set; }
         public ICommand Shortcut_CtrlS      { get; private set; }
         public ICommand Shortcut_CtrlE      { get; private set; }
+        public ICommand Shortcut_CtrlD      { get; private set; }
+        public ICommand Shortcut_CtrlA      { get; private set; }
 
         public event ShortcutEventHandler ShortcutPressed_CtrlK;
         public event ShortcutEventHandler ShortcutPressed_CtrlS;
-
         #endregion
 
         public string WindowTitle
@@ -52,8 +54,8 @@ namespace Slate_EK.ViewModels
             set
             {
                 _OverrideLength = value;
-                OnPropertyChanged("OverrideLength");
-                OnPropertyChanged("LengthOverrideVisibility");
+                OnPropertyChanged(nameof(OverrideLength));
+                //OnPropertyChanged("LengthOverrideVisibility");
             }
         }
 
@@ -66,7 +68,7 @@ namespace Slate_EK.ViewModels
             set
             {
                 _WorkingFastener = value;
-                OnPropertyChanged("WorkingFastener");
+                OnPropertyChanged(nameof(WorkingFastener));
             }
         }
 
@@ -155,15 +157,32 @@ namespace Slate_EK.ViewModels
 
             Bom.PropertyChanged += (s, e) =>
             {
-                if(e.PropertyName.Equals("SourceList") && Bom.SourceList != null)
+                if(Bom.SourceList != null && e.PropertyName.Equals(nameof(Bom.SourceList)))
                 {
                     this.ObservableFasteners = new ObservableCollection<FastenerControl>(FastenerControl.FromArray(Bom.SourceList));
+
+                    foreach (FastenerControl control in ObservableFasteners)
+                        control.RequestingRemoval += (sender) => RemoveN(sender);
                 }
 
-                OnPropertyChanged("WindowTitle"); // do this regardless of which property changed
+                OnPropertyChanged(nameof(WindowTitle)); // do this regardless of which property changed
             };
 
             Initialize();
+        }
+
+        private void RemoveN(object sender)
+        {
+            if(sender is FastenerControl)
+            {
+                Views.NumberPickerDialog dialog = new Views.NumberPickerDialog();
+                dialog.ShowDialog();
+
+                if(dialog.Value > 0)
+                {
+                    Bom.Remove((sender as FastenerControl).Fastener, dialog.Value);
+                }
+            }
         }
 
         public override void Initialize()
@@ -189,6 +208,24 @@ namespace Slate_EK.ViewModels
                     editorProcess.StartInfo.FileName         = Properties.Settings.Default.DefaultPropertiesFolder;
                     editorProcess.StartInfo.UseShellExecute  = true;
                     editorProcess.Start();
+                }
+            );
+
+            Shortcut_CtrlD = new RelayCommand
+            (
+                () =>
+                {
+                    foreach (FastenerControl item in ObservableFasteners.Where(c => c.IsSelected))
+                        item.IsSelected = false;
+                }
+            );
+
+            Shortcut_CtrlA = new RelayCommand
+            (
+                () =>
+                {
+                    foreach (FastenerControl item in ObservableFasteners)
+                        item.IsSelected = true;
                 }
             );
 
@@ -220,17 +257,22 @@ namespace Slate_EK.ViewModels
                         Bom.Remove(fc.Fastener, removeAll ? (Int32.MaxValue - 1) : 1);
                     }
 
+                    // re-select what was selected before we replaced the ObservableCollection
                     foreach(FastenerControl item in ObservableFasteners.Where(of => selected.Count(s => s.Fastener.ID.Equals(of.Fastener.ID)) > 0))
                     {
                         item.IsSelected = true;
                     }
                 }
             );
-
+            
             SaveAsCommand = new RelayCommand
             (
                 () => SaveAs()
             );
+
+            // Hook up context menu to this.RemoveN
+            foreach (FastenerControl control in ObservableFasteners)
+                control.RequestingRemoval += (sender) => RemoveN(sender);
 
             // Lists from XML
             XmlSizes    = new Models.IO.Sizes();
@@ -259,30 +301,48 @@ namespace Slate_EK.ViewModels
             Microsoft.Win32.SaveFileDialog dialog = new Microsoft.Win32.SaveFileDialog();
             dialog.Title = "Save a copy of the BOM as...";
             dialog.DefaultExt = ".xml";
+            dialog.Filter = @"(*.xml)
+|*.xml|(*.csv)|*.csv|All files (*.*)|*.*";
+            dialog.AddExtension = true;
             dialog.FileName = System.IO.Path.GetFileName(Bom.FilePath);
 
             Nullable<bool> result = dialog.ShowDialog();
 
             if (result == true)
                 savePath = dialog.FileName;
-            else
-                return false;
+            else return false;
 
-            try
+            if (Path.GetExtension(dialog.FileName)
+                    .ToLower()
+                    .EndsWith("csv"))
             {
-                System.IO.File.Copy(Bom.FilePath, savePath);
+                Extender.IO.CsvSerializer<Fastener> csv = new Extender.IO.CsvSerializer<Fastener>();
+
+                using (FileStream stream = new FileStream(dialog.FileName, FileMode.OpenOrCreate,
+                                                                           FileAccess.ReadWrite,
+                                                                           FileShare.Read))
+                {
+                    csv.Serialize(stream, Bom.SourceList);
+                }
             }
-            catch(Exception e)
+            else
             {
-                Extender.Debugging.ExceptionTools.WriteExceptionText(e, false);
+                try
+                {
+                    File.Copy(Bom.FilePath, savePath);
+                }
+                catch (Exception e)
+                {
+                    Extender.Debugging.ExceptionTools.WriteExceptionText(e, false);
 
-                System.Windows.MessageBox.Show
-                (
-                    "Encountered an exception while copying BOM:\n" + e.Message,
-                    "Exception",
-                    System.Windows.MessageBoxButton.OK
-                );
-                return false;
+                    System.Windows.MessageBox.Show
+                    (
+                        "Encountered an exception while copying BOM:\n" + e.Message,
+                        "Exception",
+                        System.Windows.MessageBoxButton.OK
+                    );
+                    return false;
+                }
             }
 
             return true;
@@ -353,8 +413,10 @@ namespace Slate_EK.ViewModels
         public ICommand DeselectCommand     { get; private set; }
         public ICommand ToggleSelectCommand { get; private set; }
         public ICommand EditCommand         { get; private set; }
+        public ICommand RequestRemoval      { get; private set; }
         
-        public event EditControlEventHandler EditingControl;
+        public event EditControlEventHandler    EditingControl;
+        public event RequestRemovalEventHandler RequestingRemoval;
 
         public FastenerControl()
         {
@@ -376,6 +438,14 @@ namespace Slate_EK.ViewModels
             EditCommand = new RelayCommand
             (
                 () => OnEdit(this)
+            );
+
+            RequestRemoval = new RelayCommand
+            (
+                () =>
+                {
+                    RequestingRemoval?.Invoke(this);
+                }
             );
         }
 
@@ -460,4 +530,5 @@ namespace Slate_EK.ViewModels
     }
     
     public delegate void EditControlEventHandler(object sender);
+    public delegate void RequestRemovalEventHandler(object sender);
 }

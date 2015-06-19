@@ -33,6 +33,7 @@ namespace Slate_EK.ViewModels
         public ICommand LoadExistingCommand         { get; private set; }
         public ICommand CreateNewBomCommand         { get; private set; }
         public ICommand OpenSettingsEditorCommand   { get; private set; }
+        public ICommand CloseAllBomWindows          { get; private set; }
         public ICommand ExitAllCommand              { get; private set; }
         public ICommand TestHarnessCommand          { get; private set; }
         public ICommand FileDroppedCommand          { get; private set; }
@@ -49,8 +50,6 @@ namespace Slate_EK.ViewModels
 
         private string _AssemblyNumber;
 
-        //TODO Make closing the main window close all children. Make sure to get confirmation from user.
-
         public MainViewModel()
         {
             this.WindowManager = new Extender.WPF.WindowManager();
@@ -65,7 +64,17 @@ namespace Slate_EK.ViewModels
 
             LoadExistingCommand = new RelayCommand
             (
-                () => System.Windows.MessageBox.Show("Loading not implemented.")
+                () =>
+                {
+                    Microsoft.Win32.OpenFileDialog dialog = new Microsoft.Win32.OpenFileDialog();
+                    dialog.DefaultExt = ".xml";
+                    dialog.Filter = @"XML documents (*.txt, *.xml)
+                |*.txt;*.xml|All files (*.*)|*.*";
+                    dialog.CheckFileExists = true;
+
+                    if (dialog.ShowDialog() == true)
+                        LoadExisting(dialog.FileName);
+                }
             );
 
             CreateNewBomCommand = new RelayCommand
@@ -93,6 +102,11 @@ namespace Slate_EK.ViewModels
                         this.CloseCommand.Execute(null);
                     }
                 }
+            );
+
+            CloseAllBomWindows = new RelayCommand
+            (
+                () => WindowManager.CloseAll()
             );
 
             FileDroppedCommand = new RelayFunction
@@ -131,7 +145,6 @@ namespace Slate_EK.ViewModels
             if (!f.Exists || !f.Extension.ToLower().EndsWith("xml"))
                 return false;
 
-
             using(FileStream stream = new FileStream(
                 file, 
                 FileMode.Open, 
@@ -160,8 +173,8 @@ namespace Slate_EK.ViewModels
                             string.Format(Properties.Settings.Default.BomFilenameFormat, assemblyNumber)
                         );
 
-                        //if(File.Exists) // TODOh finish check for file already existing
-                        f.CopyTo(destName, false); // Copy it to the right folder
+                        if(!File.Exists(destName))
+                            f.CopyTo(destName, false); // Copy it to the right folder
                     }
 
                     // now we can open a new BOM window with this one's assembly number

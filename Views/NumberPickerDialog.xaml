@@ -1,0 +1,87 @@
+﻿<Window x:Class="Slate_EK.Views.NumberPickerDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Slate_EK.Views"
+        mc:Ignorable="d"
+        Icon="/Slate_EK;component/icon_25.ico"
+        Title="" Height="75" Width="121"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen">
+    <Window.InputBindings>
+        <KeyBinding Key="Esc" Command="{Binding ExitWithoutSavingCommand}"/>
+    </Window.InputBindings>
+    <Window.Resources>
+        <Style x:Key="MaterialButton" 
+            BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
+            TargetType="{x:Type Button}">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border 
+                           x:Name="Border"  
+                           CornerRadius="0" 
+                           BorderThickness="0,0,0,0"
+                           Background="Transparent"
+                           BorderBrush="#B8B8B8"
+                            >
+                            <ContentPresenter 
+                             Margin="2"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center"
+                             RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="true">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#202020" />
+                            </Trigger>
+                            <Trigger Property="IsDefaulted" Value="true">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#202020" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="Border" Property="Background" Value="#F0F0F0" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter TargetName="Border" Property="Background" Value="#E0E0E0" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter TargetName="Border" Property="Background" Value="#EEEEEE" />
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#AAAAAA" />
+                                <Setter Property="Foreground" Value="#888888"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.Resources>
+        </Grid.Resources>
+        <StackPanel Orientation="Vertical"
+                    Margin="10">
+            <TextBox x:Name="ValueField"
+                     Style="{StaticResource FlatTextFieldStyle}"
+                     Background="Transparent"
+                     Text="{Binding Value}"
+                     
+                     Width="90" Height="25"
+                     HorizontalAlignment="Right"
+                     HorizontalContentAlignment="Right">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding DoneCommand}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="0,10,0,0">
+                <Button Content="Done"
+                        Style="{StaticResource MaterialButton}"
+                        Command="{Binding DoneCommand}"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>

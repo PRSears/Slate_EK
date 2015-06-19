@@ -45,6 +45,8 @@
             <MenuItem Header="_Windows" TabIndex="5"
                       x:Name="WindowsMenu"
                       IsEnabled="{Binding WindowsMenuEnabled}">
+                <Separator/>
+                <MenuItem x:Name="CloseAllMenuitem" Header="Close all" Command="{Binding CloseAllBomWindows}"/>
             </MenuItem>
         </Menu>
         
