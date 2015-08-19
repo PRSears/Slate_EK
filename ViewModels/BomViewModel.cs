@@ -12,6 +12,7 @@ using System.Windows.Media;
 
 namespace Slate_EK.ViewModels
 {
+    // TODO allow input to be in either inches or mm and handle all appropriate conversions in the background
     public class BomViewModel : ViewModel
     {
         protected Timer PropertyRefreshTimer;
@@ -39,8 +40,7 @@ namespace Slate_EK.ViewModels
                     "Assembly #{1} [{2}] - {0}",
                     Properties.Settings.Default.ShortTitle,
                     Bom.AssemblyNumber,
-                    Bom.SourceList != null ?
-                    Bom.SourceList.Length.ToString() : "0"
+                    Bom.SourceList != null ? Bom.SourceList.Length.ToString() : "0"
                 );
             }
         }
@@ -166,6 +166,18 @@ namespace Slate_EK.ViewModels
                 }
 
                 OnPropertyChanged(nameof(WindowTitle)); // do this regardless of which property changed
+            };
+
+            WorkingFastener.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName.Equals(nameof(Fastener.Material)) ||
+                    e.PropertyName.Equals(nameof(Fastener.Size)) ||
+                    e.PropertyName.Equals(nameof(Fastener.PlateThickness)) ||
+                    e.PropertyName.Equals(nameof(Fastener.HoleType)))
+                {
+                    if (!OverrideLength)
+                        WorkingFastener.CalculateDesiredLength();
+                }
             };
 
             Initialize();
@@ -306,7 +318,7 @@ namespace Slate_EK.ViewModels
             dialog.AddExtension = true;
             dialog.FileName = System.IO.Path.GetFileName(Bom.FilePath);
 
-            Nullable<bool> result = dialog.ShowDialog();
+            bool? result = dialog.ShowDialog();
 
             if (result == true)
                 savePath = dialog.FileName;
@@ -518,12 +530,7 @@ namespace Slate_EK.ViewModels
 
         private void OnPropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
-
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         #endregion

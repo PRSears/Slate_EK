@@ -334,6 +334,24 @@ namespace Slate_EK.Models
             : this(string.Empty)
         { }
 
+        public static explicit operator Fastener(Inventory.FastenerTableLayer value)
+        {
+            Fastener cast = new Fastener();
+
+            cast.Length         = value.Length;
+            cast.Price          = value.Price;
+            cast.Mass           = value.Mass;
+            cast.Quantity       = value.StockQuantity;
+            cast.Size           = new Size(value.Size);
+            cast.Pitch          = new Pitch(value.Pitch);
+            cast.MaterialString = value.Material;
+            cast.TypeString     = value.FastenerType;
+
+            cast.GetNewID();
+
+            return cast;
+        }
+
         protected void AnnouncePropertiesChanged()
         {
             OnPropertyChanged(nameof(Price));
@@ -391,12 +409,24 @@ namespace Slate_EK.Models
             ID = new Guid(GetHashData().Take(16).ToArray());
         }
 
-        public void CalculateLength()
+        public void CalculateDesiredLength()
         {
-            // TODO got formula from Eric again
+            double threadEngagemnt = Material.Multiplier * Size.OuterDiameter; // number of threads engaging the hole
+
+            if(HoleType.Equals(HoleType.Straight) || HoleType.Equals(HoleType.CSink))
+            {
+                Length = threadEngagemnt + PlateThickness.PlateThickness;
+            }
+            else if (HoleType.Equals(HoleType.CBore))
+            {
+                Length = threadEngagemnt + PlateThickness.PlateThickness - Size.OuterDiameter;
+            }
+
             // TODO Make length update when size/pitch/etc are updated
             //      Can call CalculateLength() in the ViewModel and have it check
             //      if OverrideLength is selected, and do nothing if it is.
+
+            // TODO When the fastener gets added to the BOM, search inventory for closest match and insert that.
         }
 
         [System.Xml.Serialization.XmlIgnore]

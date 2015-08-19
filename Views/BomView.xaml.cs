@@ -77,15 +77,15 @@ namespace Slate_EK.Views
             }
         }
 
-        private void FastenersPanel_LeftMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void FastenersPanel_LeftMouseUp(object sender, MouseButtonEventArgs e)
         {
             SelectingFasteners = false;
             JustSelected = new List<FastenerControl>();
         }
 
-        private void FastenersPanel_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        private void FastenersPanel_MouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton != System.Windows.Input.MouseButtonState.Pressed)
+            if (e.LeftButton !=  MouseButtonState.Pressed)
                 return;
 
             var origin = (FrameworkElement)e.OriginalSource;

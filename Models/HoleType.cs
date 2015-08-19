@@ -25,7 +25,7 @@ namespace Slate_EK.Models
         {
             get
             {
-                return new HoleType[] { CBore, Straight };
+                return new HoleType[] { CBore, Straight, CSink };
             }
         }
 
@@ -34,6 +34,14 @@ namespace Slate_EK.Models
             get
             {
                 return new HoleType("cbore");
+            }
+        }
+
+        public static HoleType CSink
+        {
+            get
+            {
+                return new HoleType("csink");
             }
         }
 

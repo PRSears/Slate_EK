@@ -31,6 +31,14 @@ namespace Slate_EK.Models
             }
         }
 
+        public static FastenerType FlatCountersunkHeadCapScrew
+        {
+            get
+            {
+                return new FastenerType("flat countersunk head cap screw");
+            }
+        }
+
         public static FastenerType[] Types
         {
             get
@@ -39,7 +47,8 @@ namespace Slate_EK.Models
                 {
                     SocketHeadFlatScrew, 
                     SocketCountersunkHeadCapScrew, 
-                    LowHeadSocketHeadCapScrew 
+                    LowHeadSocketHeadCapScrew,
+                    FlatCountersunkHeadCapScrew
                 };
             }
         }

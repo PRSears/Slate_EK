@@ -244,5 +244,17 @@ namespace Slate_EK.Properties {
                 this["BomListFontSize"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseInches {
+            get {
+                return ((bool)(this["UseInches"]));
+            }
+            set {
+                this["UseInches"] = value;
+            }
+        }
     }
 }
