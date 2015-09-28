@@ -12,7 +12,7 @@
       <Value Profile="(Default)">Fasteners</Value>
     </Setting>
     <Setting Name="DefaultPropertiesFolder" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Properties</Value>
+      <Value Profile="(Default)">DefaultXml</Value>
     </Setting>
     <Setting Name="DefaultAssembliesFolder" Type="System.String" Scope="User">
       <Value Profile="(Default)">Assemblies</Value>

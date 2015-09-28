@@ -18,14 +18,16 @@ namespace Slate_EK.ViewModels
         protected Timer PropertyRefreshTimer;
 
         #region commands
-        public ICommand AddToListCommand    { get; private set; }
-        public ICommand RemoveItemCommand   { get; private set; }
-        public ICommand SaveAsCommand       { get; private set; }
-        public ICommand Shortcut_CtrlK      { get; private set; }
-        public ICommand Shortcut_CtrlS      { get; private set; }
-        public ICommand Shortcut_CtrlE      { get; private set; }
-        public ICommand Shortcut_CtrlD      { get; private set; }
-        public ICommand Shortcut_CtrlA      { get; private set; }
+        public ICommand AddToListCommand            { get; private set; }
+        public ICommand RemoveItemCommand           { get; private set; }
+        public ICommand ListChangeQuantityCommand   { get; private set; }
+        public ICommand ListDeleteItemCommand       { get; private set; }
+        public ICommand SaveAsCommand               { get; private set; }
+        public ICommand Shortcut_CtrlK              { get; private set; }
+        public ICommand Shortcut_CtrlS              { get; private set; }
+        public ICommand Shortcut_CtrlE              { get; private set; }
+        public ICommand Shortcut_CtrlD              { get; private set; }
+        public ICommand Shortcut_CtrlA              { get; private set; }
 
         public event ShortcutEventHandler ShortcutPressed_CtrlK;
         public event ShortcutEventHandler ShortcutPressed_CtrlS;
@@ -72,7 +74,7 @@ namespace Slate_EK.ViewModels
             }
         }
 
-        // Dropdown list data sources
+        // Drop-down list data sources
         public Material[] MaterialsList
         {
             get
@@ -157,12 +159,16 @@ namespace Slate_EK.ViewModels
 
             Bom.PropertyChanged += (s, e) =>
             {
-                if(Bom.SourceList != null && e.PropertyName.Equals(nameof(Bom.SourceList)))
+                if (Bom.SourceList != null && e.PropertyName.Equals(nameof(Bom.SourceList)))
                 {
                     this.ObservableFasteners = new ObservableCollection<FastenerControl>(FastenerControl.FromArray(Bom.SourceList));
 
+                    // Hook up context menu for FastenerControls
                     foreach (FastenerControl control in ObservableFasteners)
-                        control.RequestingRemoval += (sender) => RemoveN(sender);
+                    {
+                        control.RequestingRemoval += (sender) => Bom.Remove((sender as FastenerControl).Fastener, Int32.MaxValue);
+                        control.RequestingQuantityChange += (sender) => ChangeQuantity(sender);
+                    }
                 }
 
                 OnPropertyChanged(nameof(WindowTitle)); // do this regardless of which property changed
@@ -185,14 +191,31 @@ namespace Slate_EK.ViewModels
 
         private void RemoveN(object sender)
         {
-            if(sender is FastenerControl)
+            if (sender is FastenerControl)
             {
                 Views.NumberPickerDialog dialog = new Views.NumberPickerDialog();
                 dialog.ShowDialog();
 
-                if(dialog.Value > 0)
+                if (dialog.Value > 0)
                 {
                     Bom.Remove((sender as FastenerControl).Fastener, dialog.Value);
+                }
+            }
+        }
+
+        private void ChangeQuantity(object sender)
+        {
+            if (sender is FastenerControl)
+            {
+                Views.NumberPickerDialog dialog = new Views.NumberPickerDialog((sender as FastenerControl).Fastener.Quantity);
+                dialog.ShowDialog();
+
+                if(dialog.Success)
+                {
+                    if (dialog.Value > 0)
+                        (sender as FastenerControl).Fastener.Quantity = dialog.Value;
+                    else
+                        Bom.Remove((sender as FastenerControl).Fastener, Int32.MaxValue);
                 }
             }
         }
@@ -266,7 +289,7 @@ namespace Slate_EK.ViewModels
 
                     foreach(FastenerControl fc in selected)
                     {
-                        Bom.Remove(fc.Fastener, removeAll ? (Int32.MaxValue - 1) : 1);
+                        Bom.Remove(fc.Fastener, removeAll ? (Int32.MaxValue) : 1);
                     }
 
                     // re-select what was selected before we replaced the ObservableCollection
@@ -276,15 +299,44 @@ namespace Slate_EK.ViewModels
                     }
                 }
             );
+
+            ListChangeQuantityCommand = new RelayCommand
+            (
+                () =>
+                {
+                    ChangeQuantity(ObservableFasteners.First(f => f.IsSelected));
+                },
+                () =>
+                {
+                    // Can't allow edit when multiple fasteners are selected. 
+                    // Too messy -- what would we use for initial value? Set all selected to the same value,
+                    // or would the user expect to increment?
+                    return (ObservableFasteners.Count((f) => f.IsSelected) <= 1) ? true : false;
+                }
+            );
+
+            ListDeleteItemCommand = new RelayCommand
+            (
+                () =>
+                {
+                    FastenerControl[] selected = ObservableFasteners.Where(c => c.IsSelected).ToArray();
+
+                    foreach (FastenerControl fc in selected)
+                        Bom.Remove(fc.Fastener, Int32.MaxValue);
+                }
+            );
             
             SaveAsCommand = new RelayCommand
             (
                 () => SaveAs()
             );
 
-            // Hook up context menu to this.RemoveN
+            // Hook up context menu commands for FastenerControls
             foreach (FastenerControl control in ObservableFasteners)
-                control.RequestingRemoval += (sender) => RemoveN(sender);
+            {
+                control.RequestingRemoval           += (sender) => Bom.Remove((sender as FastenerControl).Fastener, Int32.MaxValue);
+                control.RequestingQuantityChange    += (sender) => ChangeQuantity(sender);
+            }
 
             // Lists from XML
             XmlSizes    = new Models.IO.Sizes();
@@ -421,14 +473,16 @@ namespace Slate_EK.ViewModels
         private bool _IsSelected;
         #endregion
 
-        public ICommand SelectCommand       { get; private set; }
-        public ICommand DeselectCommand     { get; private set; }
-        public ICommand ToggleSelectCommand { get; private set; }
-        public ICommand EditCommand         { get; private set; }
-        public ICommand RequestRemoval      { get; private set; }
-        
-        public event EditControlEventHandler    EditingControl;
-        public event RequestRemovalEventHandler RequestingRemoval;
+        public ICommand SelectCommand           { get; private set; }
+        public ICommand DeselectCommand         { get; private set; }
+        public ICommand ToggleSelectCommand     { get; private set; }
+        public ICommand EditCommand             { get; private set; }
+        public ICommand RequestRemoval          { get; private set; }
+        public ICommand RequestQuantityChange   { get; private set; }
+
+        public event EditControlEventHandler            EditingControl;
+        public event RequestRemovalEventHandler         RequestingRemoval;
+        public event RequestQuantityChangeEventHandler  RequestingQuantityChange;
 
         public FastenerControl()
         {
@@ -457,6 +511,14 @@ namespace Slate_EK.ViewModels
                 () =>
                 {
                     RequestingRemoval?.Invoke(this);
+                }
+            );
+
+            RequestQuantityChange = new RelayCommand
+            (
+                () =>
+                {
+                    RequestingQuantityChange?.Invoke(this);
                 }
             );
         }
@@ -538,4 +600,5 @@ namespace Slate_EK.ViewModels
     
     public delegate void EditControlEventHandler(object sender);
     public delegate void RequestRemovalEventHandler(object sender);
+    public delegate void RequestQuantityChangeEventHandler(object sender);
 }

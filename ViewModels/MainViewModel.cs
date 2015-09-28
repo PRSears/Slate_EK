@@ -1,5 +1,6 @@
 ﻿using Extender.WPF;
 using Slate_EK.Views;
+using System;
 using System.IO;
 using System.Windows.Input;
 using System.Xml;
@@ -59,7 +60,7 @@ namespace Slate_EK.ViewModels
 
             TestHarnessCommand = new RelayCommand
             (
-                () => { throw new System.NotImplementedException(); }
+                () => { throw new NotImplementedException(); }
             );
 
             LoadExistingCommand = new RelayCommand

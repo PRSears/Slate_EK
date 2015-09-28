@@ -1,9 +1,9 @@
 ﻿using Slate_EK.ViewModels;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.ComponentModel;
 
 namespace Slate_EK.Views
 {
@@ -45,7 +45,7 @@ namespace Slate_EK.Views
 
                 WindowsMenu.Items.Insert(0, newWindow);
 
-                w.MouseLeave += (sender, args) => // Make sure the MenuItem stays uptodate
+                w.MouseLeave += (sender, args) => // Make sure the MenuItem stays up-to-date
                 {
                     newWindow.Header = w.Title;
                 };

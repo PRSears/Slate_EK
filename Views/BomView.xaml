@@ -14,8 +14,16 @@
             <Setter Property="LastChildFill" Value="False"/>
         </Style>
         <ContextMenu x:Key="FastenerContextMenu">
-            <MenuItem Header="Remove (n)"
+            <MenuItem Header="Change quantity..."
+                      Command="{Binding RequestQuantityChange}"/>
+            <MenuItem Header="Delete"
                       Command="{Binding RequestRemoval}"/>
+        </ContextMenu>
+        <ContextMenu x:Key="FastenerListContextMenu">
+            <MenuItem Header="Change quantity..."
+                      Command="{Binding ListChangeQuantityCommand}"/>
+            <MenuItem Header="Delete"
+                      Command="{Binding ListDeleteItemCommand}"/>
         </ContextMenu>
     </Window.Resources>
     <Window.InputBindings>
@@ -169,86 +177,102 @@
                     Margin="0"
                     TabIndex="7"/> 
         </StackPanel>
-        
+
         <ScrollViewer Grid.Row="1" Grid.Column="1"
                       HorizontalScrollBarVisibility="Hidden"
                       VerticalScrollBarVisibility="Visible"
                       Margin="20"
-                      Background="#4c565b">
-            <StackPanel Orientation="Vertical"
-                        Margin="0,0,0,5"
-                        MouseLeftButtonUp="FastenersPanel_LeftMouseUp"
-                        MouseLeftButtonDown="FastenersPanel_MouseDown"
-                        MouseMove="FastenersPanel_MouseMove">
-                <StackPanel.Resources>
-                    <Style TargetType="TextBlock"
-                           BasedOn="{StaticResource CheckboxLabelStyle}">
-                        <Setter Property="HorizontalAlignment" Value="Center"/>
-                        <Setter Property="VerticalAlignment" Value="Center"/>
-                    </Style>
-                </StackPanel.Resources>
-                <Grid>
+                      Background="#4c565b"
+                      >
+            <Grid x:Name="FastenersBox"
+                  MouseLeftButtonDown="FastenersBox_MouseDown"
+                  MouseLeftButtonUp="FastenersBox_MouseUp"
+                  MouseRightButtonUp="FastenersBox_RightMouseUp"
+                  MouseMove="FastenersBox_MouseMove"
+                  VerticalAlignment="Stretch"
+                  Background="Transparent"
+                  ContextMenu="{StaticResource FastenerListContextMenu}">
+                <DockPanel Margin="0,0,0,5"
+                           LastChildFill="True">
+                    <DockPanel.Resources>
+                        <Style TargetType="TextBlock"
+                               BasedOn="{StaticResource CheckboxLabelStyle}">
+                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                        </Style>
+                    </DockPanel.Resources>
+                    <Grid DockPanel.Dock="Top">
 
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="30"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="60*"/>
-                        <ColumnDefinition Width="40*"/>
-                    </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60*"/>
+                            <ColumnDefinition Width="40*"/>
+                        </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Grid.ColumnSpan="2"
-                        Background="#4F626D"
-                        Height="30"
-                        VerticalAlignment="Top"/>
-                    <TextBlock Grid.Column="0" Grid.Row="0"
-                               Text="Fastener Description"/>
-                    <TextBlock Grid.Column="1" Grid.Row="0"
-                               Text="Quantity"
-                               Margin="0,0,10,0"/>
-                </Grid>
+                        <Border Grid.Column="0" Grid.ColumnSpan="2"
+                            Background="#4F626D"
+                            Height="30"
+                            VerticalAlignment="Top"/>
+                        <TextBlock Grid.Column="0" Grid.Row="0"
+                                   Text="Fastener Description"/>
+                        <TextBlock Grid.Column="1" Grid.Row="0"
+                                   Text="Quantity"
+                                   Margin="0,0,10,0"/>
+                    </Grid>
 
-                <ItemsControl x:Name="FastenerItemsControl"
-                              AlternationCount="2">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Grid x:Name="ItemRowGrid"
-                                  Background="{Binding Background}"
-                                  ContextMenu="{StaticResource FastenerContextMenu}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="60*"/>
-                                    <ColumnDefinition Width="40*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.Resources>
-                                    <Style TargetType="TextBlock"
-                                           BasedOn="{StaticResource DejaVu}">
-                                        <Setter Property="FontSize" Value="{Binding BomFontSize}"/>
-                                        <Setter Property="Foreground" Value="#dddddd"/>
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="HorizontalAlignment" Value="Left"/>
-                                        <Setter Property="Foreground" Value="#c6c6c6"/>
-                                        <Setter Property="Padding" Value="0,4,0,4"/>
-                                    </Style>
-                                </Grid.Resources>
-                                <TextBlock Grid.Column="0"
-                                           Text="{Binding Fastener.Description}"
-                                           Margin="10,0,0,0"/>
-                                <TextBlock Grid.Column="1"
-                                           HorizontalAlignment="Center"
-                                           Margin="0,0,10,0"
-                                           Text="{Binding Fastener.Quantity}"/>
-                            </Grid>
-                            
-                            <DataTemplate.Triggers>
-                                <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                                    <Setter Property="Background" Value="{Binding AltBackground}" TargetName="ItemRowGrid"/>
-                                </Trigger>
-                            </DataTemplate.Triggers>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
+                    <ItemsControl x:Name="FastenerItemsControl"
+                                  AlternationCount="2"
+                                  DockPanel.Dock="Left">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                    <Grid x:Name="ItemRowGrid"
+                                      Background="{Binding Background}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="60*"/>
+                                            <ColumnDefinition Width="40*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.Resources>
+                                            <Style TargetType="TextBlock"
+                                               BasedOn="{StaticResource DejaVu}">
+                                                <Setter Property="FontSize" Value="{Binding BomFontSize}"/>
+                                                <Setter Property="Foreground" Value="#dddddd"/>
+                                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                                <Setter Property="HorizontalAlignment" Value="Left"/>
+                                                <Setter Property="Foreground" Value="#c6c6c6"/>
+                                                <Setter Property="Padding" Value="0,4,0,4"/>
+                                            </Style>
+                                        </Grid.Resources>
+                                        <TextBlock Grid.Column="0"
+                                               Text="{Binding Fastener.Description}"
+                                               Margin="10,0,0,0"/>
+                                        <TextBlock Grid.Column="1"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,10,0"
+                                               Text="{Binding Fastener.Quantity}"/>
+                                    </Grid>
+
+                                    <DataTemplate.Triggers>
+                                    <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                                        <Setter Property="Background" Value="{Binding AltBackground}" TargetName="ItemRowGrid"/>
+                                    </Trigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </DockPanel>
+                <Canvas IsHitTestVisible="False">
+                    <Rectangle
+                        x:Name="SelectionBox"
+                        Visibility="Collapsed"
+                        Stroke="White"
+                        StrokeThickness="1"
+                        Fill="DarkGray"
+                        Opacity="0.25"/>
+                </Canvas>
+            </Grid>
         </ScrollViewer>
         
         <Border Grid.Row="2" Grid.Column="0"

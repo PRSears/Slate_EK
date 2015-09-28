@@ -1,17 +1,6 @@
 ﻿using Extender.WPF;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Slate_EK.Views
 {
@@ -21,6 +10,12 @@ namespace Slate_EK.Views
     public partial class NumberPickerDialog : Window
     {
         public int Value
+        {
+            get;
+            set;
+        }
+
+        public bool Success
         {
             get;
             set;
@@ -37,7 +32,11 @@ namespace Slate_EK.Views
 
             DoneCommand = new RelayCommand
             (
-                () => this.Close()
+                () =>
+                {
+                    this.Close();
+                    this.Success = true;
+                }
             );
 
             ExitWithoutSavingCommand = new RelayCommand
@@ -45,11 +44,27 @@ namespace Slate_EK.Views
                 () =>
                 {
                     this.Close();
-                    this.Value = 0;
+                    this.Value      = 0;
+                    this.Success    = false;
                 }
             );
 
             ValueField.Focus();
+        }
+
+        public NumberPickerDialog(int initialValue) : this()
+        {
+            ExitWithoutSavingCommand = new RelayCommand
+            (
+                () =>
+                {
+                    this.Close();
+                    this.Value      = initialValue;
+                    this.Success    = false;
+                }
+            );
+
+            Value = initialValue;
         }
     }
 }

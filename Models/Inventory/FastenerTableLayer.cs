@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Extender.Databases;
+using Extender.ObjectUtils;
+using System;
 using System.Data.Linq.Mapping;
 using System.Linq;
 using System.Text;
-using Extender.Databases;
-using Extender.ObjectUtils;
 
 namespace Slate_EK.Models.Inventory
 {
@@ -13,7 +12,8 @@ namespace Slate_EK.Models.Inventory
     {
         //
         // TODOh Ultimately, I want the inventory to be kept/maintained in a real DB, and importing and exporting can be done via
-        //       csv files. I could see if Eric has access to a real inventory database.
+        //       csv files. I could see if Eric has access to a real inventory database. -- Nope. I can make everything without 
+        //       worrying about overlap.
 
         // BomViewModel can query the database when it is adding a fastener to the BOM.
         // I can write a quick custom object to handle csv exporting of a completed BOM for print.

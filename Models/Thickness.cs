@@ -1,10 +1,6 @@
 ﻿using Extender;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Slate_EK.Models
 {
@@ -16,7 +12,7 @@ namespace Slate_EK.Models
 
         public Thickness()
         {
-
+            //TODOh switch to using UnitConversion.Lengths to make switching between inches / mm easier
         }
 
         public Thickness(double thickness)
