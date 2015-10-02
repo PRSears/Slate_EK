@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Slate_EK.Views"
         mc:Ignorable="d"
-        Icon="/Slate_EK;component/icon_25.ico"
+        Icon="/Slate_EK;component/Icons/icon_25.ico"
         Title="" Height="75" Width="121"
         WindowStyle="None"
         ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterOwner">
     <Window.InputBindings>
         <KeyBinding Key="Esc" Command="{Binding ExitWithoutSavingCommand}"/>
     </Window.InputBindings>

@@ -119,14 +119,14 @@ namespace Slate_EK.Models
                 return new Material("aluminum", 1.5d);
             }
         }
-        public static Material NotSpecified
+        public static Material Unspecified
         {
             get
             {
-                return new Material("NotSpecified", 0d);
+                return new Material("unspecified", 0d);
             }
         }
 
-        public static Material[] Materials = { Steel, Aluminum, NotSpecified };
+        public static Material[] Materials = { Steel, Aluminum, Unspecified };
     }
 }

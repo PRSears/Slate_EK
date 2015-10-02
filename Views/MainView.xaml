@@ -1,10 +1,11 @@
 ﻿<Window x:Class="Slate_EK.Views.MainView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=System"
         Title="{Binding WindowTitle}" 
         Width="365" Height="155"
         ResizeMode="CanMinimize"
-        Icon="/Slate_EK;component/icon_25.ico"
+        Icon="/Slate_EK;component/Icons/icon_25.ico"
         Background="#494d4f"
         FocusManager.FocusedElement="{Binding ElementName=AssemblyNumField}"
         AllowDrop="True"
@@ -36,7 +37,6 @@
             <MenuItem Header="_File" TabIndex="3">
                 <MenuItem Header="_Load BOM from file..." Command="{Binding LoadExistingCommand}"/>
                 <MenuItem Header="_Create new BOM..." Command="{Binding CreateNewBomCommand}"/>
-                <Separator/>
                 <MenuItem Header="E_xit" Command="{Binding ExitAllCommand}"/>
             </MenuItem>
             <MenuItem Header="_Preferences" TabIndex="4">
@@ -46,7 +46,8 @@
                       x:Name="WindowsMenu"
                       IsEnabled="{Binding WindowsMenuEnabled}">
                 <Separator/>
-                <MenuItem x:Name="CloseAllMenuitem" Header="Close all" Command="{Binding CloseAllBomWindows}"/>
+                <MenuItem Header="Close all" x:Name="CloseAllMenuitem" Command="{Binding CloseAllBomWindows}"
+                          ToolTip="Closes any open BOM windows."/>
             </MenuItem>
         </Menu>
         

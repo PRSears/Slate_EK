@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Timers;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -28,6 +29,7 @@ namespace Slate_EK.ViewModels
         public ICommand Shortcut_CtrlE              { get; private set; }
         public ICommand Shortcut_CtrlD              { get; private set; }
         public ICommand Shortcut_CtrlA              { get; private set; }
+        public ICommand Shortcut_CtrlP              { get; private set; }
 
         public event ShortcutEventHandler ShortcutPressed_CtrlK;
         public event ShortcutEventHandler ShortcutPressed_CtrlS;
@@ -194,6 +196,7 @@ namespace Slate_EK.ViewModels
             if (sender is FastenerControl)
             {
                 Views.NumberPickerDialog dialog = new Views.NumberPickerDialog();
+                dialog.Owner = FindThisWindow();
                 dialog.ShowDialog();
 
                 if (dialog.Value > 0)
@@ -208,9 +211,10 @@ namespace Slate_EK.ViewModels
             if (sender is FastenerControl)
             {
                 Views.NumberPickerDialog dialog = new Views.NumberPickerDialog((sender as FastenerControl).Fastener.Quantity);
-                dialog.ShowDialog();
+                dialog.Owner = FindThisWindow();
+                dialog.ShowDialog();                
 
-                if(dialog.Success)
+                if (dialog.Success)
                 {
                     if (dialog.Value > 0)
                         (sender as FastenerControl).Fastener.Quantity = dialog.Value;
@@ -218,6 +222,18 @@ namespace Slate_EK.ViewModels
                         Bom.Remove((sender as FastenerControl).Fastener, Int32.MaxValue);
                 }
             }
+        }
+
+        private Window FindThisWindow()
+        {
+            // Yeah... this is bad.
+            Window mainWindow = Application.Current.MainWindow;
+            if(mainWindow is Views.MainView)
+            {
+                return (mainWindow as Views.MainView).FindBomWindow(this.Bom.AssemblyNumber);
+            }
+
+            return null; 
         }
 
         public override void Initialize()
@@ -261,6 +277,14 @@ namespace Slate_EK.ViewModels
                 {
                     foreach (FastenerControl item in ObservableFasteners)
                         item.IsSelected = true;
+                }
+            );
+
+            Shortcut_CtrlP = new RelayCommand
+            (
+                () =>
+                {
+                    System.Windows.MessageBox.Show("Print not yet implemented.");
                 }
             );
 

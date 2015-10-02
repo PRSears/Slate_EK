@@ -1,6 +1,5 @@
 ﻿using Extender.WPF;
 using Slate_EK.Views;
-using System;
 using System.IO;
 using System.Windows.Input;
 using System.Xml;
@@ -60,7 +59,7 @@ namespace Slate_EK.ViewModels
 
             TestHarnessCommand = new RelayCommand
             (
-                () => { throw new NotImplementedException(); }
+                () => { WindowManager.OpenWindow(new InventoryView()); }
             );
 
             LoadExistingCommand = new RelayCommand
@@ -107,7 +106,8 @@ namespace Slate_EK.ViewModels
 
             CloseAllBomWindows = new RelayCommand
             (
-                () => WindowManager.CloseAll()
+                () => WindowManager.CloseAll(),
+                () => WindowManager.ChildOpen()
             );
 
             FileDroppedCommand = new RelayFunction

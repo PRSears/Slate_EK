@@ -211,7 +211,7 @@ namespace Slate_EK.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("#50595E")]
+        [global::System.Configuration.DefaultSettingValueAttribute("#06FFFFFF")]
         public string ItemAltnernateBackgroundColor {
             get {
                 return ((string)(this["ItemAltnernateBackgroundColor"]));
@@ -247,13 +247,37 @@ namespace Slate_EK.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool UseInches {
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public byte DefaultUnit {
             get {
-                return ((bool)(this["UseInches"]));
+                return ((byte)(this["DefaultUnit"]));
             }
             set {
-                this["UseInches"] = value;
+                this["DefaultUnit"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("debug.log")]
+        public string DebugFilename {
+            get {
+                return ((string)(this["DebugFilename"]));
+            }
+            set {
+                this["DebugFilename"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Length")]
+        public string Inventory_DefaultSearchBy {
+            get {
+                return ((string)(this["Inventory_DefaultSearchBy"]));
+            }
+            set {
+                this["Inventory_DefaultSearchBy"] = value;
             }
         }
     }

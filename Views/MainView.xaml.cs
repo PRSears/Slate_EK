@@ -36,18 +36,18 @@ namespace Slate_EK.Views
 
             ViewModel.WindowManager.WindowOpened += (s, w) =>
             {
-                MenuItem newWindow = new MenuItem();
-                newWindow.Header   = w.Title;
-                newWindow.Command  = new Extender.WPF.RelayCommand
+                MenuItem newWindowMenuItem = new MenuItem();
+                newWindowMenuItem.Header   = w.Title;
+                newWindowMenuItem.Command  = new Extender.WPF.RelayCommand
                 (
                     () => w.Focus()
                 );
 
-                WindowsMenu.Items.Insert(0, newWindow);
+                WindowsMenu.Items.Insert(0, newWindowMenuItem);
 
                 w.MouseLeave += (sender, args) => // Make sure the MenuItem stays up-to-date
                 {
-                    newWindow.Header = w.Title;
+                    newWindowMenuItem.Header = w.Title;
                 };
             };
 
@@ -73,6 +73,29 @@ namespace Slate_EK.Views
                     WindowsMenu.Items.Remove(item);
                 }
             };
+
+        }
+
+        public Window FindBomWindow(string assemblyNumber)
+        {
+            Window bomWindow;
+
+            try
+            {
+                bomWindow = ViewModel.WindowManager.Children.First(w => w.Title.Contains(assemblyNumber));
+            }
+            catch (System.InvalidOperationException)
+            {
+                return null;
+            }
+
+            return bomWindow;
+        }
+
+        private void WindowsMenuInsertAndSort(MenuItem newItem)
+        {
+            var raw = new List<MenuItem>(WindowsMenu.Items.SourceCollection.Cast<MenuItem>());
+            //raw.Sort()
         }
 
         private void MainWindow_Drop(object sender, DragEventArgs e)

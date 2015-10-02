@@ -53,6 +53,14 @@ namespace Slate_EK.Models
             }
         }
 
+        public static HoleType Unspecified
+        {
+            get
+            {
+                return new HoleType("unspecified");
+            }
+        }
+
         public static HoleType Parse(string holeType)
         {
             foreach (HoleType t in HoleTypes)

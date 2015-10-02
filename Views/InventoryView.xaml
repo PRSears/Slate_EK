@@ -1,0 +1,339 @@
+﻿<Window x:Class="Slate_EK.Views.InventoryView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Slate_EK.Views"
+        mc:Ignorable="d"
+        Title="{Binding WindowTitle}" 
+        MinWidth="800" MinHeight="600"
+        Width="850" Height="600"
+        Icon="/Slate_EK;component/Icons/icon_25.ico"
+        Background="#494d4f">
+    <Window.Resources>
+        <ContextMenu x:Key="InventoryBoxContextMenu">
+            <MenuItem Header="Add new fastener" Command="{Binding AddNewFastenerCommand}"/>
+            <MenuItem Header="Remove fastener" Command="{Binding RemoveFastenerCommand}"/>
+            <MenuItem Header="Change quantity..." Command="{Binding ChangeQuantityCommand}"/>
+            <Separator/>
+            <MenuItem Header="Select all" Command="{Binding SelectAllCommand}"/>
+            <MenuItem Header="Deselect all" Command="{Binding SelectNoneCommand}"/>
+        </ContextMenu>
+    </Window.Resources>
+    <Window.InputBindings>
+        
+    </Window.InputBindings>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="22"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            
+        </Grid.ColumnDefinitions>
+
+        <Menu Grid.Row="0" Grid.Column="0"
+              x:Name="InventoryMenu"
+              Background="#dddddd"
+              Padding="4,0,0,0"
+              Height="22"
+              VerticalAlignment="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open a different inventory file..." Command="{Binding OpenCommand}"/>
+                <MenuItem Header="_Save Copy As..." Command="{Binding ExportCommand}"/>
+                <Separator/>
+                <MenuItem Header="E_xit" Command="{Binding ExitCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Tools">
+                <MenuItem Header="_Open in Excel" Command="{Binding OpenInExcelCommand}"/>
+                <MenuItem Header="_Update from .Csv" Command="{Binding ImportCommand}"/>
+                <MenuItem Header="Drop database" Command="{Binding DropDatabaseCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Options">
+                <MenuItem Header="_Units">
+                    <MenuItem Header="_Metric" Command="{Binding SwitchToMetricCommand}" 
+                              IsChecked="{Binding UsingMetric, Mode=OneWay}"/>
+                    <MenuItem Header="_Imperial" Command="{Binding SwitchToImperialCommand}" 
+                              IsChecked="{Binding UsingImperial, Mode=OneWay}"/>
+                </MenuItem>
+            </MenuItem>
+        </Menu>
+
+        <Grid Grid.Row="1" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+            </Grid.ColumnDefinitions>
+            <Grid.Resources>
+                <Style TargetType="{x:Type Button}">
+                    <Setter Property="Foreground" Value="#dddddd"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Border x:Name="Border"  
+                                        CornerRadius="0" 
+                                        BorderThickness="0,0,1,0"
+                                        Background="Transparent"
+                                        BorderBrush="#dddddd">
+                                    <ContentPresenter Margin="2"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      RecognizesAccessKey="True"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsKeyboardFocused" Value="true">
+                                        <Setter TargetName="Border" Property="BorderBrush" Value="#d0d0d0" />
+                                    </Trigger>
+                                    <Trigger Property="IsDefaulted" Value="true">
+                                        <Setter TargetName="Border" Property="BorderBrush" Value="#202020" />
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="true">
+                                        <Setter TargetName="Border" Property="Background" Value="#566873" />
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="true">
+                                        <Setter TargetName="Border" Property="Background" Value="#485963" />
+                                        <Setter TargetName="Border" Property="BorderBrush" Value="#d0d0d0" />
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="false">
+                                        <Setter TargetName="Border" Property="Background" Value="#485963" />
+                                        <Setter TargetName="Border" Property="BorderBrush" Value="#d0d0d0" />
+                                        <Setter Property="Foreground" Value="#999999"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Grid.Resources>
+            
+            <Border Grid.Row="0" Grid.Column="0"
+                    Grid.ColumnSpan="10"
+                    Height="30"
+                    VerticalAlignment="Top"
+                    Background="#4f626d"/>
+
+            <Button Grid.Row="0" Grid.Column="0"
+                    Content="Quantity"
+                    Command="{Binding SortByQuantityCommand}"/>
+            <Button Grid.Row="0" Grid.Column="1"
+                    Content="Price"
+                    Command="{Binding SortByPriceCommand}"/>
+            <Button Grid.Row="0" Grid.Column="2"
+                    Content="Mass"
+                    Command="{Binding SortByMassCommand}"/>
+            <Button Grid.Row="0" Grid.Column="3"
+                    Content="Size"
+                    Command="{Binding SortBySizeCommand}"/>
+            <Button Grid.Row="0" Grid.Column="4"
+                    Content="Length"
+                    Command="{Binding SortByLengthCommand}"/>
+            <Button Grid.Row="0" Grid.Column="5"
+                    Content="Pitch"
+                    Command="{Binding SortByPitchCommand}"/>
+            <Button Grid.Row="0" Grid.Column="6"
+                    Content="Material"
+                    Command="{Binding SortByMaterialCommand}"/>
+            <Button Grid.Row="0" Grid.Column="7"
+                    Content="Fast. Type"
+                    Command="{Binding SortByFastTypeCommand}"/>
+            <Button Grid.Row="0" Grid.Column="8"
+                    Content="Hole Type"
+                    Command="{Binding SortByHoleTypeCommand}"/>
+
+            <ScrollViewer Grid.Row="1" Grid.Column="0"
+                        Grid.ColumnSpan="10"
+                        HorizontalScrollBarVisibility="Hidden"
+                        VerticalScrollBarVisibility="Visible">
+                <Grid x:Name="InventoryBox"
+                      MouseLeftButtonDown="InventoryBox_LeftMouseDown"
+                      MouseLeftButtonUp="InventoryBox_LeftMouseUp"
+                      MouseRightButtonUp="InventoryBox_RightMouseUp"
+                      MouseMove="InventoryBox_MouseMove"
+                      VerticalAlignment="Stretch"
+                      HorizontalAlignment="Stretch"
+                      Background="Transparent"
+                      ContextMenu="{StaticResource InventoryBoxContextMenu}">
+                    <StackPanel Orientation="Vertical">
+                        <ItemsControl x:Name="InventoryItemsControl"
+                                        AlternationCount="2">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid x:Name="InventoryItemContainerGrid">
+                                        <Grid.Resources>
+                                            <Style TargetType="TextBox"
+                                                   BasedOn="{StaticResource DejaVu}">
+                                                <Setter Property="FontSize" Value="{Binding BomFontSize}"/>
+                                                <Setter Property="Foreground" Value="#dddddd"/>
+                                                <Setter Property="CaretBrush" Value="#dddddd"/>
+                                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                                <Setter Property="HorizontalAlignment" Value="Right"/>
+                                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                                <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                                                <Setter Property="Background" Value="Transparent"/>
+                                                <Setter Property="BorderThickness" Value="0"/>
+                                                <Setter Property="BorderBrush" Value="Transparent"/>
+                                                <Setter Property="Padding" Value="8,4,8,4"/>
+                                                <Setter Property="Margin" Value="0,0,8,0"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#10FFFFFF"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsFocused" Value="True">
+                                                        <Setter Property="Background" Value="#15FFFFFF"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Grid.Resources>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Grid.ColumnSpan="10"
+                                                x:Name="ItemBackground"
+                                                Background="{Binding Background}"/>
+
+                                        <TextBox Grid.Column="0"
+                                                   Text="{Binding Fastener.Quantity, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <TextBox Grid.Column="1"
+                                                   Text="{Binding Fastener.Price, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <TextBox Grid.Column="2"
+                                                   Text="{Binding Fastener.Mass, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <TextBox Grid.Column="3"
+                                                   Text="{Binding Fastener.SizeString}"/>
+                                        <TextBox Grid.Column="4"
+                                                   Text="{Binding Fastener.Length, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <TextBox Grid.Column="5"
+                                                   Text="{Binding Fastener.PitchString}"/>
+                                        <TextBox Grid.Column="6"
+                                                   Text="{Binding Fastener.MaterialString}"/>
+                                        <TextBox Grid.Column="7"
+                                                   Text="{Binding Fastener.TypeString}"/>
+                                        <TextBox Grid.Column="8"
+                                                   Text="{Binding Fastener.HoleTypeString}"/>
+
+                                    </Grid>
+                                    <DataTemplate.Triggers>
+                                        <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                                            <Setter Property="Background" Value="{Binding AltBackground}"  TargetName="ItemBackground"/>
+                                        </Trigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        </StackPanel>
+                        <Canvas IsHitTestVisible="False">
+                        <Rectangle x:Name="SelectionBox"
+                                   Visibility="Collapsed"
+                                   Stroke="White"
+                                   StrokeThickness="1"
+                                   Fill="DarkGray"
+                                   Opacity="0.25"/>
+                    </Canvas>
+                </Grid>
+            </ScrollViewer>
+
+
+            <Border Grid.Row="1" Grid.Column="0"
+                    BorderThickness="0,0,1,0"
+                    BorderBrush="#6b6b6b"/>
+            <Border Grid.Row="1" Grid.Column="1"
+                    BorderThickness="0,0,1,0"
+                    BorderBrush="#6b6b6b"/>
+            <Border Grid.Row="1" Grid.Column="2"
+                    BorderThickness="0,0,1,0"
+                    BorderBrush="#6b6b6b"/>
+            <Border Grid.Row="1" Grid.Column="3"
+                    BorderThickness="0,0,1,0"
+                    BorderBrush="#6b6b6b"/>
+            <Border Grid.Row="1" Grid.Column="4"
+                    BorderThickness="0,0,1,0"
+                    BorderBrush="#6b6b6b"/>
+            <Border Grid.Row="1" Grid.Column="5"
+                    BorderThickness="0,0,1,0"
+                    BorderBrush="#6b6b6b"/>
+            <Border Grid.Row="1" Grid.Column="6"
+                    BorderThickness="0,0,1,0"
+                    BorderBrush="#6b6b6b"/>
+            <Border Grid.Row="1" Grid.Column="7"
+                    BorderThickness="0,0,1,0"
+                    BorderBrush="#6b6b6b"/>
+            <Border Grid.Row="1" Grid.Column="8"
+                    BorderThickness="0,0,1,0"
+                    BorderBrush="#6b6b6b"/>
+
+        </Grid>
+        
+        <Border Grid.Row="2" Grid.Column="0"
+                Background="#505753"/>
+        <DockPanel Grid.Row="2" Grid.Column="0"
+                   Margin="10, 0, 10, 0"
+                   LastChildFill="False">
+            <Label Style="{StaticResource LabelStyle}"
+                   FontSize="12"
+                   DockPanel.Dock="Left"
+                   VerticalContentAlignment="Center"
+                   VerticalAlignment="Stretch"
+                   Margin="0,0,5,0"
+                   Content="Query:"/>
+            <ComboBox x:Name="SearchByPropertyDropdown"
+                      Style="{StaticResource Dropdown}"
+                      Margin="0,-2,0,0"
+                      Width="100" Height="26"
+                      ItemsSource="{Binding SearchByPropertyList}"
+                      SelectedValue="{Binding SelectedSearchProperty, Mode=TwoWay}"
+                      DockPanel.Dock="Left"/>
+            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                     BorderBrush="#303030"
+                     DockPanel.Dock="Left"
+                     VerticalContentAlignment="Bottom"
+                     x:Name="QueryTextField"
+                     Text="{Binding SearchQuery}"
+                     Padding="5,0,0,4"
+                     Width="200" Height="26"
+                     Margin="10,0,0,0">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding ExecuteSearchCommand}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+            <Button Style="{StaticResource FlatSearchButton}"
+                    DockPanel.Dock="Left"
+                    Command="{Binding ExecuteSearchCommand}"
+                    ToolTip="Execute search">
+                <Image Source="/Slate_EK;component/Icons/search_black_24.png"/>
+            </Button>
+
+
+            <Button Style="{StaticResource FlatActionButtonStyle}"
+                    DockPanel.Dock="Right"
+                    Margin="10,0,0,0"
+                    Command="{Binding RemoveItemCommand}"
+                    Content="Remove"/>
+            <Button Style="{StaticResource FlatActionButtonStyle}"
+                    DockPanel.Dock="Right"
+                    Margin="0"
+                    Command="{Binding AddItemCommand}"
+                    Content="Add..."/>
+        </DockPanel>
+    </Grid>
+</Window>

@@ -222,7 +222,17 @@ namespace Slate_EK.Models
             }
             set
             {
-                this.Material = Material.TryParse(value);
+                Material parsed;
+                try
+                {
+                    parsed = Material.Parse(value);
+                }
+                catch(ArgumentException)
+                {
+                    parsed = Material.Unspecified;
+                }
+
+                Material = parsed;
                 OnPropertyChanged(nameof(MaterialString));
             }
         }
@@ -235,7 +245,17 @@ namespace Slate_EK.Models
             }
             set
             {
-                this.Type = FastenerType.Parse(value);
+                FastenerType parsed;
+                try
+                {
+                    parsed = FastenerType.Parse(value);
+                }
+                catch (ArgumentException)
+                {
+                    parsed = FastenerType.Unspecified;
+                }
+
+                this.Type = parsed;
                 OnPropertyChanged(nameof(TypeString));
             }
         }
@@ -248,7 +268,17 @@ namespace Slate_EK.Models
             }
             set
             {
-                this.HoleType = HoleType.Parse(value);
+                HoleType parsed;
+                try
+                {
+                    parsed = HoleType.Parse(value);
+                }
+                catch(ArgumentException)
+                {
+                    parsed = HoleType.Unspecified;
+                }
+
+                HoleType = parsed;
                 OnPropertyChanged(nameof(HoleTypeString));
             }
         }
@@ -422,7 +452,7 @@ namespace Slate_EK.Models
                 Length = threadEngagemnt + PlateThickness.PlateThickness - Size.OuterDiameter;
             }
 
-            // TODO Make length update when size/pitch/etc are updated
+            // TODO Make sure length updates when size/pitch/etc are updated
             //      Can call CalculateLength() in the ViewModel and have it check
             //      if OverrideLength is selected, and do nothing if it is.
 

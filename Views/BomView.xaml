@@ -2,9 +2,9 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding WindowTitle}" 
-        MinWidth="850" MinHeight="444"
+        MinWidth="850" MinHeight="577"
         Width="850" Height="640"
-        Icon="/Slate_EK;component/icon_25.ico"
+        Icon="/Slate_EK;component/Icons/icon_25.ico"
         Background="#494d4f">
     <Window.Resources>
         <Style TargetType="DockPanel">
@@ -37,6 +37,8 @@
                     Command="{Binding Shortcut_CtrlD}"/>
         <KeyBinding Modifiers="Control" Key="A"
                     Command="{Binding Shortcut_CtrlA}"/>
+        <KeyBinding Modifiers="Ctrl" Key="P"
+                    Command="{Binding Shortcut_CtrlP}"/>
         <KeyBinding Key="Delete"
                     Command="{Binding RemoveItemCommand}"/>
         <KeyBinding Modifiers="Shift" Key="Delete"
@@ -255,10 +257,10 @@
                                     </Grid>
 
                                     <DataTemplate.Triggers>
-                                    <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                                        <Setter Property="Background" Value="{Binding AltBackground}" TargetName="ItemRowGrid"/>
-                                    </Trigger>
-                                </DataTemplate.Triggers>
+                                        <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                                            <Setter Property="Background" Value="{Binding AltBackground}" TargetName="ItemRowGrid"/>
+                                        </Trigger>
+                                    </DataTemplate.Triggers>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

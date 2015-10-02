@@ -12,7 +12,7 @@ namespace Slate_EK.Models
 
         public Thickness()
         {
-            //TODOh switch to using UnitConversion.Lengths to make switching between inches / mm easier
+            //TODO switch to using UnitConversion.Lengths to make switching between inches / mm easier
         }
 
         public Thickness(double thickness)

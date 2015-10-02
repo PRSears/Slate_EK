@@ -51,7 +51,7 @@
       <Value Profile="(Default)">#4c565b</Value>
     </Setting>
     <Setting Name="ItemAltnernateBackgroundColor" Type="System.String" Scope="User">
-      <Value Profile="(Default)">#50595E</Value>
+      <Value Profile="(Default)">#06FFFFFF</Value>
     </Setting>
     <Setting Name="DefaultFastenerFilePath" Type="System.String" Scope="User">
       <Value Profile="(Default)">Properties\\default_fastener.xml</Value>
@@ -59,8 +59,14 @@
     <Setting Name="BomListFontSize" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">12</Value>
     </Setting>
-    <Setting Name="UseInches" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+    <Setting Name="DefaultUnit" Type="System.Byte" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="DebugFilename" Type="System.String" Scope="User">
+      <Value Profile="(Default)">debug.log</Value>
+    </Setting>
+    <Setting Name="Inventory_DefaultSearchBy" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Length</Value>
     </Setting>
   </Settings>
 </SettingsFile>

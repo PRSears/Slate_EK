@@ -1,5 +1,4 @@
 ﻿using System;
-using Extender;
 using System.ComponentModel;
 using System.Linq;
 
@@ -36,6 +35,14 @@ namespace Slate_EK.Models
             get
             {
                 return new FastenerType("flat countersunk head cap screw");
+            }
+        }
+
+        public static FastenerType Unspecified
+        {
+            get
+            {
+                return new FastenerType("unspecified");
             }
         }
 

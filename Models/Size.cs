@@ -79,7 +79,7 @@ namespace Slate_EK.Models
             return OuterDiameter.GetHashCode();
         }
 
-        public static Boolean operator == (Models.Size a, Models.Size b)
+        public static bool operator == (Models.Size a, Models.Size b)
         {
             if (object.ReferenceEquals(null, a))
                 return object.ReferenceEquals(null, b);
@@ -87,7 +87,7 @@ namespace Slate_EK.Models
             return a.Equals(b);
         }
 
-        public static Boolean operator != (Models.Size a, Models.Size b)
+        public static bool operator != (Models.Size a, Models.Size b)
         {
             return !(a == b);
         }

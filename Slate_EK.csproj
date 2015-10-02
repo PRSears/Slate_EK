@@ -62,15 +62,20 @@
     <Compile Include="Models\FastenerType.cs" />
     <Compile Include="Models\Fastener.cs" />
     <Compile Include="Models\HoleType.cs" />
-    <Compile Include="Models\Inventory\Archive.cs" />
+    <Compile Include="Models\Inventory\Inventory.cs" />
     <Compile Include="Models\Inventory\FastenerTableLayer.cs" />
+    <Compile Include="Models\Inventory\InventoryDataContext.cs" />
     <Compile Include="Models\IO\Pitches.cs" />
     <Compile Include="Models\IO\Sizes.cs" />
     <Compile Include="Models\Pitch.cs" />
     <Compile Include="Models\Size.cs" />
     <Compile Include="Models\Thickness.cs" />
     <Compile Include="ViewModels\BomViewModel.cs" />
+    <Compile Include="ViewModels\InventoryViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="Views\InventoryView.xaml.cs">
+      <DependentUpon>InventoryView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
@@ -90,6 +95,10 @@
       <DependentUpon>BomView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Views\InventoryView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MainView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -138,9 +147,15 @@
     <Content Include="DefaultXml\sizes.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Icons\ic_settings_black_24dp_1x.png" />
+    <Resource Include="Icons\ic_settings_black_24dp_2x.png" />
+    <Resource Include="Icons\ic_settings_white_24dp_1x.png" />
+    <Resource Include="Icons\ic_settings_white_24dp_2x.png" />
+    <Resource Include="Icons\search_black_24.png" />
+    <Resource Include="Icons\search_black_48.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="icon_25.ico" />
+    <Resource Include="Icons\icon_25.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

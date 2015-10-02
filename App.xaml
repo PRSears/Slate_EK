@@ -90,6 +90,56 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="FlatSearchButton" 
+            BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
+            TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="#dddddd"/>
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="#303030"/>
+            <Setter Property="Foreground" Value="#454545"/>
+            <Setter Property="Width" Value="26"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border 
+                           x:Name="Border"  
+                           CornerRadius="0" 
+                           BorderThickness="0,0,0,2"
+                           Background="#eeeeee"
+                           BorderBrush="#303030">
+                            <ContentPresenter 
+                             Margin="2"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center"
+                             RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="true">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#303030" />
+                            </Trigger>
+                            <Trigger Property="IsDefaulted" Value="true">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#303030" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="Border" Property="Background" Value="White" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter TargetName="Border" Property="Background" Value="#dddddd" />
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#303030" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter TargetName="Border" Property="Background" Value="#bdbdbd" />
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#303030" />
+                                <Setter Property="Foreground" Value="#888888"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         
         <Style x:Key="FlatHeaderTextboxStyle" TargetType="TextBox">
             <Setter Property="Background" Value="#545454"/>
