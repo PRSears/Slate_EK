@@ -25,10 +25,10 @@ namespace Slate_EK.Models.Inventory
         {
             get
             {
-                if (_UniqueID == null)
-                    _UniqueID = new Guid(GetHashData());
+                if (_UniqueId == null)
+                    _UniqueId = new Guid(GetHashData());
 
-                return _UniqueID;
+                return _UniqueId;
             }
         }
 
@@ -145,7 +145,7 @@ namespace Slate_EK.Models.Inventory
         private string  _Material;
         private string  _FastenerType;
 
-        private Guid    _UniqueID;
+        private Guid    _UniqueId;
         
         public FastenerTableLayer()
         {
@@ -184,7 +184,7 @@ namespace Slate_EK.Models.Inventory
 
         public void ForceNewUniqueID()
         {
-            _UniqueID = new Guid(GetHashData());
+            _UniqueId = new Guid(GetHashData());
         }
 
         public byte[] GetHashData()

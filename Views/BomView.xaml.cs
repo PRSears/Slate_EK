@@ -1,5 +1,4 @@
-﻿using Extender.Debugging;
-using Slate_EK.ViewModels;
+﻿using Slate_EK.ViewModels;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -11,7 +10,7 @@ namespace Slate_EK.Views
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class BomView : Window
+    public partial class BomView
     {
         private BomViewModel ViewModel
         {
@@ -19,8 +18,7 @@ namespace Slate_EK.Views
             {
                 if (DataContext is BomViewModel)
                     return (BomViewModel)DataContext;
-                else
-                    return null;
+                return null;
             }
             set
             {
@@ -33,41 +31,38 @@ namespace Slate_EK.Views
 
         public BomView(string assemblyNumber)
         {
-            base.Activated += (sender, e) =>
+            Activated += (sender, e) =>
             {
-                this.PlateThicknessTextField.Focus();
+                PlateThicknessTextField.Focus();
             };
 
             ViewModel = new BomViewModel(assemblyNumber);
             
             InitializeComponent();
 
-            ViewModel.RegisterCloseAction(() => this.Close());
+            ViewModel.RegisterCloseAction(Close);
             ViewModel.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName.Equals("OverrideLength"))
                 {
-                    if (ViewModel.OverrideLength)
-                        this.LengthTextbox.Opacity = 1d;
-                    else
-                        this.LengthTextbox.Opacity = 0.35;
+                    LengthTextbox.Opacity = ViewModel.OverrideLength ? 1d : 0.35;
                 }
                 else if (e.PropertyName.Equals("ObservableFasteners"))
                 {
-                    this.FastenerItemsControl.ItemsSource = ViewModel.ObservableFasteners;
+                    FastenerItemsControl.ItemsSource = ViewModel.ObservableFasteners;
                 }
             };
-            ViewModel.ShortcutPressed_CtrlK += () => this.AssemblyNumberField.Focus();
+            ViewModel.ShortcutPressedCtrlK += () => AssemblyNumberField.Focus();
             ViewModel.OverrideLength = false;
 
-            this.FastenerItemsControl.ItemsSource   = ViewModel.ObservableFasteners;
-            this.MaterialsDropdown.SelectedIndex    = 0; // HACK to fix a bug where the dropdown had no SelectedValue,
+            FastenerItemsControl.ItemsSource   = ViewModel.ObservableFasteners;
+            MaterialsDropdown.SelectedIndex    = 0; // HACK to fix a bug where the dropdown had no SelectedValue,
                                                          // despite array being initialized, etc.
         }
 
         #region // Click / drag / selection handling
         
-        protected bool  IsMouseDown = false;
+        protected bool  IsMouseDown;
         protected Point MouseDownPos;
 
         protected int SelectDownIndex   = -1;
@@ -80,26 +75,14 @@ namespace Slate_EK.Views
         {
             get
             {
-                foreach (FastenerControl item in FastenerItemsControl.Items)
-                {
-                    if (item.IsSelected)
-                        return true;
-                }
-
-                return false;
+                return FastenerItemsControl.Items.Cast<FastenerControl>().Any(item => item.IsSelected);
             }
         }
         protected int  SelectedFastenersCount
         {
             get
             {
-                int count = 0;
-                foreach (FastenerControl item in FastenerItemsControl.Items)
-                {
-                    if (item.IsSelected) count++;
-                }
-
-                return count;
+                return FastenerItemsControl.Items.Cast<FastenerControl>().Count(item => item.IsSelected);
             }
         }
         protected int  FirstSelectedIndex
@@ -150,7 +133,7 @@ namespace Slate_EK.Views
 
             SelectionBox.Visibility = Visibility.Visible;
 
-            Debug.WriteMessage($"_MouseDown [{MouseDownPos.X}, {MouseDownPos.Y}]", DEBUG, "info");
+            Extender.Debugging.Debug.WriteMessage($"_MouseDown [{MouseDownPos.X}, {MouseDownPos.Y}]", Debug, "info");
 
             if (e.OriginalSource is FrameworkElement)
             {
@@ -166,7 +149,7 @@ namespace Slate_EK.Views
 
             //
             // Handle double click
-            if(e.ClickCount == 2 && SelectedFastenersCount == 1)
+            if (e.ClickCount == 2 && SelectedFastenersCount == 1)
             {
                 PreviouslySelected.First().RequestQuantityChange.Execute(null);
 
@@ -179,22 +162,22 @@ namespace Slate_EK.Views
         {
             if (IsMouseDown)
             {
-                IsMouseDown = false;
+                IsMouseDown             = false;
                 SelectionBox.Visibility = Visibility.Collapsed;
 
                 Point mouseUpPos = e.GetPosition(FastenersBox);
 
-                Debug.WriteMessage($"_MouseUp [{mouseUpPos.X}, {mouseUpPos.Y}]", DEBUG, "info");
+                Extender.Debugging.Debug.WriteMessage($"_MouseUp [{mouseUpPos.X}, {mouseUpPos.Y}]", Debug, "info");
 
                 if (e.OriginalSource is FrameworkElement)
                 {
                     FrameworkElement origin = GetRootFastenerElement(e.OriginalSource as FrameworkElement);
 
-                    if(origin != null)
-                        SelectUpIndex = FastenerItemsControl.Items.IndexOf(origin.DataContext); ;
+                    if (origin != null)
+                        SelectUpIndex = FastenerItemsControl.Items.IndexOf(origin.DataContext); 
                 }
 
-                Debug.WriteMessage($"Selection started at index [{SelectDownIndex}] and ended at [{SelectUpIndex}].", DEBUG);
+                Extender.Debugging.Debug.WriteMessage($"Selection started at index [{SelectDownIndex}] and ended at [{SelectUpIndex}].", Debug);
 
                 if (SelectDownIndex >= 0 &&
                     HasFastenerSelected &&
@@ -206,14 +189,14 @@ namespace Slate_EK.Views
                     {
                         for (int i = LastSelectedIndex; i < SelectDownIndex; i++)
                         {
-                            (FastenerItemsControl.Items[i] as FastenerControl).SelectCommand.Execute(null);
+                            (FastenerItemsControl.Items[i] as FastenerControl)?.SelectCommand.Execute(null);
                         }
                     }
                     else if (SelectDownIndex < FirstSelectedIndex)
                     {
                         for (int i = SelectDownIndex; i < FirstSelectedIndex; i++)
                         {
-                            (FastenerItemsControl.Items[i] as FastenerControl).SelectCommand.Execute(null);
+                            (FastenerItemsControl.Items[i] as FastenerControl)?.SelectCommand.Execute(null);
                         }
                     }
                 }
@@ -226,12 +209,12 @@ namespace Slate_EK.Views
         private void FastenersBox_RightMouseUp(object sender, MouseButtonEventArgs e)
         {
             if (e.OriginalSource is FrameworkElement &&
-               (e.OriginalSource as FrameworkElement).DataContext != null &&
-               (e.OriginalSource as FrameworkElement).DataContext is FastenerControl &&
+               ((FrameworkElement)e.OriginalSource).DataContext != null &&
+               ((FrameworkElement)e.OriginalSource).DataContext is FastenerControl &&
                (SelectedFastenersCount <= 1))
             {
                 ClearFastenersSelection();
-                ((e.OriginalSource as FrameworkElement).DataContext as FastenerControl).SelectCommand.Execute(null);
+                (((FrameworkElement)e.OriginalSource).DataContext as FastenerControl)?.SelectCommand.Execute(null);
             }
         }
 
@@ -284,15 +267,15 @@ namespace Slate_EK.Views
                 FrameworkElement root = source;
 
                 while   (root.Parent != null &&
-                        (root.Parent as FrameworkElement).DataContext != null && 
-                        (root.Parent as FrameworkElement).DataContext is FastenerControl)
+                        ((FrameworkElement)root.Parent)?.DataContext != null && 
+                        ((FrameworkElement)root.Parent)?.DataContext is FastenerControl)
                 {
                     root = (FrameworkElement)root.Parent;
                 }
 
                 return root;
             }
-            else return null;
+            return null;
         }
 
         private void HandleSelections(bool firstClick)
@@ -338,17 +321,17 @@ namespace Slate_EK.Views
 
             //
             // Make a list of the elements in InventoryItemsControl so we can hit test them
-            FrameworkElement[] FastenerElements = new FrameworkElement[FastenerItemsControl.Items.Count];
-            for (int i = 0; i < FastenerElements.Length; i++)
+            FrameworkElement[] fastenerElements = new FrameworkElement[FastenerItemsControl.Items.Count];
+            for (int i = 0; i < fastenerElements.Length; i++)
             {
                 DependencyObject container = FastenerItemsControl.ItemContainerGenerator.ContainerFromIndex(i);
                 if (container is FrameworkElement)
-                    FastenerElements[i] = container as FrameworkElement;
+                    fastenerElements[i] = container as FrameworkElement;
             }
 
             //
             // Select and/or deselect 
-            foreach (FrameworkElement fastenerElement in FastenerElements)
+            foreach (FrameworkElement fastenerElement in fastenerElements)
             {
                 FastenerControl fastener = fastenerElement.DataContext as FastenerControl;
 
@@ -364,31 +347,32 @@ namespace Slate_EK.Views
                 {
                     if (inSelection && !PreviouslySelected.Contains(fastener))
                     {
-                        fastener.SelectCommand.Execute(null);
+                        fastener?.SelectCommand.Execute(null);
                     }
                     else if (inSelection && PreviouslySelected.Contains(fastener))
                     {
-                        fastener.DeselectCommand.Execute(null);
+                        fastener?.DeselectCommand.Execute(null);
                     }
                     else if (!inSelection && PreviouslySelected.Contains(fastener))
                     {
-                        fastener.SelectCommand.Execute(null);
+                        fastener?.SelectCommand.Execute(null);
                     }
                     else
                     {
-                        fastener.DeselectCommand.Execute(null);
+                        fastener?.DeselectCommand.Execute(null);
                     }
                 }
                 else if (shiftDown)
                 {
                     if (inSelection)
                     {
-                        fastener.SelectCommand.Execute(null);
+                        fastener?.SelectCommand.Execute(null);
                         PassedOver.Add(fastener);
                     }
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse // for clarity
                     else if (!inSelection && PassedOver.Contains(fastener))
                     {
-                        fastener.DeselectCommand.Execute(null);
+                        fastener?.DeselectCommand.Execute(null);
                     }
                 }
                 else
@@ -396,9 +380,9 @@ namespace Slate_EK.Views
                     if (inSelection &&
                         !(!HasFastenerSelected && PreviouslySelected.Count <= 1 && PreviouslySelected.Contains(fastener)))
                     {
-                        fastener.SelectCommand.Execute(null);
+                        fastener?.SelectCommand.Execute(null);
                     }
-                    else fastener.DeselectCommand.Execute(null);
+                    else fastener?.DeselectCommand.Execute(null);
                 }
             }
         }
@@ -407,10 +391,7 @@ namespace Slate_EK.Views
         {
             foreach (var item in FastenerItemsControl.Items)
             {
-                if (item is FastenerControl)
-                {
-                    (item as FastenerControl).DeselectCommand.Execute(null);
-                }
+                (item as FastenerControl)?.DeselectCommand.Execute(null);
             }
         }
 
@@ -418,13 +399,8 @@ namespace Slate_EK.Views
 
 
         #region // Settings.Settings aliases
-        private bool DEBUG
-        {
-            get
-            {
-                return Properties.Settings.Default.Debug;
-            }
-        }
+        private bool Debug => Properties.Settings.Default.Debug;
+
         #endregion
     }
 }

@@ -1,5 +1,4 @@
-﻿using Extender.Debugging;
-using Slate_EK.ViewModels;
+﻿using Slate_EK.ViewModels;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -11,7 +10,7 @@ namespace Slate_EK.Views
     /// <summary>
     /// Interaction logic for InventoryView.xaml
     /// </summary>
-    public partial class InventoryView : Window
+    public partial class InventoryView
     {
         public InventoryViewModel ViewModel
         {
@@ -19,7 +18,7 @@ namespace Slate_EK.Views
             {
                 if (DataContext != null && DataContext is InventoryViewModel)
                     return (InventoryViewModel)DataContext;
-                else return null;
+                return null;
             }
             set
             {
@@ -42,7 +41,7 @@ namespace Slate_EK.Views
 
         #region // Click / drag / selection handling
         
-        protected bool  IsMouseDown = false;
+        protected bool  IsMouseDown;
         protected Point MouseDownPos;
 
         protected int SelectDownIndex   = -1;
@@ -126,7 +125,7 @@ namespace Slate_EK.Views
 
             SelectionBox.Visibility = Visibility.Visible;
 
-            Debug.WriteMessage($"_MouseDown [{MouseDownPos.X}, {MouseDownPos.Y}]", DEBUG, "info");
+            Extender.Debugging.Debug.WriteMessage($"_MouseDown [{MouseDownPos.X}, {MouseDownPos.Y}]", Debug, "info");
 
             if (e.OriginalSource is FrameworkElement)
             {
@@ -149,7 +148,7 @@ namespace Slate_EK.Views
                 SelectionBox.Visibility = Visibility.Collapsed;
 
                 var o = Mouse.DirectlyOver;
-                Debug.WriteMessage(o.ToString());
+                Extender.Debugging.Debug.WriteMessage(o.ToString());
             }
         }
 
@@ -164,7 +163,7 @@ namespace Slate_EK.Views
 
                 Point mouseUpPos = e.GetPosition(InventoryBox);
 
-                Debug.WriteMessage($"_MouseUp [{mouseUpPos.X}, {mouseUpPos.Y}]", DEBUG, "info");
+                Extender.Debugging.Debug.WriteMessage($"_MouseUp [{mouseUpPos.X}, {mouseUpPos.Y}]", Debug, "info");
 
                 if (e.OriginalSource is FrameworkElement)
                 {
@@ -174,7 +173,7 @@ namespace Slate_EK.Views
                         SelectUpIndex = InventoryItemsControl.Items.IndexOf(origin.DataContext);
                 }
 
-                Debug.WriteMessage($"Selection started at index [{SelectDownIndex}] and ended at [{SelectUpIndex}].", DEBUG);
+                Extender.Debugging.Debug.WriteMessage($"Selection started at index [{SelectDownIndex}] and ended at [{SelectUpIndex}].", Debug);
 
                 if (SelectDownIndex >= 0 &&
                     HasFastenerSelected &&
@@ -186,14 +185,14 @@ namespace Slate_EK.Views
                     {
                         for (int i = LastSelectedIndex; i < SelectDownIndex; i++)
                         {
-                            (InventoryItemsControl.Items[i] as FastenerControl).SelectCommand.Execute(null);
+                            (InventoryItemsControl.Items[i] as FastenerControl)?.SelectCommand.Execute(null);
                         }
                     }
                     else if (SelectDownIndex < FirstSelectedIndex)
                     {
                         for (int i = SelectDownIndex; i < FirstSelectedIndex; i++)
                         {
-                            (InventoryItemsControl.Items[i] as FastenerControl).SelectCommand.Execute(null);
+                            (InventoryItemsControl.Items[i] as FastenerControl)?.SelectCommand.Execute(null);
                         }
                     }
                 }
@@ -205,13 +204,10 @@ namespace Slate_EK.Views
 
         private void InventoryBox_RightMouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (e.OriginalSource is FrameworkElement &&
-               (e.OriginalSource as FrameworkElement).DataContext != null &&
-               (e.OriginalSource as FrameworkElement).DataContext is FastenerControl &&
-               (SelectedFastenersCount <= 1))
+            if ((e.OriginalSource as FrameworkElement)?.DataContext is FastenerControl && (SelectedFastenersCount <= 1))
             {
                 ClearFastenersSelection();
-                ((e.OriginalSource as FrameworkElement).DataContext as FastenerControl).SelectCommand.Execute(null);
+                (((FrameworkElement)e.OriginalSource).DataContext as FastenerControl)?.SelectCommand.Execute(null);
             }
         }
 
@@ -264,15 +260,16 @@ namespace Slate_EK.Views
                 FrameworkElement root = source;
 
                 while (root.Parent != null &&
-                      (root.Parent as FrameworkElement).DataContext != null &&
-                      (root.Parent as FrameworkElement).DataContext is FastenerControl)
+                      ((FrameworkElement)root.Parent).DataContext != null &&
+                      ((FrameworkElement)root.Parent).DataContext is FastenerControl)
                 {
                     root = (FrameworkElement)root.Parent;
                 }
 
                 return root;
             }
-            else return null;
+
+            return null;
         }
 
         private void HandleSelections(bool firstClick) 
@@ -318,18 +315,21 @@ namespace Slate_EK.Views
 
             //
             // Make a list of the elements in InventoryItemsControl so we can hit test them
-            FrameworkElement[] InventoryElemeents = new FrameworkElement[InventoryItemsControl.Items.Count];
-            for (int i = 0; i < InventoryElemeents.Length; i++)
+            FrameworkElement[] inventoryElemeents = new FrameworkElement[InventoryItemsControl.Items.Count];
+            for (int i = 0; i < inventoryElemeents.Length; i++)
             {
                 DependencyObject container = InventoryItemsControl.ItemContainerGenerator.ContainerFromIndex(i);
                 if (container is FrameworkElement)
-                    InventoryElemeents[i] = container as FrameworkElement;
+                    inventoryElemeents[i] = container as FrameworkElement;
             }
 
             //
             // Select and/or deselect 
-            foreach (FrameworkElement fastenerElement in InventoryElemeents)
+            foreach (FrameworkElement fastenerElement in inventoryElemeents)
             {
+                if ((FastenerControl)fastenerElement?.DataContext == null)
+                    continue;
+
                 FastenerControl fastener = fastenerElement.DataContext as FastenerControl;
 
                 Rect hitBox = new Rect
@@ -366,6 +366,7 @@ namespace Slate_EK.Views
                         fastener.SelectCommand.Execute(null);
                         PassedOver.Add(fastener);
                     } 
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse // for clarity
                     else if (!inSelection && PassedOver.Contains(fastener))
                     {
                         fastener.DeselectCommand.Execute(null);
@@ -387,10 +388,7 @@ namespace Slate_EK.Views
         {
             foreach (var item in InventoryItemsControl.Items)
             {
-                if (item is FastenerControl)
-                {
-                    (item as FastenerControl).DeselectCommand.Execute(null);
-                }
+                (item as FastenerControl)?.DeselectCommand.Execute(null);
             }
         }
 
@@ -398,14 +396,8 @@ namespace Slate_EK.Views
 
         #region // Settings.settings aliases
 
-        public bool DEBUG
-        {
-            get
-            {
-                return Properties.Settings.Default.Debug;
-            }
-        }
-        
+        public bool Debug => Properties.Settings.Default.Debug;
+
         #endregion
     }
 }

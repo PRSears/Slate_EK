@@ -1,12 +1,11 @@
 ﻿using Extender;
-using System;
 using System.Text.RegularExpressions;
 
 namespace Slate_EK.Models
 {
     public class Pitch
     {
-        public double Distance { get; set; }
+        public double Distance { get; }
 
         protected const double SIGMA = 0.0001d;
 
@@ -16,12 +15,12 @@ namespace Slate_EK.Models
 
         public Pitch(double pitch)
         {
-            this.Distance = pitch;
+            Distance = pitch;
         }
 
         public Pitch(int pitch)
         {
-            this.Distance = pitch;
+            Distance = pitch;
         }
 
         public override string ToString()
@@ -47,28 +46,28 @@ namespace Slate_EK.Models
 
         public override bool Equals(object obj)
         {
-            if (obj is Models.Pitch)
-                return this.Distance.RoughEquals((obj as Models.Pitch).Distance, SIGMA);
-            else if (obj is float)
+            if (obj is Pitch)
+                return Distance.RoughEquals((obj as Pitch).Distance, SIGMA);
+            if (obj is float)
                 return Distance.RoughEquals((float)obj, SIGMA);
-            else if (obj is double)
+            if (obj is double)
                 return Distance.RoughEquals((double)obj, SIGMA);
-            else if (obj is decimal)
+            if (obj is decimal)
                 return ((decimal)Distance).Equals((decimal)obj);
-            else if (obj.IsNumber())
+            if (obj.IsNumber())
                 return Distance.RoughEquals((long)obj, SIGMA);
-            else
-                return false;
+            return false;
         }
-        public static Boolean operator ==(Models.Pitch a, Models.Pitch b)
+
+        public static bool operator ==(Pitch a, Pitch b)
         {
-            if (object.ReferenceEquals(null, a))
-                return object.ReferenceEquals(null, b);
+            if (ReferenceEquals(null, a))
+                return ReferenceEquals(null, b);
 
             return a.Equals(b);
         }
 
-        public static Boolean operator !=(Models.Pitch a, Models.Pitch b)
+        public static bool operator !=(Pitch a, Pitch b)
         {
             return !(a == b);
         }

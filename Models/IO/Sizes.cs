@@ -14,14 +14,14 @@ namespace Slate_EK.Models.IO
         {
         }
 
-        public Sizes(Models.Size[] sourceList) : this()
+        public Sizes(Size[] sourceList) : this()
         {
-            this.SourceList = sourceList;
+            SourceList = sourceList;
         }
 
         public override void Reload()
         {
-            FileInfo xmlFile = new FileInfo(this.FilePath);
+            FileInfo xmlFile = new FileInfo(FilePath);
 
             SizesXmlOperationsQueue.Enqueue
             (
@@ -31,7 +31,7 @@ namespace Slate_EK.Models.IO
 
         public override void Save()
         {
-            FileInfo xmlFile = new FileInfo(this.FilePath);
+            FileInfo xmlFile = new FileInfo(FilePath);
 
             SizesXmlOperationsQueue.Enqueue
             (
@@ -54,7 +54,7 @@ namespace Slate_EK.Models.IO
             System.Threading.Thread.Sleep(100);
 
             foreach (var item in loaded.SourceList)
-                Console.Write(item.OuterDiameter.ToString() + ", ");
+                Console.Write(item.OuterDiameter + @", ");
         }
 
         private static void Test_ArrayVsList()
@@ -66,25 +66,25 @@ namespace Slate_EK.Models.IO
             for (int x = 0; x < 500; x++)
             {
                 // Create the initial SourceList
-                Size[] SourceList = new Size[250];
-                for (int i = 0; i < SourceList.Length; i++)
-                    SourceList[i] = new Size(i);
+                Size[] sourceList = new Size[250];
+                for (int i = 0; i < sourceList.Length; i++)
+                    sourceList[i] = new Size(i);
 
                 // Add a value to it
-                Size[] appendedList = new Size[SourceList.Length + 1];
-                Array.Copy(SourceList, appendedList, SourceList.Length);
-                appendedList[SourceList.Length] = new Size(250);
-                SourceList = appendedList;
+                Size[] appendedList = new Size[sourceList.Length + 1];
+                Array.Copy(sourceList, appendedList, sourceList.Length);
+                appendedList[sourceList.Length] = new Size(250);
+                sourceList = appendedList;
 
                 // Serialize
                 using (MemoryStream stream = new MemoryStream())
                 {
                     XmlSerializer xml = new XmlSerializer(typeof(Size));
-                    foreach (Size size in SourceList)
+                    foreach (Size size in sourceList)
                         xml.Serialize(stream, size);
                 }
 
-                if (x % 100 == 0) // rather hacky solution to avoiding OutOfMemory errors
+                if (x % 100 == 0) // rather hacky solution to lessen OutOfMemory errors
                 {
                     timer.Stop();
                     GC.Collect();
@@ -94,7 +94,7 @@ namespace Slate_EK.Models.IO
             timer.Stop();
             Extender.Debugging.Debug.WriteMessage
             (
-                string.Format("Array: {0}ms", timer.ElapsedMilliseconds),
+                $"Array: {timer.ElapsedMilliseconds}ms",
                 "info"
             );
 
@@ -105,24 +105,22 @@ namespace Slate_EK.Models.IO
             for (int x = 0; x < 500; x++)
             {
                 // Create the initial SourceList
-                List<Size> SourceList = new List<Size>();
+                List<Size> sourceList = new List<Size>();
                 for (int i = 0; i < 250; i++)
-                    SourceList.Add(new Size(i));
+                    sourceList.Add(new Size(i));
 
                 // Add a value to it
-                SourceList.Add(new Size(250));
+                sourceList.Add(new Size(250));
 
                 // Serialize
                 using (MemoryStream stream = new MemoryStream())
                 {
                     XmlSerializer xml = new XmlSerializer(typeof(Size));
-                    foreach (Size size in SourceList)
+                    foreach (Size size in sourceList)
                         xml.Serialize(stream, size);
-
-                    xml = null;
                 }
 
-                if (x % 100 == 0) // rather hacky solution to avoiding OutOfMemory errors
+                if (x % 100 == 0) // rather hacky solution to lessen OutOfMemory errors
                 {
                     timer.Stop();
                     GC.Collect();
@@ -132,7 +130,7 @@ namespace Slate_EK.Models.IO
             timer.Stop();
             Extender.Debugging.Debug.WriteMessage
             (
-                string.Format("List : {0}ms", timer.ElapsedMilliseconds),
+                $"List : {timer.ElapsedMilliseconds}ms",
                 "info"
             );
         }
@@ -154,7 +152,7 @@ namespace Slate_EK.Models.IO
             Sizes list = new Sizes(dummies);
 
 
-            XmlSerializer s = new XmlSerializer(typeof(Models.IO.Sizes));
+            XmlSerializer s = new XmlSerializer(typeof(Sizes));
 
             using (FileStream stream = new FileStream(list.FilePath, FileMode.Create, FileAccess.Write))
             {
@@ -179,30 +177,13 @@ namespace Slate_EK.Models.IO
         #endregion
 
         #region Settings.Settings aliases
-        public string PropertiesPath
-        {
-            get
-            {
-                return Properties.Settings.Default.DefaultPropertiesFolder;
-            }
-        }
+        public string PropertiesPath => Properties.Settings.Default.DefaultPropertiesFolder;
 
-        public string Filename
-        {
-            get
-            {
-                return Properties.Settings.Default.SizesFilename;
-            }
-        }
+        public string Filename       => Properties.Settings.Default.SizesFilename;
+
         #endregion
 
-        public override string FilePath
-        {
-            get
-            {
-                return Path.Combine(PropertiesPath, Filename);
-            }
-        }
+        public override string FilePath => Path.Combine(PropertiesPath, Filename);
     }
 
     /// <summary>
@@ -211,7 +192,7 @@ namespace Slate_EK.Models.IO
     /// </summary>
     static class SizesXmlOperationsQueue
     {
-        private static BlockingCollection<SerializeTask<Size>> TaskQueue = new BlockingCollection<SerializeTask<Size>>();
+        private static BlockingCollection<SerializeTask<Size>> _TaskQueue = new BlockingCollection<SerializeTask<Size>>();
 
         static SizesXmlOperationsQueue()
         {
@@ -221,7 +202,7 @@ namespace Slate_EK.Models.IO
                 {
                     while(true)
                     {
-                        TaskQueue.Take().Execute();
+                        _TaskQueue.Take().Execute();
                     }
                 }
             );
@@ -232,7 +213,7 @@ namespace Slate_EK.Models.IO
 
         public static void Enqueue(SerializeTask<Size> operation)
         {
-            TaskQueue.Add(operation);
+            _TaskQueue.Add(operation);
         }
     }
 }

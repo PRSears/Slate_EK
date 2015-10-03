@@ -6,60 +6,24 @@ namespace Slate_EK.Models
 {
     public class HoleType : INotifyPropertyChanged
     {
-        private string _HoleType;
+        private readonly string _HoleType;
 
-        public bool IsCounterBore
-        {
-            get
-            {
-                return this._HoleType.ToLower().Equals(CBore._HoleType.ToLower());
-            }
-        }
+        public bool IsCounterBore => _HoleType.ToLower().Equals(CBore._HoleType.ToLower());
 
         private HoleType(string holeType)
         {
-            this._HoleType = holeType;
+            _HoleType = holeType;
         }
 
-        public static HoleType[] HoleTypes
-        {
-            get
-            {
-                return new HoleType[] { CBore, Straight, CSink };
-            }
-        }
+        public static HoleType[] HoleTypes => new[] { CBore, Straight, CSink };
 
-        public static HoleType CBore
-        {
-            get
-            {
-                return new HoleType("cbore");
-            }
-        }
+        public static HoleType CBore       => new HoleType("cbore");
 
-        public static HoleType CSink
-        {
-            get
-            {
-                return new HoleType("csink");
-            }
-        }
+        public static HoleType CSink       => new HoleType("csink");
 
-        public static HoleType Straight
-        {
-            get
-            {
-                return new HoleType("straight");
-            }
-        }
+        public static HoleType Straight    => new HoleType("straight");
 
-        public static HoleType Unspecified
-        {
-            get
-            {
-                return new HoleType("unspecified");
-            }
-        }
+        public static HoleType Unspecified => new HoleType("unspecified");
 
         public static HoleType Parse(string holeType)
         {
@@ -74,7 +38,7 @@ namespace Slate_EK.Models
                 {
                     Extender.Debugging.Debug.WriteMessage
                     (
-                        string.Format("HoleType.Parse found only a partial match. {0} -> {1}", holeType, t.ToString()),
+                        $"HoleType.Parse found only a partial match. {holeType} -> {t}",
                         "warn"
                     );
 
@@ -82,7 +46,7 @@ namespace Slate_EK.Models
                 }
             }
 
-            throw new ArgumentException(string.Format(@"HoleType name ""{0}"" is not a valid HoleType.", holeType));
+            throw new ArgumentException($@"HoleType name ""{holeType}"" is not a valid HoleType.");
         }
 
 
@@ -96,12 +60,12 @@ namespace Slate_EK.Models
             if (!(obj is HoleType))
                 return false;
 
-            return (obj as HoleType)._HoleType.ToLower().Equals(this._HoleType.ToLower());
+            return ((HoleType)obj)._HoleType.ToLower().Equals(_HoleType.ToLower());
         }
 
         public override int GetHashCode()
         {
-            return this._HoleType.GetHashCode();
+            return _HoleType.GetHashCode();
         }
 
         #region INotifyPropertyChanged Members
@@ -112,10 +76,7 @@ namespace Slate_EK.Models
         {
             PropertyChangedEventHandler handler = PropertyChanged;
 
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         #endregion

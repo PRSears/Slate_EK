@@ -24,30 +24,24 @@ namespace Slate_EK.ViewModels
         public ICommand ListChangeQuantityCommand   { get; private set; }
         public ICommand ListDeleteItemCommand       { get; private set; }
         public ICommand SaveAsCommand               { get; private set; }
-        public ICommand Shortcut_CtrlK              { get; private set; }
-        public ICommand Shortcut_CtrlS              { get; private set; }
-        public ICommand Shortcut_CtrlE              { get; private set; }
-        public ICommand Shortcut_CtrlD              { get; private set; }
-        public ICommand Shortcut_CtrlA              { get; private set; }
-        public ICommand Shortcut_CtrlP              { get; private set; }
+        public ICommand ShortcutCtrlK              { get; private set; }
+        public ICommand ShortcutCtrlS              { get; private set; }
+        public ICommand ShortcutCtrlE              { get; private set; }
+        public ICommand ShortcutCtrlD              { get; private set; }
+        public ICommand ShortcutCtrlA              { get; private set; }
+        public ICommand ShortcutCtrlP              { get; private set; }
 
-        public event ShortcutEventHandler ShortcutPressed_CtrlK;
-        public event ShortcutEventHandler ShortcutPressed_CtrlS;
+        public event ShortcutEventHandler ShortcutPressedCtrlK;
+        public event ShortcutEventHandler ShortcutPressedCtrlS;
         #endregion
 
-        public string WindowTitle
-        {
-            get
-            {
-                return string.Format
-                (
-                    "Assembly #{1} [{2}] - {0}",
-                    Properties.Settings.Default.ShortTitle,
-                    Bom.AssemblyNumber,
-                    Bom.SourceList != null ? Bom.SourceList.Length.ToString() : "0"
-                );
-            }
-        }
+        public string WindowTitle => string.Format
+            (
+                "Assembly #{1} [{2}] - {0}",
+                Properties.Settings.Default.ShortTitle,
+                Bom.AssemblyNumber,
+                Bom.SourceList != null ? Bom.SourceList.Length.ToString() : "0"
+            );
 
         public bool OverrideLength
         {
@@ -77,13 +71,7 @@ namespace Slate_EK.ViewModels
         }
 
         // Drop-down list data sources
-        public Material[] MaterialsList
-        {
-            get
-            {
-                return Material.Materials;
-            }
-        }
+        public Material[] MaterialsList => Material.Materials;
 
         public string[] FastenerTypesList
         {
@@ -93,13 +81,7 @@ namespace Slate_EK.ViewModels
             }
         }
 
-        public HoleType[] HoleTypesList
-        {
-            get
-            {
-                return HoleType.HoleTypes;
-            }
-        }
+        public HoleType[] HoleTypesList => HoleType.HoleTypes;
 
         public Models.IO.Sizes XmlSizes
         {
@@ -154,22 +136,22 @@ namespace Slate_EK.ViewModels
 
         public BomViewModel(string assemblyNumber)
         {
-            this.Bom                    = new Models.Bom(assemblyNumber); // TODO fix saving when assembly # changes // Should it 'move' or just copy?
-            this.WorkingFastener        = new Fastener(assemblyNumber);
-            this.ObservableFasteners    = Bom.SourceList != null ? new ObservableCollection<FastenerControl>(FastenerControl.FromArray(Bom.SourceList)) :
+            Bom                    = new Bom(assemblyNumber); // TODO fix saving when assembly # changes // Should it 'move' or just copy?
+            WorkingFastener        = new Fastener(assemblyNumber);
+            ObservableFasteners    = Bom.SourceList != null ? new ObservableCollection<FastenerControl>(FastenerControl.FromArray(Bom.SourceList)) :
                                                                    new ObservableCollection<FastenerControl>();
 
             Bom.PropertyChanged += (s, e) =>
             {
                 if (Bom.SourceList != null && e.PropertyName.Equals(nameof(Bom.SourceList)))
                 {
-                    this.ObservableFasteners = new ObservableCollection<FastenerControl>(FastenerControl.FromArray(Bom.SourceList));
+                    ObservableFasteners = new ObservableCollection<FastenerControl>(FastenerControl.FromArray(Bom.SourceList));
 
                     // Hook up context menu for FastenerControls
                     foreach (FastenerControl control in ObservableFasteners)
                     {
-                        control.RequestingRemoval += (sender) => Bom.Remove((sender as FastenerControl).Fastener, Int32.MaxValue);
-                        control.RequestingQuantityChange += (sender) => ChangeQuantity(sender);
+                        control.RequestingRemoval += sender => Bom.Remove((sender as FastenerControl).Fastener, Int32.MaxValue);
+                        control.RequestingQuantityChange += sender => ChangeQuantity(sender);
                     }
                 }
 
@@ -228,9 +210,9 @@ namespace Slate_EK.ViewModels
         {
             // Yeah... this is bad.
             Window mainWindow = Application.Current.MainWindow;
-            if(mainWindow is Views.MainView)
+            if (mainWindow is Views.MainView)
             {
-                return (mainWindow as Views.MainView).FindBomWindow(this.Bom.AssemblyNumber);
+                return (mainWindow as Views.MainView).FindBomWindow(Bom.AssemblyNumber);
             }
 
             return null; 
@@ -241,17 +223,17 @@ namespace Slate_EK.ViewModels
             base.Initialize();
 
             // Init shortcuts
-            Shortcut_CtrlK = new RelayCommand
+            ShortcutCtrlK = new RelayCommand
             (
-                () => NullsafeHandleShortcut(ShortcutPressed_CtrlK)
+                () => NullsafeHandleShortcut(ShortcutPressedCtrlK)
             );
 
-            Shortcut_CtrlS = new RelayCommand
+            ShortcutCtrlS = new RelayCommand
             (
-                () => NullsafeHandleShortcut(ShortcutPressed_CtrlS)
+                () => NullsafeHandleShortcut(ShortcutPressedCtrlS)
             );
 
-            Shortcut_CtrlE = new RelayCommand
+            ShortcutCtrlE = new RelayCommand
             (
                 () =>
                 {
@@ -262,7 +244,7 @@ namespace Slate_EK.ViewModels
                 }
             );
 
-            Shortcut_CtrlD = new RelayCommand
+            ShortcutCtrlD = new RelayCommand
             (
                 () =>
                 {
@@ -271,7 +253,7 @@ namespace Slate_EK.ViewModels
                 }
             );
 
-            Shortcut_CtrlA = new RelayCommand
+            ShortcutCtrlA = new RelayCommand
             (
                 () =>
                 {
@@ -280,15 +262,15 @@ namespace Slate_EK.ViewModels
                 }
             );
 
-            Shortcut_CtrlP = new RelayCommand
+            ShortcutCtrlP = new RelayCommand
             (
                 () =>
                 {
-                    System.Windows.MessageBox.Show("Print not yet implemented.");
+                    MessageBox.Show("Print not yet implemented.");
                 }
             );
 
-            ShortcutPressed_CtrlS += () =>
+            ShortcutPressedCtrlS += () =>
             {
                 SaveAs();
             };
@@ -299,7 +281,7 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-                    WorkingFastener.GetNewID();
+                    WorkingFastener.GetNewId();
                     Bom.Add(WorkingFastener.Copy<Fastener>());
                 }
             );
@@ -311,13 +293,13 @@ namespace Slate_EK.ViewModels
                     FastenerControl[] selected = ObservableFasteners.Where(c => c.IsSelected).ToArray();
                     bool removeAll = (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift));
 
-                    foreach(FastenerControl fc in selected)
+                    foreach (FastenerControl fc in selected)
                     {
                         Bom.Remove(fc.Fastener, removeAll ? (Int32.MaxValue) : 1);
                     }
 
                     // re-select what was selected before we replaced the ObservableCollection
-                    foreach(FastenerControl item in ObservableFasteners.Where(of => selected.Count(s => s.Fastener.ID.Equals(of.Fastener.ID)) > 0))
+                    foreach (FastenerControl item in ObservableFasteners.Where(of => selected.Count(s => s.Fastener.Id.Equals(of.Fastener.Id)) > 0))
                     {
                         item.IsSelected = true;
                     }
@@ -335,7 +317,7 @@ namespace Slate_EK.ViewModels
                     // Can't allow edit when multiple fasteners are selected. 
                     // Too messy -- what would we use for initial value? Set all selected to the same value,
                     // or would the user expect to increment?
-                    return (ObservableFasteners.Count((f) => f.IsSelected) <= 1) ? true : false;
+                    return (ObservableFasteners.Count(f => f.IsSelected) <= 1) ? true : false;
                 }
             );
 
@@ -358,8 +340,8 @@ namespace Slate_EK.ViewModels
             // Hook up context menu commands for FastenerControls
             foreach (FastenerControl control in ObservableFasteners)
             {
-                control.RequestingRemoval           += (sender) => Bom.Remove((sender as FastenerControl).Fastener, Int32.MaxValue);
-                control.RequestingQuantityChange    += (sender) => ChangeQuantity(sender);
+                control.RequestingRemoval           += sender => Bom.Remove((sender as FastenerControl).Fastener, Int32.MaxValue);
+                control.RequestingQuantityChange    += sender => ChangeQuantity(sender);
             }
 
             // Lists from XML
@@ -376,7 +358,7 @@ namespace Slate_EK.ViewModels
                 XmlSizes.Reload();
                 XmlPitches.Reload();
 
-                System.GC.Collect();
+                GC.Collect();
             };
 
             PropertyRefreshTimer.Start();
@@ -392,7 +374,7 @@ namespace Slate_EK.ViewModels
             dialog.Filter = @"(*.xml)
 |*.xml|(*.csv)|*.csv|All files (*.*)|*.*";
             dialog.AddExtension = true;
-            dialog.FileName = System.IO.Path.GetFileName(Bom.FilePath);
+            dialog.FileName = Path.GetFileName(Bom.FilePath);
 
             bool? result = dialog.ShowDialog();
 
@@ -423,11 +405,11 @@ namespace Slate_EK.ViewModels
                 {
                     Extender.Debugging.ExceptionTools.WriteExceptionText(e, false);
 
-                    System.Windows.MessageBox.Show
+                    MessageBox.Show
                     (
                         "Encountered an exception while copying BOM:\n" + e.Message,
                         "Exception",
-                        System.Windows.MessageBoxButton.OK
+                        MessageBoxButton.OK
                     );
                     return false;
                 }
@@ -550,7 +532,7 @@ namespace Slate_EK.ViewModels
         public FastenerControl(Fastener fastener)
             : this()
         {
-            this.Fastener = fastener;
+            Fastener = fastener;
         }
 
         /// <summary>
@@ -567,48 +549,19 @@ namespace Slate_EK.ViewModels
 
         protected void OnEdit(object sender)
         {
-            EditControlEventHandler handler = this.EditingControl;
+            EditControlEventHandler handler = EditingControl;
 
             if (handler != null)
                 handler(sender);
         }
 
         #region Settings.Settings aliases
-        protected string SelectedColor
-        {
-            get
-            {
-                return Properties.Settings.Default.ItemSelectedBackgroundColor;
-            }
-        }
-        protected string HoverColor
-        {
-            get
-            {
-                return Properties.Settings.Default.ItemHoverBackgroundColor;
-            }
-        }
-        protected string NormalColor
-        {
-            get
-            {
-                return Properties.Settings.Default.ItemDefaultBackgroundColor;
-            }
-        }
-        protected string AltColor
-        {
-            get
-            {
-                return Properties.Settings.Default.ItemAltnernateBackgroundColor;
-            }
-        }
-        public int BomFontSize
-        {
-            get
-            {
-                return Properties.Settings.Default.BomListFontSize;
-            }
-        }
+        protected string SelectedColor => Properties.Settings.Default.ItemSelectedBackgroundColor;
+        protected string HoverColor => Properties.Settings.Default.ItemHoverBackgroundColor;
+        protected string NormalColor => Properties.Settings.Default.ItemDefaultBackgroundColor;
+        protected string AltColor => Properties.Settings.Default.ItemAltnernateBackgroundColor;
+        public int BomFontSize => Properties.Settings.Default.BomListFontSize;
+
         #endregion
         #region INotifyPropertyChanged Members
 

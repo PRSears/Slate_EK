@@ -6,73 +6,31 @@ namespace Slate_EK.Models
 {
     public class FastenerType : INotifyPropertyChanged
     {
-        public static FastenerType SocketHeadFlatScrew
-        {
-            get
-            {
-                return new FastenerType("socket head flat screw");
-            }
-        }
+        public static FastenerType SocketHeadFlatScrew              => new FastenerType("socket head flat screw");
 
-        public static FastenerType SocketCountersunkHeadCapScrew
-        {
-            get
-            {
-                return new FastenerType("socket countersunk head cap screw");
-            }
-        }
+        public static FastenerType SocketCountersunkHeadCapScrew    => new FastenerType("socket countersunk head cap screw");
 
-        public static FastenerType LowHeadSocketHeadCapScrew
-        {
-            get
-            {
-                return new FastenerType("low-head socket head cap screw");
-            }
-        }
+        public static FastenerType LowHeadSocketHeadCapScrew        => new FastenerType("low-head socket head cap screw");
 
-        public static FastenerType FlatCountersunkHeadCapScrew
-        {
-            get
-            {
-                return new FastenerType("flat countersunk head cap screw");
-            }
-        }
+        public static FastenerType FlatCountersunkHeadCapScrew      => new FastenerType("flat countersunk head cap screw");
 
-        public static FastenerType Unspecified
-        {
-            get
-            {
-                return new FastenerType("unspecified");
-            }
-        }
+        public static FastenerType Unspecified                      => new FastenerType("unspecified");
 
-        public static FastenerType[] Types
+        public static FastenerType[] Types => new[] 
         {
-            get
-            {
-                return new FastenerType[] 
-                {
-                    SocketHeadFlatScrew, 
-                    SocketCountersunkHeadCapScrew, 
-                    LowHeadSocketHeadCapScrew,
-                    FlatCountersunkHeadCapScrew
-                };
-            }
-        }
+            SocketHeadFlatScrew, 
+            SocketCountersunkHeadCapScrew, 
+            LowHeadSocketHeadCapScrew,
+            FlatCountersunkHeadCapScrew
+        };
 
         private string _Type;
 
-        public string Type
-        {
-            get
-            {
-                return _Type;
-            }
-        }
+        public string Type => _Type;
 
         private FastenerType(string familyType)
         {
-            this._Type = familyType;
+            _Type = familyType;
         }
 
         public string Callout
@@ -81,9 +39,9 @@ namespace Slate_EK.Models
             {
                 return new string
                 (
-                    _Type.Split(new char[] { ' ', '-' }, StringSplitOptions.RemoveEmptyEntries)
-                               .Select(c => c[0])
-                               .ToArray()
+                    _Type.Split(new[] { ' ', '-' }, StringSplitOptions.RemoveEmptyEntries)
+                         .Select(c => c[0])
+                         .ToArray()
                 ).ToUpper();
             }
         }
@@ -91,28 +49,28 @@ namespace Slate_EK.Models
         public static FastenerType Parse(string familyType)
         {
             // Check for exact _FamilyType match
-            foreach(FastenerType f in Types)
+            foreach (FastenerType f in Types)
             {
-                if(familyType.ToLower().Equals(f._Type.ToLower()))
+                if (familyType.ToLower().Equals(f._Type.ToLower()))
                     return f;
             }
 
             // Check for exact Callout match
-            foreach(FastenerType f in Types)
+            foreach (FastenerType f in Types)
             {
                 if (f.Callout.ToLower().Equals(familyType.ToLower()))
                     return f;
             }
 
             // Fuzzy check for _FamilyType match
-            foreach(FastenerType f in Types)
+            foreach (FastenerType f in Types)
             {
                 if (f._Type.ToLower().Contains(familyType.ToLower()))
                     return f;
             }
 
             // Fuzzy Callout match
-            foreach(FastenerType f in Types)
+            foreach (FastenerType f in Types)
             {
                 if (familyType.ToLower().Contains(f.Callout.ToLower()))
                     return f;
@@ -120,7 +78,7 @@ namespace Slate_EK.Models
 
             throw new ArgumentException
             (
-                string.Format(@"Specified string ""{0}"" was not a valid FamilyType", familyType)
+                $@"Specified string ""{familyType}"" was not a valid FamilyType"
             );
         }
 
@@ -129,7 +87,7 @@ namespace Slate_EK.Models
             if (!(obj is FastenerType))
                 return false;
 
-            return (obj as FastenerType)._Type.ToLower().Equals(this._Type.ToLower());
+            return ((FastenerType)obj)._Type.ToLower().Equals(_Type.ToLower());
         }
 
         public override string ToString()
@@ -150,10 +108,7 @@ namespace Slate_EK.Models
         {
             PropertyChangedEventHandler handler = PropertyChanged;
 
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         #endregion

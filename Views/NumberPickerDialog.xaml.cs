@@ -1,5 +1,4 @@
 ﻿using Extender.WPF;
-using System.Windows;
 using System.Windows.Input;
 
 namespace Slate_EK.Views
@@ -7,7 +6,7 @@ namespace Slate_EK.Views
     /// <summary>
     /// Interaction logic for NumberPickerDialog.xaml
     /// </summary>
-    public partial class NumberPickerDialog : Window
+    public partial class NumberPickerDialog
     {
         public int Value
         {
@@ -34,8 +33,8 @@ namespace Slate_EK.Views
             (
                 () =>
                 {
-                    this.Close();
-                    this.Success = true;
+                    Close();
+                    Success = true;
                 }
             );
 
@@ -43,9 +42,9 @@ namespace Slate_EK.Views
             (
                 () =>
                 {
-                    this.Close();
-                    this.Value      = 0;
-                    this.Success    = false;
+                    Close();
+                    Value      = 0;
+                    Success    = false;
                 }
             );
 
@@ -58,9 +57,9 @@ namespace Slate_EK.Views
             (
                 () =>
                 {
-                    this.Close();
-                    this.Value      = initialValue;
-                    this.Success    = false;
+                    Close();
+                    Value      = initialValue;
+                    Success    = false;
                 }
             );
 

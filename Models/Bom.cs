@@ -24,13 +24,7 @@ namespace Slate_EK.Models
 
         private string _AssemblyNumber;
 
-        public override string FilePath
-        {
-            get
-            {
-                return Path.Combine(FolderPath, Filename);
-            }
-        }
+        public override string FilePath => Path.Combine(FolderPath, Filename);
 
         public Bom() 
             : this("none")
@@ -40,9 +34,9 @@ namespace Slate_EK.Models
 
         public Bom(string assemblyNumber)
         {
-            this.AssemblyNumber = assemblyNumber;
+            AssemblyNumber = assemblyNumber;
 
-            if(File.Exists(FilePath)) // there's an existing BOM with the same name
+            if (File.Exists(FilePath)) // there's an existing BOM with the same name
             {
                 base.Reload();
                 Sort();
@@ -51,7 +45,7 @@ namespace Slate_EK.Models
 
         public override void Reload()
         {
-            FileInfo xmlFile = new FileInfo(this.FilePath);
+            FileInfo xmlFile = new FileInfo(FilePath);
 
             BomXmlOperationsQueue.Enqueue
             (
@@ -61,7 +55,7 @@ namespace Slate_EK.Models
 
         public override void Save()
         {
-            FileInfo xmlFile = new FileInfo(this.FilePath);
+            FileInfo xmlFile = new FileInfo(FilePath);
 
             BomXmlOperationsQueue.Enqueue
             (
@@ -73,7 +67,7 @@ namespace Slate_EK.Models
         {
             if (SourceList != null && SourceList.Contains(item))
             {
-                SourceList.First(f => f.ID.Equals(item.ID))
+                SourceList.First(f => f.Id.Equals(item.Id))
                           .Quantity += item.Quantity;
                 Sort();
                 Save();
@@ -93,12 +87,12 @@ namespace Slate_EK.Models
 
         public bool Remove(Fastener item, int quantity)
         {
-            item.GetNewID();
+            item.GetNewId();
 
             if (SourceList != null && SourceList.Contains(item))
             {
-                if ((SourceList.First(f => f.ID.Equals(item.ID))
-                              .Quantity -= quantity) <= 0)
+                if ((SourceList.First(f => f.Id.Equals(item.Id))
+                               .Quantity -= quantity) <= 0)
                 {
                     base.Remove(item);
                 }
@@ -114,9 +108,9 @@ namespace Slate_EK.Models
         {
             List<Fastener> sorted = new List<Fastener>();
 
-            foreach(var type_group in SourceList.OrderBy(f => f.Length).GroupBy(f => f.TypeString))
+            foreach (var typeGroup in SourceList.OrderBy(f => f.Length).GroupBy(f => f.TypeString))
             {
-                sorted.AddRange(type_group.OrderBy(f => f.SizeString));
+                sorted.AddRange(typeGroup.OrderBy(f => f.SizeString));
             }
 
             SourceList = sorted.ToArray();
@@ -129,18 +123,17 @@ namespace Slate_EK.Models
             if (!(obj is Bom))
                 return false;
 
-            return this.GetHashCode() == (obj as Bom).GetHashCode();
+            return GetHashCode() == (obj as Bom).GetHashCode();
 
         }
 
         public override int GetHashCode()
         {
-            List<byte[]> blocks = new List<byte[]>();
+            List<byte[]> blocks = new List<byte[]> {System.Text.Encoding.Default.GetBytes(AssemblyNumber)};
 
-            blocks.Add(System.Text.Encoding.Default.GetBytes(AssemblyNumber));
-            foreach(Fastener f in SourceList)
+            foreach (Fastener f in SourceList)
             {
-                if(f != null)
+                if (f != null)
                 blocks.Add(f.GetHashData());
             }
 
@@ -149,74 +142,58 @@ namespace Slate_EK.Models
 
         public override string ToString()
         {
-            return string.Format
-            (
-                "Assembly #{0} [{1} Fasteners]",
-                AssemblyNumber,
-                SourceList.Length
-            );
+            return $"Assembly #{AssemblyNumber} [{SourceList.Length} Fasteners]";
         }
 
-        public static Boolean operator ==(Bom a, Bom b)
+        public static bool operator ==(Bom a, Bom b)
         {
             return a.Equals(b);
         }
 
-        public static Boolean operator !=(Bom a, Bom b)
+        public static bool operator !=(Bom a, Bom b)
         {
-            if (object.ReferenceEquals(null, a))
-                return object.ReferenceEquals(null, b);
+            if (ReferenceEquals(null, a))
+                return ReferenceEquals(null, b);
 
             return !(a == b);
         }
         #endregion
 
         #region Settings.Settings aliases
-        private string FolderPath
-        {
-            get
-            {
-                return Properties.Settings.Default.DefaultAssembliesFolder;
-            }
-        }
-        private string Filename
-        {
-            get
-            {
-                return string.Format
-                (
-                    Properties.Settings.Default.BomFilenameFormat,
-                    AssemblyNumber
-                );
-            }
-        }
+        private string FolderPath => Properties.Settings.Default.DefaultAssembliesFolder;
+
+        private string Filename => string.Format
+        (
+            Properties.Settings.Default.BomFilenameFormat,
+            AssemblyNumber
+        );
+
         #endregion
     }
 
     static class BomXmlOperationsQueue
     {
-        private static BlockingCollection<SerializeTask<Fastener>> TaskQueue = new BlockingCollection<SerializeTask<Fastener>>();
+        private static BlockingCollection<SerializeTask<Fastener>> _TaskQueue = new BlockingCollection<SerializeTask<Fastener>>();
 
         static BomXmlOperationsQueue()
         {
             var thread = new System.Threading.Thread
-            (
-                () =>
-                {
-                    while(true)
+                (
+                    () =>
                     {
-                        TaskQueue.Take().Execute();
+                        while (true)
+                        {
+                            _TaskQueue.Take().Execute();
+                        }
                     }
-                }
-            );
+                ) {IsBackground = true};
 
-            thread.IsBackground = true;
             thread.Start();
         }
 
         public static void Enqueue(SerializeTask<Fastener> operation)
         {
-            TaskQueue.Add(operation);
+            _TaskQueue.Add(operation);
         }
     }
 }

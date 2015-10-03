@@ -1,12 +1,12 @@
 ﻿using Extender;
-using System;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace Slate_EK.Models
 {
     public class Thickness
     {
-        public double PlateThickness { get; set; }
+        public double PlateThickness { get; }
 
         protected const double SIGMA = 0.0001d;
 
@@ -38,69 +38,68 @@ namespace Slate_EK.Models
 
         public override string ToString()
         {
-            return PlateThickness.ToString();
+            return PlateThickness.ToString(CultureInfo.CurrentCulture);
         }
 
         public override bool Equals(object obj)
         {
             if (obj is Thickness)
-                return this.PlateThickness.RoughEquals((obj as Thickness).PlateThickness, SIGMA);
-            else if (obj is float)
+                return PlateThickness.RoughEquals((obj as Thickness).PlateThickness, SIGMA);
+            if (obj is float)
                 return PlateThickness.RoughEquals((float)obj, SIGMA);
-            else if (obj is double)
+            if (obj is double)
                 return PlateThickness.RoughEquals((double)obj, SIGMA);
-            else if (obj is decimal)
+            if (obj is decimal)
                 return ((decimal)PlateThickness).Equals((decimal)obj);
-            else if (obj.IsNumber())
+            if (obj.IsNumber())
                 return PlateThickness.RoughEquals((long)obj, SIGMA);
-            else
-                return false;
+            return false;
         }
 
         #region operator overloads
-        public static Boolean operator ==(Models.Thickness a, Models.Thickness b)
+        public static bool operator ==(Thickness a, Thickness b)
         {
-            if (object.ReferenceEquals(null, a))
-                return object.ReferenceEquals(null, b);
+            if (ReferenceEquals(null, a))
+                return ReferenceEquals(null, b);
 
             return a.Equals(b);
         }
 
-        public static Boolean operator !=(Models.Thickness a, Models.Thickness b)
+        public static bool operator !=(Thickness a, Thickness b)
         {
-            if (object.ReferenceEquals(null, a))
-                return object.ReferenceEquals(null, b);
+            if (ReferenceEquals(null, a))
+                return ReferenceEquals(null, b);
 
             return !a.Equals(b);
         }
 
-        public static Boolean operator ==(double a, Models.Thickness b)
+        public static bool operator ==(double a, Thickness b)
         {
-            if (object.ReferenceEquals(null, a))
-                return object.ReferenceEquals(null, b);
+            if (ReferenceEquals(null, b))
+                return ReferenceEquals(null, a);
 
             return b.Equals(a);
         }
 
-        public static Boolean operator !=(double a, Models.Thickness b)
+        public static bool operator !=(double a, Thickness b)
         {
-            if (object.ReferenceEquals(null, a))
-                return object.ReferenceEquals(null, b);
+            if (ReferenceEquals(null, b))
+                return ReferenceEquals(null, a);
 
             return !b.Equals(a);
         }
-        public static Boolean operator ==(Models.Thickness a, double b)
+        public static bool operator ==(Thickness a, double b)
         {
-            if (object.ReferenceEquals(null, a))
-                return object.ReferenceEquals(null, b);
+            if (ReferenceEquals(null, a))
+                return ReferenceEquals(null, b);
             
             return a.Equals(b);
         }
 
-        public static Boolean operator !=(Models.Thickness a, double b)
+        public static bool operator !=(Thickness a, double b)
         {
-            if (object.ReferenceEquals(null, a))
-                return object.ReferenceEquals(null, b);
+            if (ReferenceEquals(null, a))
+                return ReferenceEquals(null, b);
 
             return !a.Equals(b);
         }

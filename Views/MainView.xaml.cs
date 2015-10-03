@@ -1,6 +1,7 @@
 ﻿using Slate_EK.ViewModels;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,7 +11,7 @@ namespace Slate_EK.Views
     /// <summary>
     /// Interaction logic for NewBomWindow.xaml
     /// </summary>
-    public partial class MainView : Window
+    public partial class MainView
     {
         private MainViewModel ViewModel
         {
@@ -18,8 +19,8 @@ namespace Slate_EK.Views
             {
                 if (DataContext is MainViewModel)
                     return (MainViewModel)DataContext;
-                else
-                    return null;
+
+                return null;
             }
             set
             {
@@ -32,7 +33,7 @@ namespace Slate_EK.Views
             InitializeComponent();
 
             ViewModel = new MainViewModel();
-            ViewModel.RegisterCloseAction(() => this.Close());
+            ViewModel.RegisterCloseAction(Close);
 
             ViewModel.WindowManager.WindowOpened += (s, w) =>
             {
@@ -60,8 +61,10 @@ namespace Slate_EK.Views
                     if (item is MenuItem)
                     {
                         string header = ((item as MenuItem).Header as string);
+
+                        Debug.Assert(header != null, "header != null");
                         if (header.Equals(CloseAllMenuitem.Header)) continue;
-                        if (ViewModel.WindowManager.Children.Count((c) => c.Title.Equals(header)) < 1)
+                        if (ViewModel.WindowManager.Children.Count(c => c.Title.Equals(header)) < 1)
                         {
                             removalQueue.Enqueue(item as MenuItem);
                         }
@@ -92,17 +95,11 @@ namespace Slate_EK.Views
             return bomWindow;
         }
 
-        private void WindowsMenuInsertAndSort(MenuItem newItem)
-        {
-            var raw = new List<MenuItem>(WindowsMenu.Items.SourceCollection.Cast<MenuItem>());
-            //raw.Sort()
-        }
-
         private void MainWindow_Drop(object sender, DragEventArgs e)
         {
             var items = e.Data.GetData(DataFormats.FileDrop);
 
-            if(items is string[])
+            if (items is string[])
             {
                 string[] filenames = (items as string[]);
 

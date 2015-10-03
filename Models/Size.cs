@@ -9,7 +9,7 @@ namespace Slate_EK.Models
         /// <summary>
         /// Outer diameter (in millimeters) of the screw being described.
         /// </summary>
-        public double OuterDiameter { get; set; }
+        public double OuterDiameter { get; }
 
         protected const double SIGMA = 0.0001d;
 
@@ -17,23 +17,23 @@ namespace Slate_EK.Models
         {
         }
 
-        public Size(double OD)
+        public Size(double od)
         {
-            OuterDiameter = OD;
+            OuterDiameter = od;
         }
 
-        public Size(int OD)
+        public Size(int od)
         {
-            OuterDiameter = OD;
+            OuterDiameter = od;
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="designation">Size designation. Ie: M6. Cannot contain decimal values.</param>
+        /// <param name="designation">Size designation. IE: M6. Cannot contain decimal values.</param>
         public Size(string designation)
         {
-            OuterDiameter = Size.TryParse(designation).OuterDiameter;
+            OuterDiameter = TryParse(designation).OuterDiameter;
         }
 
         public static Size TryParse(string pitch)
@@ -41,7 +41,7 @@ namespace Slate_EK.Models
             Regex query = new Regex("([^0-9.-])");
             string cleaned = query.Replace(pitch, "");
 
-            double distance = 0d;
+            double distance;
             double.TryParse(cleaned, out distance);
 
             return new Size(distance);
@@ -49,29 +49,24 @@ namespace Slate_EK.Models
 
         public override string ToString()
         {
-            // If it is an integer
-            if(OuterDiameter % 1 == 0)
-                return string.Format("M{0,-2}", ((int)Math.Round(OuterDiameter)).ToString());
-            else
-                return string.Format("{0}mm", OuterDiameter.ToString());
-
             // TODO_ Check on this later to make sure it's actually what we want
+            return Math.Abs(OuterDiameter % 1) < SIGMA ? $"M{Math.Round(OuterDiameter),-2}" : $"{OuterDiameter}mm";
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is Models.Size)
-                return this.OuterDiameter.RoughEquals((obj as Models.Size).OuterDiameter, SIGMA);
-            else if (obj is float)
+            if (obj is Size)
+                return OuterDiameter.RoughEquals((obj as Size).OuterDiameter, SIGMA);
+            if (obj is float)
                 return OuterDiameter.RoughEquals((float)obj, SIGMA);
-            else if (obj is double)
+            if (obj is double)
                 return OuterDiameter.RoughEquals((double)obj, SIGMA);
-            else if (obj is decimal)
+            if (obj is decimal)
                 return ((decimal)OuterDiameter).Equals((decimal)obj);
-            else if (obj.IsNumber())
+            if (obj.IsNumber())
                 return OuterDiameter.RoughEquals((long)obj, SIGMA);
-            else
-                return false;
+
+            return false;
         }
 
         public override int GetHashCode()
@@ -79,15 +74,15 @@ namespace Slate_EK.Models
             return OuterDiameter.GetHashCode();
         }
 
-        public static bool operator == (Models.Size a, Models.Size b)
+        public static bool operator == (Size a, Size b)
         {
-            if (object.ReferenceEquals(null, a))
-                return object.ReferenceEquals(null, b);
+            if (ReferenceEquals(null, a))
+                return ReferenceEquals(null, b);
 
             return a.Equals(b);
         }
 
-        public static bool operator != (Models.Size a, Models.Size b)
+        public static bool operator != (Size a, Size b)
         {
             return !(a == b);
         }

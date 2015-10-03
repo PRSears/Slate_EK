@@ -1,29 +1,25 @@
 ﻿using Extender.IO;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Timers;
 
 namespace Slate_EK.Models.IO
 {
     public class Pitches : SerializedArray<Pitch>
     {
-        public override string FilePath
-        {
-            get { return Path.Combine(PropertiesPath, Filename); }
-        }
+        public override string FilePath => Path.Combine(PropertiesPath, Filename);
 
         public Pitches()
         {
         }
 
-        public Pitches(Models.Pitch[] sourceList) : this()
+        public Pitches(Pitch[] sourceList) : this()
         {
-            this.SourceList = sourceList;
+            SourceList = sourceList;
         }
 
         public override void Reload()
         {
-            FileInfo xmlFile = new FileInfo(this.FilePath);
+            FileInfo xmlFile = new FileInfo(FilePath);
 
             PitchesXmlOperationsQueue.Enqueue
             (
@@ -33,7 +29,7 @@ namespace Slate_EK.Models.IO
 
         public override void Save()
         {
-            FileInfo xmlFile = new FileInfo(this.FilePath);
+            FileInfo xmlFile = new FileInfo(FilePath);
 
             PitchesXmlOperationsQueue.Enqueue
             (
@@ -42,21 +38,10 @@ namespace Slate_EK.Models.IO
         }
 
         #region Settings.Settings aliases
-        public string Filename
-        {
-            get
-            {
-                return Properties.Settings.Default.PitchesFilename;
-            }
-        }
+        public string Filename       => Properties.Settings.Default.PitchesFilename;
 
-        public string PropertiesPath
-        {
-            get
-            {
-                return Properties.Settings.Default.DefaultPropertiesFolder;
-            }
-        }
+        public string PropertiesPath => Properties.Settings.Default.DefaultPropertiesFolder;
+
         #endregion
     }
 
@@ -66,7 +51,7 @@ namespace Slate_EK.Models.IO
     /// </summary>
     static class PitchesXmlOperationsQueue
     {
-        private static BlockingCollection<SerializeTask<Pitch>> TaskQueue = new BlockingCollection<SerializeTask<Pitch>>();
+        private static BlockingCollection<SerializeTask<Pitch>> _TaskQueue = new BlockingCollection<SerializeTask<Pitch>>();
 
         static PitchesXmlOperationsQueue()
         {
@@ -76,7 +61,7 @@ namespace Slate_EK.Models.IO
                 {
                     while(true)
                     {
-                        TaskQueue.Take().Execute();
+                        _TaskQueue.Take().Execute();
                     }
                 }
             );
@@ -87,7 +72,7 @@ namespace Slate_EK.Models.IO
 
         public static void Enqueue(SerializeTask<Pitch> operation)
         {
-            TaskQueue.Add(operation);
+            _TaskQueue.Add(operation);
         }
     }
 }

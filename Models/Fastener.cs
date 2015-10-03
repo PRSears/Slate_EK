@@ -24,17 +24,17 @@ namespace Slate_EK.Models
         }
 
         [System.Xml.Serialization.XmlIgnore]
-        public Guid ID
+        public Guid Id
         {
             get
             {
-                if (_ID == null || _ID.Equals(Guid.Empty))
-                    this._ID = new Guid(GetHashData().Take(16).ToArray()); // first 16 bytes from SHA256 
-                return _ID;
+                if (_Id.Equals(Guid.Empty))
+                    _Id = new Guid(GetHashData().Take(16).ToArray()); // first 16 bytes from SHA256 
+                return _Id;
             }
             protected set
             {
-                _ID = value;
+                _Id = value;
             }
         }
 
@@ -179,11 +179,11 @@ namespace Slate_EK.Models
         {
             get
             {
-                return this.Size.ToString();
+                return Size.ToString();
             }
             set
             {
-                this.Size = Size.TryParse(value);
+                Size = Size.TryParse(value);
                 OnPropertyChanged(nameof(SizeString));
             }
         }
@@ -192,11 +192,11 @@ namespace Slate_EK.Models
         {
             get
             {
-                return this.Pitch.ToString();
+                return Pitch.ToString();
             }
             set
             {
-                this.Pitch = Pitch.TryParse(value);
+                Pitch = Pitch.TryParse(value);
                 OnPropertyChanged(nameof(PitchString));
             }
         }
@@ -205,11 +205,11 @@ namespace Slate_EK.Models
         {
             get
             {
-                return this.PlateThickness.ToString();
+                return PlateThickness.ToString();
             }
             set
             {
-                this.PlateThickness = Thickness.TryParse(value);
+                PlateThickness = Thickness.TryParse(value);
                 OnPropertyChanged(nameof(PlateThicknessString));
             }
         }
@@ -218,7 +218,7 @@ namespace Slate_EK.Models
         {
             get
             {
-                return this.Material.ToString();
+                return Material.ToString();
             }
             set
             {
@@ -241,7 +241,7 @@ namespace Slate_EK.Models
         {
             get
             {
-                return this.Type.ToString();
+                return Type.ToString();
             }
             set
             {
@@ -255,7 +255,7 @@ namespace Slate_EK.Models
                     parsed = FastenerType.Unspecified;
                 }
 
-                this.Type = parsed;
+                Type = parsed;
                 OnPropertyChanged(nameof(TypeString));
             }
         }
@@ -264,7 +264,7 @@ namespace Slate_EK.Models
         {
             get
             {
-                return this.HoleType.ToString();
+                return HoleType.ToString();
             }
             set
             {
@@ -273,7 +273,7 @@ namespace Slate_EK.Models
                 {
                     parsed = HoleType.Parse(value);
                 }
-                catch(ArgumentException)
+                catch (ArgumentException)
                 {
                     parsed = HoleType.Unspecified;
                 }
@@ -287,11 +287,11 @@ namespace Slate_EK.Models
         {
             get
             {
-                return this.ID.ToString();
+                return Id.ToString();
             }
             set
             {
-                this.ID = new Guid(value);
+                Id = new Guid(value);
                 OnPropertyChanged(nameof(IdString));
             }
         }
@@ -309,38 +309,38 @@ namespace Slate_EK.Models
         private Material        _Material;
         private HoleType        _HoleType;
         private FastenerType    _Type;
-        private Guid            _ID;
+        private Guid            _Id;
         #endregion
 
         public Fastener(
-            string assemblyNumber,
-            Size size,
-            Pitch pitch,
-            Thickness plateThickness,
-            Material material,
-            HoleType holeType,
-            FastenerType type)
+            string          assemblyNumber,
+            Size            size,
+            Pitch           pitch,
+            Thickness       plateThickness,
+            Material        material,
+            HoleType        holeType,
+            FastenerType    type)
         {
-            this.AssemblyNumber = assemblyNumber;
-            this.Size           = size;
-            this.Pitch          = pitch;
-            this.PlateThickness = plateThickness;
-            this.Material       = material;
-            this.HoleType       = holeType;
-            this.Type           = type;
+            AssemblyNumber = assemblyNumber;
+            Size           = size;
+            Pitch          = pitch;
+            PlateThickness = plateThickness;
+            Material       = material;
+            HoleType       = holeType;
+            Type           = type;
 
-            this.Price          = 0d;
-            this.Mass           = 0d;
-            this.Quantity       = 1;
+            Price          = 0d;
+            Mass           = 0d;
+            Quantity       = 1;
         }
 
         public Fastener(
-            Size size,
-            Pitch pitch,
-            Thickness plateThickness,
-            Material material,
-            HoleType holeType,
-            FastenerType type)
+            Size            size,
+            Pitch           pitch,
+            Thickness       plateThickness,
+            Material        material,
+            HoleType        holeType,
+            FastenerType    type)
             : this(string.Empty, 
                    size, 
                    pitch, 
@@ -366,18 +366,19 @@ namespace Slate_EK.Models
 
         public static explicit operator Fastener(Inventory.FastenerTableLayer value)
         {
-            Fastener cast = new Fastener();
+            Fastener cast = new Fastener
+            {
+                Length         = value.Length,
+                Price          = value.Price,
+                Mass           = value.Mass,
+                Quantity       = value.StockQuantity,
+                Size           = new Size(value.Size),
+                Pitch          = new Pitch(value.Pitch),
+                MaterialString = value.Material,
+                TypeString     = value.FastenerType
+            };
 
-            cast.Length         = value.Length;
-            cast.Price          = value.Price;
-            cast.Mass           = value.Mass;
-            cast.Quantity       = value.StockQuantity;
-            cast.Size           = new Size(value.Size);
-            cast.Pitch          = new Pitch(value.Pitch);
-            cast.MaterialString = value.Material;
-            cast.TypeString     = value.FastenerType;
-
-            cast.GetNewID();
+            cast.GetNewId();
 
             return cast;
         }
@@ -423,8 +424,8 @@ namespace Slate_EK.Models
                 if (deserialized != null)
                     this.UpdateFrom(deserialized);
 
-                this.GetNewID();
-                this.AnnouncePropertiesChanged();
+                GetNewId();
+                AnnouncePropertiesChanged();
             }
         }
 
@@ -434,16 +435,16 @@ namespace Slate_EK.Models
             AssemblyNumber = assemblyNumber;
         }
 
-        public void GetNewID()
+        public void GetNewId()
         {
-            ID = new Guid(GetHashData().Take(16).ToArray());
+            Id = new Guid(GetHashData().Take(16).ToArray());
         }
 
         public void CalculateDesiredLength()
         {
             double threadEngagemnt = Material.Multiplier * Size.OuterDiameter; // number of threads engaging the hole
 
-            if(HoleType.Equals(HoleType.Straight) || HoleType.Equals(HoleType.CSink))
+            if (HoleType.Equals(HoleType.Straight) || HoleType.Equals(HoleType.CSink))
             {
                 Length = threadEngagemnt + PlateThickness.PlateThickness;
             }
@@ -460,32 +461,26 @@ namespace Slate_EK.Models
         }
 
         [System.Xml.Serialization.XmlIgnore]
-        public string Description
-        {
-            get
-            {
-                return $"{SizeString} - {PitchString} x {Length,-3} {Type.ToString()}";
-            }
-        }
+        public string Description => $"{SizeString} - {PitchString} x {Length,-3} {Type}";
 
         public override string ToString()
         {
-            return $"[Fastener] {this.SizeString}, {this.PitchString}, {this.TypeString}, {this.MaterialString}, {this.Length}";
+            return $"[Fastener] {SizeString}, {PitchString}, {TypeString}, {MaterialString}, {Length}";
         }
 
         public byte[] GetHashData()
         {
             byte[][] blocks = new byte[9][];
 
-            blocks[0] = Encoding.Default.GetBytes(this.TypeString);
-            blocks[1] = Encoding.Default.GetBytes(this.MaterialString);
-            blocks[2] = BitConverter.GetBytes(this.Size.OuterDiameter);
-            blocks[3] = BitConverter.GetBytes(this.Pitch.Distance);
-            blocks[4] = BitConverter.GetBytes(this.PlateThickness.PlateThickness);
-            blocks[5] = BitConverter.GetBytes(this.Length);
-            blocks[6] = BitConverter.GetBytes(this.Mass);
-            blocks[7] = BitConverter.GetBytes(this.Price);
-            blocks[8] = Encoding.Default.GetBytes(this.HoleTypeString);
+            blocks[0] = Encoding.Default.GetBytes(TypeString);
+            blocks[1] = Encoding.Default.GetBytes(MaterialString);
+            blocks[2] = BitConverter.GetBytes(Size.OuterDiameter);
+            blocks[3] = BitConverter.GetBytes(Pitch.Distance);
+            blocks[4] = BitConverter.GetBytes(PlateThickness.PlateThickness);
+            blocks[5] = BitConverter.GetBytes(Length);
+            blocks[6] = BitConverter.GetBytes(Mass);
+            blocks[7] = BitConverter.GetBytes(Price);
+            blocks[8] = Encoding.Default.GetBytes(HoleTypeString);
 
             return Hashing.GenerateSHA256(blocks);
         }
@@ -500,7 +495,7 @@ namespace Slate_EK.Models
             if (!(obj is Fastener))
                 return false;
 
-            return this.GetHashCode().Equals((obj as Fastener).GetHashCode());
+            return GetHashCode().Equals((obj as Fastener).GetHashCode());
         }
 
         #region INotifyPropertyChanged Members

@@ -1,26 +1,23 @@
 ﻿using Extender;
 using System;
+using System.Diagnostics;
 
 namespace Slate_EK.Models
 {
     public class Material
     {
-        private string _Material;
+        private readonly string _Material;
 
         public double Multiplier
         {
             get;
-            set;
         }
 
         private Material(string material, double multiplier)
         {
-            this._Material  = material.ToLower();
-            this.Multiplier = multiplier;
+            _Material  = material.ToLower();
+            Multiplier = multiplier;
         }
-
-        private Material(string material) : this(material, 1d) 
-        { }
 
         public static Material Parse(string material)
         {
@@ -35,7 +32,7 @@ namespace Slate_EK.Models
                 {
                     Extender.Debugging.Debug.WriteMessage
                     (
-                        string.Format("Material.Parse found only a partial match. {0} -> {1}", material, m.ToString()),
+                        $"Material.Parse found only a partial match. {material} -> {m}",
                         "warn"
                     );
 
@@ -43,7 +40,7 @@ namespace Slate_EK.Models
                 }
             }
 
-            throw new ArgumentException(string.Format(@"Material name ""{0}"" is not a valid material.", material));
+            throw new ArgumentException($@"Material name ""{material}"" is not a valid material.");
         }
 
         public static Material TryParse(string material)
@@ -56,7 +53,7 @@ namespace Slate_EK.Models
             {
                 Extender.Debugging.Debug.WriteMessage
                 (
-                    string.Format(@"Could not parse material ""{0}""\n{1}", material, e.Message),
+                    $@"Could not parse material ""{material}""\n{e.Message}",
                     "error"
                 );
                 return null;
@@ -71,15 +68,16 @@ namespace Slate_EK.Models
 
             Material b = (Material)obj;
 
-            return (this._Material.Equals(b._Material))     &&
-                   (this.Multiplier.Equals(b.Multiplier));
+            return (_Material.Equals(b._Material))     &&
+                   (Multiplier.Equals(b.Multiplier));
         }
 
         public override int GetHashCode()
         {
             byte[][] blocks = new byte[2][];
 
-            blocks[0] = System.Text.Encoding.Default.GetBytes(this._Material);
+            Debug.Assert(_Material != null, "_Material != null");
+            blocks[0] = System.Text.Encoding.Default.GetBytes(_Material);
             blocks[1] = BitConverter.GetBytes(Multiplier);
 
             return BitConverter.ToInt32(Extender.ObjectUtils.Hashing.GenerateHashCode(blocks), 0);
@@ -90,42 +88,27 @@ namespace Slate_EK.Models
             return _Material.ToPropercase();
         }
 
-        public static Boolean operator == (Material a, Material b)
+        public static bool operator == (Material a, Material b)
         {
+            if (ReferenceEquals(null, a))
+                return ReferenceEquals(null, b);
+
             return a.Equals(b);
         }
 
-        public static Boolean operator != (Material a, Material b)
+        public static bool operator != (Material a, Material b)
         {
-            if (object.ReferenceEquals(null, a))
-                return object.ReferenceEquals(null, b);
+            if (ReferenceEquals(null, a))
+                return !ReferenceEquals(null, b);
 
             return !(a == b);
         }
         #endregion
 
-        public static Material Steel
-        {
-            get
-            {
-                return new Material("steel", 1d);
-            }
-        }
+        public static Material Steel => new Material("steel", 1d);
 
-        public static Material Aluminum
-        {
-            get
-            {
-                return new Material("aluminum", 1.5d);
-            }
-        }
-        public static Material Unspecified
-        {
-            get
-            {
-                return new Material("unspecified", 0d);
-            }
-        }
+        public static Material Aluminum => new Material("aluminum", 1.5d);
+        public static Material Unspecified => new Material("unspecified", 0d);
 
         public static Material[] Materials = { Steel, Aluminum, Unspecified };
     }

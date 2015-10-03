@@ -92,38 +92,23 @@ namespace Slate_EK.ViewModels
                 OnPropertyChanged(nameof(UsingImperial));
             }
         }
-        public bool     UsingMetric
+        public bool     UsingMetric => CurrentUnit == UnitType.Metric;
+
+        public bool     UsingImperial => CurrentUnit == UnitType.Imperial;
+
+        public string[] SearchByPropertyList => new[]
         {
-            get
-            {
-                return CurrentUnit == UnitType.Metric;
-            }
-        }
-        public bool     UsingImperial
-        {
-            get
-            {
-                return CurrentUnit == UnitType.Imperial;
-            }
-        }
-        public string[] SearchByPropertyList
-        {
-            get
-            {
-                return new string[]
-                {
-                    "Quantity",
-                    "Price",
-                    "Mass",
-                    "Size",
-                    "Length",
-                    "Pitch",
-                    "Material",
-                    "Fastener Type",
-                    "Hole Type"
-                };
-            }
-        }
+            "Quantity",
+            "Price",
+            "Mass",
+            "Size",
+            "Length",
+            "Pitch",
+            "Material",
+            "Fastener Type",
+            "Hole Type"
+        };
+
         public string   SelectedSearchProperty
         {
             get
@@ -194,7 +179,7 @@ namespace Slate_EK.ViewModels
                     else
                         _LastSortBy = SortMethod.Quantity;
 
-                    FastenerControl[] sorted = new FastenerControl[_FastenerList.Count];
+                    FastenerControl[] sorted;
                     if (OrderByDescending)
                     {
                         sorted = _FastenerList.OrderByDescending(f => f.Fastener.Quantity)
@@ -220,7 +205,7 @@ namespace Slate_EK.ViewModels
                     else
                         _LastSortBy = SortMethod.Price;
 
-                    FastenerControl[] sorted = new FastenerControl[_FastenerList.Count];
+                    FastenerControl[] sorted;
                     if (OrderByDescending)
                     {
                         sorted = _FastenerList.OrderByDescending(f => f.Fastener.Price)
@@ -246,7 +231,7 @@ namespace Slate_EK.ViewModels
                     else
                         _LastSortBy = SortMethod.Mass;
 
-                    FastenerControl[] sorted = new FastenerControl[_FastenerList.Count];
+                    FastenerControl[] sorted;
                     if (OrderByDescending)
                     {
                         sorted = _FastenerList.OrderByDescending(f => f.Fastener.Mass)
@@ -272,7 +257,7 @@ namespace Slate_EK.ViewModels
                     else
                         _LastSortBy = SortMethod.Size;
 
-                    FastenerControl[] sorted = new FastenerControl[_FastenerList.Count];
+                    FastenerControl[] sorted;
                     if (OrderByDescending)
                     {
                         sorted = _FastenerList.OrderByDescending(f => f.Fastener.SizeString)
@@ -298,7 +283,7 @@ namespace Slate_EK.ViewModels
                     else
                         _LastSortBy = SortMethod.Length;
 
-                    FastenerControl[] sorted = new FastenerControl[_FastenerList.Count];
+                    FastenerControl[] sorted;
                     if (OrderByDescending)
                     {
                         sorted = _FastenerList.OrderByDescending(f => f.Fastener.Length)
@@ -324,7 +309,7 @@ namespace Slate_EK.ViewModels
                     else
                         _LastSortBy = SortMethod.Pitch;
 
-                    FastenerControl[] sorted = new FastenerControl[_FastenerList.Count];
+                    FastenerControl[] sorted;
                     if (OrderByDescending)
                     {
                         sorted = _FastenerList.OrderByDescending(f => f.Fastener.PitchString)
@@ -350,7 +335,7 @@ namespace Slate_EK.ViewModels
                     else
                         _LastSortBy = SortMethod.Material;
 
-                    FastenerControl[] sorted = new FastenerControl[_FastenerList.Count];
+                    FastenerControl[] sorted;
                     if (OrderByDescending)
                     {
                         sorted = _FastenerList.OrderByDescending(f => f.Fastener.MaterialString)
@@ -376,7 +361,7 @@ namespace Slate_EK.ViewModels
                     else
                         _LastSortBy = SortMethod.FastType;
 
-                    FastenerControl[] sorted = new FastenerControl[_FastenerList.Count];
+                    FastenerControl[] sorted;
                     if (OrderByDescending)
                     {
                         sorted = _FastenerList.OrderByDescending(f => f.Fastener.TypeString)
@@ -402,7 +387,7 @@ namespace Slate_EK.ViewModels
                     else
                         _LastSortBy = SortMethod.HoleType;
 
-                    FastenerControl[] sorted = new FastenerControl[_FastenerList.Count];
+                    FastenerControl[] sorted;
                     if (OrderByDescending)
                     {
                         sorted = _FastenerList.OrderByDescending(f => f.Fastener.HoleTypeString)

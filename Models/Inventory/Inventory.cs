@@ -11,24 +11,9 @@ namespace Slate_EK.Models.Inventory
         protected InventoryDataContext  Database;
         protected string                Filename;
         
-        public string InventoryConnectionString
-        {
-            get
-            {
-                return $"Data Source=(LocalDB)\\v11.0;AttachDbFilename={this.Filename};Integrated Security=False;Pooling=false;";
-            }
-        }
+        public string InventoryConnectionString    => $"Data Source=(LocalDB)\\v11.0;AttachDbFilename={Filename};Integrated Security=False;Pooling=false;";
 
-        public Table<FastenerTableLayer> Fasteners
-        {
-            get
-            {
-                if (Database == null)
-                    return null;
-
-                return Database.Fasteners;
-            }
-        }
+        public Table<FastenerTableLayer> Fasteners => Database?.Fasteners;
 
         /// <summary>
         /// Initializes a new instance of the Inventory for the database at the specified path.
@@ -36,6 +21,8 @@ namespace Slate_EK.Models.Inventory
         /// <param name="filename">Full name and path of the inventory database being managed.</param>
         public Inventory(string filename)
         {
+            Filename = filename;
+
             Database = new InventoryDataContext(InventoryConnectionString);
 
             if (!Database.DatabaseExists())
@@ -54,17 +41,23 @@ namespace Slate_EK.Models.Inventory
 
         public void Add(FastenerTableLayer fastener)
         {
-            if (Fasteners.Count((f) => f.UniqueID.Equals(fastener.UniqueID)) < 1)
+            var inTable = Fasteners.FirstOrDefault(f => f.UniqueID.Equals(fastener.UniqueID));
+
+            if (inTable != null && !inTable.Equals(default(FastenerTableLayer)))
             {
+                // It was in the table
+                Replace(inTable, fastener);
+            }
+            else
+            {
+                // It was not in the table
                 Database.Fasteners.InsertOnSubmit(fastener);
             }
-            // TODO If the fastener is already in the db, then check to see if the quantity 
-            //      matches that of the one we're trying to add. If not, call Replace()
         }
 
-        public Fastener Pull(Guid fastenerID)
+        public Fastener Pull(Guid fastenerId)
         {
-            return (Fastener)Database.Fasteners.FirstOrDefault((f) => f.UniqueID.Equals(fastenerID));
+            return (Fastener)Database.Fasteners.FirstOrDefault(f => f.UniqueID.Equals(fastenerId));
         }
 
         public void Replace(Fastener inDatabase, Fastener replacement)
@@ -74,7 +67,7 @@ namespace Slate_EK.Models.Inventory
 
         public void Replace(FastenerTableLayer inDatabase, FastenerTableLayer replacement)
         {
-            if (Fasteners.Count((f) => f.UniqueID.Equals(inDatabase.UniqueID)) > 0)
+            if (Fasteners.Any(f => f.UniqueID.Equals(inDatabase.UniqueID)))
             {
                 Remove(inDatabase);
             }
@@ -84,23 +77,23 @@ namespace Slate_EK.Models.Inventory
 
         public void Remove(Fastener fastener)
         {
-            Remove(new FastenerTableLayer[] { (FastenerTableLayer)fastener });
+            Remove(new[] { (FastenerTableLayer)fastener });
         }
 
         public void Remove(FastenerTableLayer fastener)
         {
-            Remove(new FastenerTableLayer[] { fastener });
+            Remove(new[] { fastener });
         }
 
         public void Remove(FastenerTableLayer[] fasteners)
         {
             var matches = Database.Fasteners.Where
             ( 
-                (inTable) => fasteners.Select( (f) => f.UniqueID)
-                                      .Contains(inTable.UniqueID)
+                inTable => fasteners.Select( f => f.UniqueID)
+                                    .Contains(inTable.UniqueID)
             );
 
-            if (matches.Count() < 1)
+            if (!matches.Any())
             {
                 Debug.WriteMessage("Remove could not find any matching items in the database.", "info");
                 return;
@@ -128,7 +121,7 @@ namespace Slate_EK.Models.Inventory
             Fastener[] dumped = new Fastener[Fasteners.Count()];
 
             int i = 0;
-            foreach(FastenerTableLayer f in Fasteners)
+            foreach (FastenerTableLayer f in Fasteners)
             {
                 dumped[i++] = (Fastener)f; // explicit cast operator performs a shallow copy
             }
@@ -144,11 +137,11 @@ namespace Slate_EK.Models.Inventory
 
 
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
+        private bool _DisposedValue; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_DisposedValue)
             {
                 if (disposing)
                 {
@@ -160,7 +153,7 @@ namespace Slate_EK.Models.Inventory
                 //  free unmanaged resources (unmanaged objects) and override a finalizer below.
                 //  set large fields to null.
 
-                disposedValue = true;
+                _DisposedValue = true;
             }
         }
 
