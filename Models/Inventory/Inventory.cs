@@ -8,12 +8,12 @@ namespace Slate_EK.Models.Inventory
 {
     public class Inventory : IDisposable
     {
-        protected InventoryDataContext  Database;
-        protected string                Filename;
+        private readonly InventoryDataContext  _Database;
+        private readonly string                _Filename;
         
-        public string InventoryConnectionString    => $"Data Source=(LocalDB)\\v11.0;AttachDbFilename={Filename};Integrated Security=False;Pooling=false;";
+        public string InventoryConnectionString    => $"Data Source=(LocalDB)\\v11.0;AttachDbFilename={_Filename};Integrated Security=False;Pooling=false;";
 
-        public Table<FastenerTableLayer> Fasteners => Database?.Fasteners;
+        public Table<FastenerTableLayer> Fasteners => _Database?.Fasteners;
 
         /// <summary>
         /// Initializes a new instance of the Inventory for the database at the specified path.
@@ -21,17 +21,17 @@ namespace Slate_EK.Models.Inventory
         /// <param name="filename">Full name and path of the inventory database being managed.</param>
         public Inventory(string filename)
         {
-            Filename = filename;
+            _Filename = filename;
 
-            Database = new InventoryDataContext(InventoryConnectionString);
+            _Database = new InventoryDataContext(InventoryConnectionString);
 
-            if (!Database.DatabaseExists())
-                Database.CreateDatabase();
+            if (!_Database.DatabaseExists())
+                _Database.CreateDatabase();
         }
 
         public void SubmitChanges()
         {
-            Database.SubmitChanges();
+            _Database.SubmitChanges();
         }
 
         public void Add(Fastener fastener)
@@ -51,13 +51,13 @@ namespace Slate_EK.Models.Inventory
             else
             {
                 // It was not in the table
-                Database.Fasteners.InsertOnSubmit(fastener);
+                _Database.Fasteners.InsertOnSubmit(fastener);
             }
         }
 
         public Fastener Pull(Guid fastenerId)
         {
-            return (Fastener)Database.Fasteners.FirstOrDefault(f => f.UniqueID.Equals(fastenerId));
+            return (Fastener)_Database.Fasteners.FirstOrDefault(f => f.UniqueID.Equals(fastenerId));
         }
 
         public void Replace(Fastener inDatabase, Fastener replacement)
@@ -87,7 +87,7 @@ namespace Slate_EK.Models.Inventory
 
         public void Remove(FastenerTableLayer[] fasteners)
         {
-            var matches = Database.Fasteners.Where
+            var matches = _Database.Fasteners.Where
             ( 
                 inTable => fasteners.Select( f => f.UniqueID)
                                     .Contains(inTable.UniqueID)
@@ -99,7 +99,7 @@ namespace Slate_EK.Models.Inventory
                 return;
             }
 
-            Database.Fasteners.DeleteAllOnSubmit(matches);
+            _Database.Fasteners.DeleteAllOnSubmit(matches);
         }
 
         public void Export(string filename)
@@ -129,13 +129,6 @@ namespace Slate_EK.Models.Inventory
             return dumped;
         }
 
-
-
-
-
-
-
-
         #region IDisposable Support
         private bool _DisposedValue; // To detect redundant calls
 
@@ -146,8 +139,8 @@ namespace Slate_EK.Models.Inventory
                 if (disposing)
                 {
                     //  dispose managed state (managed objects).
-                    Database.SubmitChanges(); // THOUGHT Make sure I should actually do this
-                    Database.Dispose();
+                    _Database.SubmitChanges(); // THOUGHT Make sure I should actually do this
+                    _Database.Dispose();
                 }
 
                 //  free unmanaged resources (unmanaged objects) and override a finalizer below.

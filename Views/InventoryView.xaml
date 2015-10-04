@@ -21,6 +21,10 @@
         </ContextMenu>
     </Window.Resources>
     <Window.InputBindings>
+        <KeyBinding Modifiers="Control" Key="A"
+                    Command="{Binding SelectAllCommand}"/>
+        <KeyBinding Modifiers="Control" Key="D"
+                    Command="{Binding SelectNoneCommand}"/>
         
     </Window.InputBindings>
     <Grid>
@@ -48,6 +52,9 @@
             <MenuItem Header="_Tools">
                 <MenuItem Header="_Open in Excel" Command="{Binding OpenInExcelCommand}"/>
                 <MenuItem Header="_Update from .Csv" Command="{Binding ImportCommand}"/>
+                <Separator/>
+                <MenuItem Header="Retrieve all fasteners" Command="{Binding ShowAllFastenersCommand}"/>
+                <MenuItem Header="Clear query results" Command="{Binding ClearQueryResultsCommand}"/>
                 <MenuItem Header="Drop database" Command="{Binding DropDatabaseCommand}"/>
             </MenuItem>
             <MenuItem Header="_Options">
@@ -176,7 +183,6 @@
                                         <Grid.Resources>
                                             <Style TargetType="TextBox"
                                                    BasedOn="{StaticResource DejaVu}">
-                                                <Setter Property="FontSize" Value="{Binding BomFontSize}"/>
                                                 <Setter Property="Foreground" Value="#dddddd"/>
                                                 <Setter Property="CaretBrush" Value="#dddddd"/>
                                                 <Setter Property="VerticalAlignment" Value="Center"/>
@@ -323,17 +329,27 @@
                 <Image Source="/Slate_EK;component/Icons/search_black_24.png"/>
             </Button>
 
-
-            <Button Style="{StaticResource FlatActionButtonStyle}"
+            <Button Style="{StaticResource FlatIconButtonStyle}"
                     DockPanel.Dock="Right"
-                    Margin="10,0,0,0"
-                    Command="{Binding RemoveItemCommand}"
-                    Content="Remove"/>
-            <Button Style="{StaticResource FlatActionButtonStyle}"
+                    Width="40"
+                    Margin="30,0,15,0"
+                    Command="{Binding SubmitChangesCommand}"
+                    ToolTip="Submit changes to the database">
+                <Image Source="/Slate_EK;component/Icons/ic_publish_black_24dp_2x.png"/>
+            </Button>
+            <Button Style="{StaticResource FlatIconButtonStyle}"
+                    DockPanel.Dock="Right"
+                    Command="{Binding RemoveFastenerCommand}"
+                    ToolTip="Remove selected item(s) from the collection">
+                <Image Source="/Slate_EK;component/Icons/ic_remove_black_24dp_2x.png"/>
+            </Button>
+            <Button Style="{StaticResource FlatIconButtonStyle}"
                     DockPanel.Dock="Right"
                     Margin="0"
-                    Command="{Binding AddItemCommand}"
-                    Content="Add..."/>
+                    Command="{Binding AddNewFastenerCommand}"
+                    ToolTip="Add a new listing to the collection">
+                <Image Source="/Slate_EK;component/Icons/ic_add_black_24dp_2x.png"/>
+            </Button>
         </DockPanel>
     </Grid>
 </Window>

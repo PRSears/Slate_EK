@@ -147,6 +147,20 @@
     <Content Include="DefaultXml\sizes.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Icons\ic_publish_black_24dp_1x.png" />
+    <Resource Include="Icons\ic_publish_black_24dp_2x.png" />
+    <Resource Include="Icons\ic_file_upload_black_24dp_1x.png" />
+    <Resource Include="Icons\ic_file_upload_black_24dp_2x.png" />
+    <Resource Include="Icons\ic_remove_black_24dp_1x.png" />
+    <Resource Include="Icons\ic_remove_black_24dp_2x.png" />
+    <Resource Include="Icons\ic_add_black_24dp_1x.png" />
+    <Resource Include="Icons\ic_add_black_24dp_2x.png" />
+    <Resource Include="Icons\ic_remove_circle_outline_black_24dp_1x.png" />
+    <Resource Include="Icons\ic_remove_circle_outline_black_24dp_2x.png" />
+    <Resource Include="Icons\ic_add_white_24dp_1x.png" />
+    <Resource Include="Icons\ic_add_white_24dp_2x.png" />
+    <Resource Include="Icons\ic_remove_circle_outline_white_24dp_1x.png" />
+    <Resource Include="Icons\ic_remove_circle_outline_white_24dp_2x.png" />
     <Resource Include="Icons\ic_settings_black_24dp_1x.png" />
     <Resource Include="Icons\ic_settings_black_24dp_2x.png" />
     <Resource Include="Icons\ic_settings_white_24dp_1x.png" />

@@ -1,5 +1,8 @@
-﻿using Extender.WPF;
+﻿using Extender;
+using Extender.WPF;
 using Slate_EK.Models;
+using Slate_EK.Models.Inventory;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -8,7 +11,7 @@ using System.Windows.Input;
 namespace Slate_EK.ViewModels
 {
     public enum UnitType   : byte { Metric, Imperial }
-    public enum SortMethod : byte { None, Quantity, Price, Mass, Size, Length, Pitch, Material, FastType, HoleType }
+    public enum SortMethod        { None, Quantity, Price, Mass, Size, Length, Pitch, Material, FastType, HoleType }
 
     public class InventoryViewModel : ViewModel
     {
@@ -47,8 +50,7 @@ namespace Slate_EK.ViewModels
 
         //
         // Lower controls
-        public ICommand RemoveItemCommand       { get; private set; }
-        public ICommand AddItemCommand          { get; private set; }
+        public ICommand SubmitChangesCommand    { get; private set; }
         public ICommand ExecuteSearchCommand    { get; private set; }
 
         #endregion
@@ -56,10 +58,13 @@ namespace Slate_EK.ViewModels
         //
         // Bound properties
         private ObservableCollection<FastenerControl> _FastenerList;
+
         private string          _WindowTitle = "Inventory Viewer";
         private UnitType        _CurrentUnit;
         private SortMethod      _LastSortBy;
         private bool            _OrderByDescending;
+        private Inventory       _Inventory;
+        private Queue<Fastener> _PendingFasteners;
 
         public string   WindowTitle
         {
@@ -92,9 +97,22 @@ namespace Slate_EK.ViewModels
                 OnPropertyChanged(nameof(UsingImperial));
             }
         }
-        public bool     UsingMetric => CurrentUnit == UnitType.Metric;
+        public bool     UsingMetric   => CurrentUnit == UnitType.Metric;
 
         public bool     UsingImperial => CurrentUnit == UnitType.Imperial;
+
+        public enum     SearchType : byte
+        {
+            Quantity,
+            Price,
+            Mass,
+            Size,
+            Length,
+            Pitch,
+            Material,
+            FastenerType,
+            HoleType 
+        }
 
         public string[] SearchByPropertyList => new[]
         {
@@ -109,7 +127,7 @@ namespace Slate_EK.ViewModels
             "Hole Type"
         };
 
-        public string   SelectedSearchProperty
+        public string     SelectedSearchProperty
         {
             get
             {
@@ -123,7 +141,10 @@ namespace Slate_EK.ViewModels
                 OnPropertyChanged(nameof(SelectedSearchProperty));
             }
         }
-        public bool     OrderByDescending
+
+        public SearchType SelectedSearchType => (SearchType)Array.IndexOf(SearchByPropertyList, SelectedSearchProperty);
+
+        public bool       OrderByDescending
         {
             get
             {
@@ -155,18 +176,136 @@ namespace Slate_EK.ViewModels
         /// <summary>
         /// Constructs and initializes a new InventoryViewModel
         /// </summary>
-        public InventoryViewModel()
+        public InventoryViewModel(string filename)
         {
             Initialize();
 
-            // HACK generating dummy fasteners for debug
-            FastenerList    = new ObservableCollection<FastenerControl>(CreateDummies());
-            _LastSortBy     = SortMethod.None;
+            FastenerList      = new ObservableCollection<FastenerControl>();
+            _PendingFasteners = new Queue<Fastener>();
+            _Inventory        = new Inventory(filename);
+            _LastSortBy       = SortMethod.None;
         }
 
         public override void Initialize()
         {
             base.Initialize();
+
+            #region // InventoryBoxContextMenu commands
+
+            AddNewFastenerCommand = new RelayCommand
+            (
+                () =>
+                {
+                    Fastener empty = new Fastener();
+
+                    _PendingFasteners.Enqueue(empty);
+                    FastenerList.Add(new FastenerControl(empty));
+                }    
+            );
+
+            RemoveFastenerCommand = new RelayCommand
+            (
+                () =>
+                {
+                    FastenerList.Where(fc => fc.IsSelected)
+                                .Select(fc => fc.Fastener)
+                                .ForEach(f => _Inventory.Remove(f));
+                }
+            );
+
+            ChangeQuantityCommand = new RelayCommand
+            (
+                () =>
+                {
+                    throw new NotImplementedException("ChangeQuantityCommand is not in use.");
+                }
+            );
+
+            SelectAllCommand = new RelayCommand
+            (
+                () =>
+                {
+                    FastenerList.ForEach(f => f.IsSelected = true);
+                }
+            );
+
+            SelectNoneCommand = new RelayCommand
+            (
+                () =>
+                {
+                    FastenerList.ForEach(f => f.IsSelected = false);
+                }
+            );
+
+            #endregion
+
+            #region // Main menu commands
+
+            OpenCommand = new RelayCommand
+            (
+                () =>
+                {
+
+                }
+            );
+
+            ExportCommand = new RelayCommand
+            (
+                () =>
+                {
+
+                }
+            );
+
+            ExitCommand = new RelayCommand
+            (
+                () =>
+                {
+
+                }
+            );
+
+            OpenInExcelCommand = new RelayCommand
+            (
+                () =>
+                {
+
+                }
+            );
+
+            ImportCommand = new RelayCommand
+            (
+                () =>
+                {
+
+                }
+            );
+
+            DropDatabaseCommand = new RelayCommand
+            (
+                () =>
+                {
+
+                }
+            );
+
+            SwitchToMetricCommand = new RelayCommand
+            (
+                () =>
+                {
+
+                }
+            );
+
+            SwitchToImperialCommand = new RelayCommand
+            (
+                () =>
+                {
+
+                }
+            );
+
+            #endregion
 
             #region // SortBy Commands
 
@@ -403,12 +542,104 @@ namespace Slate_EK.ViewModels
                     foreach (var item in sorted) FastenerList.Add(item);
                 }
             );
-            
+
             #endregion
-            
+
+            #region Lower controls
+
+            SubmitChangesCommand = new RelayCommand
+            (
+                () =>
+                {
+                    while(_PendingFasteners.Any())
+                        _Inventory.Add(_PendingFasteners.Dequeue());
+
+                    _Inventory.SubmitChanges();
+                }
+            );
+
+            ExecuteSearchCommand = new RelayCommand
+            (
+                () =>
+                {
+                    if (string.IsNullOrWhiteSpace(SearchQuery))
+                        return;
+
+                    FastenerList.Clear();
+
+                    List<FastenerControl> queryResults = new List<FastenerControl>();
+
+                    switch (SelectedSearchType)
+                    {
+                        case SearchType.FastenerType:
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft  => ft.FastenerType.Contains(SearchQuery))
+                                                                      .Select(ft => new FastenerControl(ft)));
+                            break;
+                        case SearchType.HoleType:
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.HoleType.Contains(SearchQuery))
+                                                                      .Select(ft => new FastenerControl(ft)));
+                            break;
+                        case SearchType.Material:
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Material.Contains(SearchQuery))
+                                                                      .Select(ft => new FastenerControl(ft)));
+                            break;
+                        case SearchType.Length:
+                            double parsed;
+                            if (double.TryParse(SearchQuery, out parsed))
+                            {
+                                queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Length.Equals(parsed))
+                                                                          .Select(ft => new FastenerControl(ft)));
+                            }
+                            break;
+                        case SearchType.Mass:
+                            if (double.TryParse(SearchQuery, out parsed))
+                            {
+                                queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Mass.Equals(parsed))
+                                                                          .Select(ft => new FastenerControl(ft)));
+                            }
+                            break;
+                        case SearchType.Pitch:
+                            if (double.TryParse(SearchQuery, out parsed))
+                            {
+                                queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Pitch.Equals(parsed))
+                                                                          .Select(ft => new FastenerControl(ft)));
+                            }
+                            break;
+                        case SearchType.Price:
+                            if (double.TryParse(SearchQuery, out parsed))
+                            {
+                                queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Price.Equals(parsed))
+                                                                          .Select(ft => new FastenerControl(ft)));
+                            }
+                            break;
+                        case SearchType.Size:
+                            if (double.TryParse(SearchQuery, out parsed))
+                            {
+                                queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Size.Equals(parsed))
+                                                                          .Select(ft => new FastenerControl(ft)));
+                            }
+                            break;
+                        case SearchType.Quantity:
+                            int parsedInt;
+                            if (int.TryParse(SearchQuery, out parsedInt))
+                            {
+                                queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.StockQuantity.Equals(parsedInt))
+                                                                          .Select(ft => new FastenerControl(ft)));
+                            }
+                            break;
+                    }
+                    
+                    queryResults.ForEach(f => FastenerList.Add(f));
+                }
+            );
+
+            #endregion
+
+            //TODOh fix not being able to enter decimals in property text boxes
+            //TODO  think of a good way to track changes to a fastener and replace them in the database
         }
 
-        public List<FastenerControl> CreateDummies()
+        private List<FastenerControl> CreateDummies()
         {
             List<FastenerControl> dummies = new List<FastenerControl>();
 

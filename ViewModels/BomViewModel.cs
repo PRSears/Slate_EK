@@ -1,6 +1,7 @@
 ﻿using Extender;
 using Extender.WPF;
 using Slate_EK.Models;
+using Slate_EK.Models.Inventory;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -24,12 +25,12 @@ namespace Slate_EK.ViewModels
         public ICommand ListChangeQuantityCommand   { get; private set; }
         public ICommand ListDeleteItemCommand       { get; private set; }
         public ICommand SaveAsCommand               { get; private set; }
-        public ICommand ShortcutCtrlK              { get; private set; }
-        public ICommand ShortcutCtrlS              { get; private set; }
-        public ICommand ShortcutCtrlE              { get; private set; }
-        public ICommand ShortcutCtrlD              { get; private set; }
-        public ICommand ShortcutCtrlA              { get; private set; }
-        public ICommand ShortcutCtrlP              { get; private set; }
+        public ICommand ShortcutCtrlK               { get; private set; }
+        public ICommand ShortcutCtrlS               { get; private set; }
+        public ICommand ShortcutCtrlE               { get; private set; }
+        public ICommand ShortcutCtrlD               { get; private set; }
+        public ICommand ShortcutCtrlA               { get; private set; }
+        public ICommand ShortcutCtrlP               { get; private set; }
 
         public event ShortcutEventHandler ShortcutPressedCtrlK;
         public event ShortcutEventHandler ShortcutPressedCtrlS;
@@ -160,8 +161,8 @@ namespace Slate_EK.ViewModels
 
             WorkingFastener.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName.Equals(nameof(Fastener.Material)) ||
-                    e.PropertyName.Equals(nameof(Fastener.Size)) ||
+                if (e.PropertyName.Equals(nameof(Fastener.Material))       ||
+                    e.PropertyName.Equals(nameof(Fastener.Size))           ||
                     e.PropertyName.Equals(nameof(Fastener.PlateThickness)) ||
                     e.PropertyName.Equals(nameof(Fastener.HoleType)))
                 {
@@ -201,7 +202,7 @@ namespace Slate_EK.ViewModels
                     if (dialog.Value > 0)
                         (sender as FastenerControl).Fastener.Quantity = dialog.Value;
                     else
-                        Bom.Remove((sender as FastenerControl).Fastener, Int32.MaxValue);
+                        Bom.Remove(((FastenerControl)sender).Fastener, Int32.MaxValue);
                 }
             }
         }
@@ -210,12 +211,7 @@ namespace Slate_EK.ViewModels
         {
             // Yeah... this is bad.
             Window mainWindow = Application.Current.MainWindow;
-            if (mainWindow is Views.MainView)
-            {
-                return (mainWindow as Views.MainView).FindBomWindow(Bom.AssemblyNumber);
-            }
-
-            return null; 
+            return (mainWindow as Views.MainView)?.FindBomWindow(Bom.AssemblyNumber);
         }
 
         public override void Initialize()
@@ -368,13 +364,14 @@ namespace Slate_EK.ViewModels
         {
             string savePath;
 
-            Microsoft.Win32.SaveFileDialog dialog = new Microsoft.Win32.SaveFileDialog();
-            dialog.Title = "Save a copy of the BOM as...";
-            dialog.DefaultExt = ".xml";
-            dialog.Filter = @"(*.xml)
-|*.xml|(*.csv)|*.csv|All files (*.*)|*.*";
-            dialog.AddExtension = true;
-            dialog.FileName = Path.GetFileName(Bom.FilePath);
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title        = "Save a copy of the BOM as...",
+                DefaultExt   = ".xml",
+                Filter       = @"(*.xml)*.xml|(*.csv)|*.csv|All files (*.*)|*.*",
+                AddExtension = true,
+                FileName     = Path.GetFileName(Bom.FilePath)
+            };
 
             bool? result = dialog.ShowDialog();
 
@@ -535,6 +532,12 @@ namespace Slate_EK.ViewModels
             Fastener = fastener;
         }
 
+        public FastenerControl(FastenerTableLayer fastener)
+            : this()
+        {
+            Fastener = (Models.Fastener)fastener;
+        }
+
         /// <summary>
         /// Creates an array of FastenerControls from an array of plain Fastener objects.
         /// </summary>
@@ -551,8 +554,7 @@ namespace Slate_EK.ViewModels
         {
             EditControlEventHandler handler = EditingControl;
 
-            if (handler != null)
-                handler(sender);
+            handler?.Invoke(sender);
         }
 
         #region Settings.Settings aliases

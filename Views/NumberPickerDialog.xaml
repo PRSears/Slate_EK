@@ -11,7 +11,7 @@
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner">
     <Window.InputBindings>
-        <KeyBinding Key="Esc" Command="{Binding ExitWithoutSavingCommand}"/>
+        <KeyBinding Key="Escape" Command="{Binding ExitWithoutSavingCommand}"/>
     </Window.InputBindings>
     <Window.Resources>
         <Style x:Key="MaterialButton" 

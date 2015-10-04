@@ -30,7 +30,7 @@ namespace Slate_EK.Views
         {
             InitializeComponent();
 
-            ViewModel = new InventoryViewModel();
+            ViewModel = new InventoryViewModel("E:\\code\\GitHub\\Slate_EK\\.example_files\\TestInventory_001.mdf"); //HACK temporary Inventory for testing
 
             InventoryItemsControl.ItemsSource = ViewModel.FastenerList; 
             
@@ -47,8 +47,7 @@ namespace Slate_EK.Views
         protected int SelectDownIndex   = -1;
         protected int SelectUpIndex     = -1;
 
-
-        protected List<FastenerControl>    PassedOver;
+        protected List<FastenerControl>     PassedOver;
         protected List<FastenerControl>     PreviouslySelected;
 
         protected bool HasFastenerSelected

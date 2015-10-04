@@ -20,7 +20,7 @@ namespace Slate_EK.Models.Inventory
 
         // Adding a fastener to the BOM should search for the closest match from inventory & update stock at some point
 
-        [Column(IsPrimaryKey = true, Storage = "_UniqueID")]
+        [Column(IsPrimaryKey = true, Storage = nameof(_UniqueId))]
         public Guid UniqueID
         {
             get
@@ -32,7 +32,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = "_Length")]
+        [Column(Storage = nameof(_Length))]
         public double Length
         {
             get
@@ -45,7 +45,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = "_Price")]
+        [Column(Storage = nameof(_Price))]
         public double Price
         {
             get
@@ -58,7 +58,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = "_Mass")]
+        [Column(Storage = nameof(_Mass))]
         public double Mass
         {
             get
@@ -71,7 +71,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = "_Size")]
+        [Column(Storage = nameof(_Size))]
         public double Size
         {
             get
@@ -84,7 +84,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = "_StockQuantity")]
+        [Column(Storage = nameof(_StockQuantity))]
         public int StockQuantity
         {
             get
@@ -97,7 +97,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = "_Pitch")]
+        [Column(Storage = nameof(_Price))]
         public double Pitch
         {
             get
@@ -110,7 +110,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = "_Material")]
+        [Column(Storage = nameof(_Material))]
         public string Material
         {
             get
@@ -123,7 +123,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = "_FastenerType")]
+        [Column(Storage = nameof(_FastenerType))]
         public string FastenerType
         {
             get
@@ -136,14 +136,30 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
+        [Column(Storage = nameof(_Thickness))]
+        public double Thickness
+        {
+            get { return _Thickness; }
+            set { _Thickness = value; }
+        }
+
+        [Column(Storage = nameof(_HoleType))]
+        public string HoleType
+        {
+            get { return _HoleType; }
+            set { _HoleType = value; }
+        }
+
         private double  _Length;
         private double  _Price;
         private double  _Mass;
         private int     _StockQuantity;
         private double  _Size;
         private double  _Pitch;
+        private double  _Thickness;
         private string  _Material;
         private string  _FastenerType;
+        private string  _HoleType;
 
         private Guid    _UniqueId;
         
@@ -160,8 +176,10 @@ namespace Slate_EK.Models.Inventory
             _StockQuantity  = fastener.Quantity;
             _Size           = fastener.Size.OuterDiameter;
             _Pitch          = fastener.Pitch.Distance;
+            _Thickness      = fastener.PlateThickness.PlateThickness;
             _Material       = fastener.MaterialString;
             _FastenerType   = fastener.TypeString;
+            _HoleType       = fastener.HoleTypeString;
         }
         
         public static explicit operator FastenerTableLayer(Fastener value)
@@ -174,8 +192,10 @@ namespace Slate_EK.Models.Inventory
             cast.StockQuantity  = value.Quantity;
             cast.Size           = value.Size.OuterDiameter;
             cast.Pitch          = value.Pitch.Distance;
+            cast.Thickness      = value.PlateThickness.PlateThickness;
             cast.Material       = value.MaterialString;
             cast.FastenerType   = value.TypeString;
+            cast.HoleType       = value.HoleTypeString;
 
             cast.ForceNewUniqueID();
 
@@ -189,7 +209,7 @@ namespace Slate_EK.Models.Inventory
 
         public byte[] GetHashData()
         {
-            byte[][] blocks = new byte[7][];
+            byte[][] blocks = new byte[9][];
 
             //
             // THOUGHT Should quantity be used in the UID? 
@@ -203,6 +223,8 @@ namespace Slate_EK.Models.Inventory
             blocks[4] = BitConverter.GetBytes(_Pitch);
             blocks[5] = Encoding.Default.GetBytes(_Material);
             blocks[6] = Encoding.Default.GetBytes(_FastenerType);
+            blocks[7] = Encoding.Default.GetBytes(_HoleType);
+            blocks[8] = BitConverter.GetBytes(_Thickness);
 
             return Hashing.GenerateSHA256(blocks).Take(16).ToArray(); // I know... I know...
         }

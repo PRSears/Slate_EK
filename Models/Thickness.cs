@@ -22,8 +22,8 @@ namespace Slate_EK.Models
 
         public static Thickness TryParse(string value)
         {
-            Regex query = new Regex("([^0-9.-])");
-            string cleaned = query.Replace(value, "");
+            Regex query      = new Regex("([^0-9.-])");
+            string cleaned   = query.Replace(value, "");
 
             double thickness = 0d;
             double.TryParse(cleaned, out thickness);

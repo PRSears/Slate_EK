@@ -24,13 +24,11 @@ namespace Slate_EK.Models
             FlatCountersunkHeadCapScrew
         };
 
-        private string _Type;
-
-        public string Type => _Type;
+        public string Type { get; }
 
         private FastenerType(string familyType)
         {
-            _Type = familyType;
+            Type = familyType;
         }
 
         public string Callout
@@ -39,7 +37,7 @@ namespace Slate_EK.Models
             {
                 return new string
                 (
-                    _Type.Split(new[] { ' ', '-' }, StringSplitOptions.RemoveEmptyEntries)
+                    Type.Split(new[] { ' ', '-' }, StringSplitOptions.RemoveEmptyEntries)
                          .Select(c => c[0])
                          .ToArray()
                 ).ToUpper();
@@ -51,7 +49,7 @@ namespace Slate_EK.Models
             // Check for exact _FamilyType match
             foreach (FastenerType f in Types)
             {
-                if (familyType.ToLower().Equals(f._Type.ToLower()))
+                if (familyType.ToLower().Equals(f.Type.ToLower()))
                     return f;
             }
 
@@ -65,7 +63,7 @@ namespace Slate_EK.Models
             // Fuzzy check for _FamilyType match
             foreach (FastenerType f in Types)
             {
-                if (f._Type.ToLower().Contains(familyType.ToLower()))
+                if (f.Type.ToLower().Contains(familyType.ToLower()))
                     return f;
             }
 
@@ -87,7 +85,7 @@ namespace Slate_EK.Models
             if (!(obj is FastenerType))
                 return false;
 
-            return ((FastenerType)obj)._Type.ToLower().Equals(_Type.ToLower());
+            return ((FastenerType)obj).Type.ToLower().Equals(Type.ToLower());
         }
 
         public override string ToString()
@@ -97,7 +95,7 @@ namespace Slate_EK.Models
 
         public override int GetHashCode()
         {
-            return _Type.GetHashCode();
+            return Type.GetHashCode();
         }
 
         #region INotifyPropertyChanged Members

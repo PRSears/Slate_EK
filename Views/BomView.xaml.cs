@@ -61,31 +61,33 @@ namespace Slate_EK.Views
         }
 
         #region // Click / drag / selection handling
-        
-        protected bool  IsMouseDown;
-        protected Point MouseDownPos;
 
-        protected int SelectDownIndex   = -1;
-        protected int SelectUpIndex     = -1;
+        private bool  _IsMouseDown;
+        private Point _MouseDownPos;
 
-        protected List<FastenerControl>     PassedOver;
-        protected List<FastenerControl>     PreviouslySelected;
+        private int _SelectDownIndex   = -1;
+        private int _SelectUpIndex     = -1;
 
-        protected bool HasFastenerSelected
+        private List<FastenerControl> _PassedOver;
+        private List<FastenerControl> _PreviouslySelected;
+
+        private bool HasFastenerSelected
         {
             get
             {
                 return FastenerItemsControl.Items.Cast<FastenerControl>().Any(item => item.IsSelected);
             }
         }
-        protected int  SelectedFastenersCount
+
+        private int  SelectedFastenersCount
         {
             get
             {
                 return FastenerItemsControl.Items.Cast<FastenerControl>().Count(item => item.IsSelected);
             }
         }
-        protected int  FirstSelectedIndex
+
+        private int  FirstSelectedIndex
         {
             get
             {
@@ -93,11 +95,12 @@ namespace Slate_EK.Views
 
                 return FastenerItemsControl.Items.IndexOf
                 (
-                    PreviouslySelected.First()
+                    _PreviouslySelected.First()
                 );
             }
         }
-        protected int  LastSelectedIndex
+
+        private int  LastSelectedIndex
         {
             get
             {
@@ -105,7 +108,7 @@ namespace Slate_EK.Views
 
                 return FastenerItemsControl.Items.IndexOf
                 (
-                    PreviouslySelected.Last()
+                    _PreviouslySelected.Last()
                 );
             }
         }
@@ -114,26 +117,26 @@ namespace Slate_EK.Views
         {
             FastenersBox.CaptureMouse();
 
-            IsMouseDown             = true;
-            MouseDownPos            = e.GetPosition(FastenersBox);
-            PreviouslySelected      = new List<FastenerControl>();
-            PassedOver              = new List<FastenerControl>();
+            _IsMouseDown             = true;
+            _MouseDownPos            = e.GetPosition(FastenersBox);
+            _PreviouslySelected      = new List<FastenerControl>();
+            _PassedOver              = new List<FastenerControl>();
 
             foreach (FastenerControl item in FastenerItemsControl.Items)
             {
                 if (item.IsSelected)
-                    PreviouslySelected.Add(item);
+                    _PreviouslySelected.Add(item);
             }
 
-            Canvas.SetLeft(SelectionBox, MouseDownPos.X);
-            Canvas.SetTop(SelectionBox, MouseDownPos.Y);
+            Canvas.SetLeft(SelectionBox, _MouseDownPos.X);
+            Canvas.SetTop(SelectionBox, _MouseDownPos.Y);
 
             SelectionBox.Width  = 0;
             SelectionBox.Height = 0;
 
             SelectionBox.Visibility = Visibility.Visible;
 
-            Extender.Debugging.Debug.WriteMessage($"_MouseDown [{MouseDownPos.X}, {MouseDownPos.Y}]", Debug, "info");
+            Extender.Debugging.Debug.WriteMessage($"_MouseDown [{_MouseDownPos.X}, {_MouseDownPos.Y}]", Debug, "info");
 
             if (e.OriginalSource is FrameworkElement)
             {
@@ -141,7 +144,7 @@ namespace Slate_EK.Views
 
                 if (origin != null)
                 {
-                    SelectDownIndex = FastenerItemsControl.Items.IndexOf(origin.DataContext);
+                    _SelectDownIndex = FastenerItemsControl.Items.IndexOf(origin.DataContext);
                 }
             }
 
@@ -151,18 +154,18 @@ namespace Slate_EK.Views
             // Handle double click
             if (e.ClickCount == 2 && SelectedFastenersCount == 1)
             {
-                PreviouslySelected.First().RequestQuantityChange.Execute(null);
+                _PreviouslySelected.First().RequestQuantityChange.Execute(null);
 
-                IsMouseDown = false;
+                _IsMouseDown = false;
                 SelectionBox.Visibility = Visibility.Collapsed;
             }
         }
 
         private void FastenersBox_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (IsMouseDown)
+            if (_IsMouseDown)
             {
-                IsMouseDown             = false;
+                _IsMouseDown             = false;
                 SelectionBox.Visibility = Visibility.Collapsed;
 
                 Point mouseUpPos = e.GetPosition(FastenersBox);
@@ -174,35 +177,35 @@ namespace Slate_EK.Views
                     FrameworkElement origin = GetRootFastenerElement(e.OriginalSource as FrameworkElement);
 
                     if (origin != null)
-                        SelectUpIndex = FastenerItemsControl.Items.IndexOf(origin.DataContext); 
+                        _SelectUpIndex = FastenerItemsControl.Items.IndexOf(origin.DataContext); 
                 }
 
-                Extender.Debugging.Debug.WriteMessage($"Selection started at index [{SelectDownIndex}] and ended at [{SelectUpIndex}].", Debug);
+                Extender.Debugging.Debug.WriteMessage($"Selection started at index [{_SelectDownIndex}] and ended at [{_SelectUpIndex}].", Debug);
 
-                if (SelectDownIndex >= 0 &&
+                if (_SelectDownIndex >= 0 &&
                     HasFastenerSelected &&
                     (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)) &&
-                    mouseUpPos.Y.Equals(MouseDownPos.Y))
+                    mouseUpPos.Y.Equals(_MouseDownPos.Y))
                 {
                     // Single click with shift held
-                    if (SelectDownIndex > LastSelectedIndex)
+                    if (_SelectDownIndex > LastSelectedIndex)
                     {
-                        for (int i = LastSelectedIndex; i < SelectDownIndex; i++)
+                        for (int i = LastSelectedIndex; i < _SelectDownIndex; i++)
                         {
                             (FastenerItemsControl.Items[i] as FastenerControl)?.SelectCommand.Execute(null);
                         }
                     }
-                    else if (SelectDownIndex < FirstSelectedIndex)
+                    else if (_SelectDownIndex < FirstSelectedIndex)
                     {
-                        for (int i = SelectDownIndex; i < FirstSelectedIndex; i++)
+                        for (int i = _SelectDownIndex; i < FirstSelectedIndex; i++)
                         {
                             (FastenerItemsControl.Items[i] as FastenerControl)?.SelectCommand.Execute(null);
                         }
                     }
                 }
 
-                SelectDownIndex = -1;
-                SelectUpIndex   = -1;
+                _SelectDownIndex = -1;
+                _SelectUpIndex   = -1;
             }
         }
 
@@ -220,32 +223,32 @@ namespace Slate_EK.Views
 
         private void FastenersBox_MouseMove(object sender, MouseEventArgs e)
         {
-            if (IsMouseDown)
+            if (_IsMouseDown)
             {
                 Point curPos = e.GetPosition(FastenersBox);
 
                 //
                 // resize the selection box
-                if (MouseDownPos.X < curPos.X)
+                if (_MouseDownPos.X < curPos.X)
                 {
-                    Canvas.SetLeft(SelectionBox, MouseDownPos.X);
-                    SelectionBox.Width = curPos.X - MouseDownPos.X;
+                    Canvas.SetLeft(SelectionBox, _MouseDownPos.X);
+                    SelectionBox.Width  = curPos.X - _MouseDownPos.X;
                 }
                 else
                 {
                     Canvas.SetLeft(SelectionBox, curPos.X);
-                    SelectionBox.Width = MouseDownPos.X - curPos.X;
+                    SelectionBox.Width  = _MouseDownPos.X - curPos.X;
                 }
 
-                if (MouseDownPos.Y < curPos.Y)
+                if (_MouseDownPos.Y < curPos.Y)
                 {
-                    Canvas.SetTop(SelectionBox, MouseDownPos.Y);
-                    SelectionBox.Height = curPos.Y - MouseDownPos.Y;
+                    Canvas.SetTop(SelectionBox, _MouseDownPos.Y);
+                    SelectionBox.Height = curPos.Y - _MouseDownPos.Y;
                 }
                 else
                 {
                     Canvas.SetTop(SelectionBox, curPos.Y);
-                    SelectionBox.Height = MouseDownPos.Y - curPos.Y;
+                    SelectionBox.Height = _MouseDownPos.Y - curPos.Y;
                 }
 
                 HandleSelections(false);
@@ -306,7 +309,7 @@ namespace Slate_EK.Views
             Rect selectionBounds;
             if (firstClick)
             {
-                selectionBounds = new Rect(MouseDownPos, new Size(2, 2));
+                selectionBounds = new Rect(_MouseDownPos, new Size(2, 2));
                 // The rectangle used for selection hasn't actually been drawn yet, 
                 // so we need to fake it.
             }
@@ -345,15 +348,15 @@ namespace Slate_EK.Views
 
                 if (ctrlDown)
                 {
-                    if (inSelection && !PreviouslySelected.Contains(fastener))
+                    if (inSelection && !_PreviouslySelected.Contains(fastener))
                     {
                         fastener?.SelectCommand.Execute(null);
                     }
-                    else if (inSelection && PreviouslySelected.Contains(fastener))
+                    else if (inSelection && _PreviouslySelected.Contains(fastener))
                     {
                         fastener?.DeselectCommand.Execute(null);
                     }
-                    else if (!inSelection && PreviouslySelected.Contains(fastener))
+                    else if (!inSelection && _PreviouslySelected.Contains(fastener))
                     {
                         fastener?.SelectCommand.Execute(null);
                     }
@@ -367,10 +370,10 @@ namespace Slate_EK.Views
                     if (inSelection)
                     {
                         fastener?.SelectCommand.Execute(null);
-                        PassedOver.Add(fastener);
+                        _PassedOver.Add(fastener);
                     }
                     // ReSharper disable once ConditionIsAlwaysTrueOrFalse // for clarity
-                    else if (!inSelection && PassedOver.Contains(fastener))
+                    else if (!inSelection && _PassedOver.Contains(fastener))
                     {
                         fastener?.DeselectCommand.Execute(null);
                     }
@@ -378,7 +381,7 @@ namespace Slate_EK.Views
                 else
                 {
                     if (inSelection &&
-                        !(!HasFastenerSelected && PreviouslySelected.Count <= 1 && PreviouslySelected.Contains(fastener)))
+                        !(!HasFastenerSelected && _PreviouslySelected.Count <= 1 && _PreviouslySelected.Contains(fastener)))
                     {
                         fastener?.SelectCommand.Execute(null);
                     }
