@@ -70,7 +70,7 @@
                    Style="{StaticResource LabelStyle}"/>
             <TextBox Style="{StaticResource FlatHeaderTextboxStyle}"
                      x:Name="AssemblyNumberField"
-                     TabIndex="99"
+                     IsTabStop="False"
                      Text="{Binding Bom.AssemblyNumber}"
                      Width="200"
                      Height="26"
@@ -110,7 +110,7 @@
                          Style="{StaticResource FlatTextFieldStyle}"
                          Text="{Binding WorkingFastener.PlateThicknessString, Mode=TwoWay}"
                          Width="250" Height="22"
-                         TabIndex="5"
+                         TabIndex="3"
                          DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
@@ -118,7 +118,7 @@
                        Style="{StaticResource LabelStyle}"
                        DockPanel.Dock="Left"/>
                 <ComboBox Style="{StaticResource Dropdown}"
-                          TabIndex="2"
+                          TabIndex="4"
                           ItemsSource="{Binding HoleTypesList}"
                           SelectedValue="{Binding WorkingFastener.HoleTypeString, Mode=TwoWay}"
                           DockPanel.Dock="Right"/>
@@ -128,7 +128,7 @@
                        Style="{StaticResource LabelStyle}"
                        DockPanel.Dock="Left"/>
                 <ComboBox Style="{StaticResource Dropdown}"
-                          TabIndex="3"
+                          TabIndex="5"
                           ItemsSource="{Binding XmlSizes.SourceList}"
                           SelectedValue="{Binding WorkingFastener.SizeString, Mode=TwoWay}"
                           DockPanel.Dock="Right"/>
@@ -138,7 +138,7 @@
                        Style="{StaticResource LabelStyle}"
                        DockPanel.Dock="Left"/>
                 <ComboBox Style="{StaticResource Dropdown}"
-                          TabIndex="4"
+                          TabIndex="6"
                           ItemsSource="{Binding XmlPitches.SourceList}"
                           SelectedValue="{Binding WorkingFastener.PitchString, Mode=TwoWay}"
                           DockPanel.Dock="Right"/>
@@ -148,6 +148,7 @@
                        Style="{StaticResource LabelStyle}"
                        DockPanel.Dock="Left"/>
                 <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                         TabIndex="7"
                          Text="{Binding WorkingFastener.Quantity, Mode=TwoWay}"
                          Width="250" Height="22"
                          DockPanel.Dock="Right"/>
@@ -156,6 +157,7 @@
                 <CheckBox Style="{StaticResource CenteredCheckbox}"
                           DockPanel.Dock="Left"
                           Margin="5,0,0,0"
+                          TabIndex="8"
                           IsChecked="{Binding OverrideLength}">
                     <TextBlock Style="{StaticResource CheckboxLabelStyle}"
                                Text="Override"/>
@@ -168,7 +170,7 @@
                          Text="{Binding WorkingFastener.Length, Mode=TwoWay}"
                          IsEnabled="{Binding OverrideLength}"
                          Width="250" Height="22"
-                         TabIndex="6"
+                         TabIndex="8"
                          DockPanel.Dock="Right"/>
                 
             </DockPanel>
@@ -177,7 +179,7 @@
                     Command="{Binding AddToListCommand}"
                     HorizontalAlignment="Right"
                     Margin="0"
-                    TabIndex="7"/> 
+                    TabIndex="9"/> 
         </StackPanel>
 
         <ScrollViewer Grid.Row="1" Grid.Column="1"
@@ -227,7 +229,8 @@
 
                     <ItemsControl x:Name="FastenerItemsControl"
                                   AlternationCount="2"
-                                  DockPanel.Dock="Left">
+                                  DockPanel.Dock="Left"
+                                  IsTabStop="False">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                     <Grid x:Name="ItemRowGrid"
@@ -286,11 +289,13 @@
                    Margin="20,0,20,0">
             <Button Style="{StaticResource FlatActionButtonStyle}"
                     Command="{Binding SaveAsCommand}"
+                    IsTabStop="False"
                     Content="Save as..."/>
             <Button Style="{StaticResource FlatActionButtonStyle}"
                     DockPanel.Dock="Right"
                     Margin="0"
                     Command="{Binding RemoveItemCommand}"
+                    IsTabStop="False"
                     Content="Remove"/>
         </DockPanel>
     </Grid>

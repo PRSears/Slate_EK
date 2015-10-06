@@ -5,7 +5,10 @@ namespace Slate_EK.Models
 {
     public class Pitch
     {
-        public double Distance { get; }
+        // These need to be publicly set-able for the serialized array to work correctly.
+        // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
+        // ReSharper disable once MemberCanBePrivate.Global
+        public double Distance { get; set; }
 
         protected const double SIGMA = 0.0001d;
 

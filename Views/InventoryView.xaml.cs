@@ -31,11 +31,9 @@ namespace Slate_EK.Views
             InitializeComponent();
 
             ViewModel = new InventoryViewModel("E:\\code\\GitHub\\Slate_EK\\.example_files\\TestInventory_001.mdf"); //HACK temporary Inventory for testing
+            ViewModel.RegisterCloseAction(Close);
 
             InventoryItemsControl.ItemsSource = ViewModel.FastenerList; 
-            
-            // THOUGHT 'Open in Excel' function that dumps the entire DB to a temp csv file 
-            //          and automatically updates the DB when the file is saved.
         }
 
 

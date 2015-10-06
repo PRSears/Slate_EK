@@ -57,7 +57,7 @@ namespace Slate_EK.Views
 
             FastenerItemsControl.ItemsSource   = ViewModel.ObservableFasteners;
             MaterialsDropdown.SelectedIndex    = 0; // HACK to fix a bug where the dropdown had no SelectedValue,
-                                                         // despite array being initialized, etc.
+                                                    // despite array being initialized, etc.
         }
 
         #region // Click / drag / selection handling
@@ -154,8 +154,19 @@ namespace Slate_EK.Views
             // Handle double click
             if (e.ClickCount == 2 && SelectedFastenersCount == 1)
             {
-                _PreviouslySelected.First().RequestQuantityChange.Execute(null);
+                FastenersBox.ReleaseMouseCapture();
 
+                FastenerItemsControl.Items.Cast<FastenerControl>()
+                                          .First(fc => fc.IsSelected)
+                                          .RequestQuantityChange.Execute(null);
+                _IsMouseDown = false;
+                SelectionBox.Visibility = Visibility.Collapsed;
+            }
+            else if (e.ClickCount == 2 && _PreviouslySelected.Count == 1)
+            {
+                FastenersBox.ReleaseMouseCapture();
+
+                _PreviouslySelected.First().RequestQuantityChange.Execute(null);
                 _IsMouseDown = false;
                 SelectionBox.Visibility = Visibility.Collapsed;
             }
@@ -165,7 +176,7 @@ namespace Slate_EK.Views
         {
             if (_IsMouseDown)
             {
-                _IsMouseDown             = false;
+                _IsMouseDown            = false;
                 SelectionBox.Visibility = Visibility.Collapsed;
 
                 Point mouseUpPos = e.GetPosition(FastenersBox);
@@ -207,6 +218,8 @@ namespace Slate_EK.Views
                 _SelectDownIndex = -1;
                 _SelectUpIndex   = -1;
             }
+
+            FastenersBox.ReleaseMouseCapture();
         }
 
         private void FastenersBox_RightMouseUp(object sender, MouseButtonEventArgs e)

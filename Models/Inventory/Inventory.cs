@@ -68,11 +68,10 @@ namespace Slate_EK.Models.Inventory
         public void Replace(FastenerTableLayer inDatabase, FastenerTableLayer replacement)
         {
             if (Fasteners.Any(f => f.UniqueID.Equals(inDatabase.UniqueID)))
-            {
-                Remove(inDatabase);
-            }
+                _Database.Fasteners.DeleteOnSubmit(inDatabase);
 
-            Add(replacement);
+            if (!Fasteners.Any(f => f.UniqueID.Equals(replacement.UniqueID)))
+                _Database.Fasteners.InsertOnSubmit(replacement);
         }
 
         public void Remove(Fastener fastener)
@@ -89,7 +88,7 @@ namespace Slate_EK.Models.Inventory
         {
             var matches = _Database.Fasteners.Where
             ( 
-                inTable => fasteners.Select( f => f.UniqueID)
+                inTable => fasteners.Select(f => f.UniqueID)
                                     .Contains(inTable.UniqueID)
             );
 

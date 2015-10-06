@@ -6,10 +6,13 @@ namespace Slate_EK.Models
 {
     public class Size
     {
+        // These need to be publicly set-able for the serialized array to work correctly.
+        // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
+        // ReSharper disable once MemberCanBePrivate.Global
         /// <summary>
         /// Outer diameter (in millimeters) of the screw being described.
         /// </summary>
-        public double OuterDiameter { get; }
+        public double OuterDiameter { get; set; }
 
         protected const double SIGMA = 0.0001d;
 

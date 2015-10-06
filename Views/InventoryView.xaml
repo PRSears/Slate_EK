@@ -19,6 +19,30 @@
             <MenuItem Header="Select all" Command="{Binding SelectAllCommand}"/>
             <MenuItem Header="Deselect all" Command="{Binding SelectNoneCommand}"/>
         </ContextMenu>
+        
+        <!--<Style TargetType="TextBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Name="Bd" BorderThickness="{TemplateBinding BorderThickness}" 
+                                             BorderBrush="{TemplateBinding BorderBrush}" 
+                                             Background="{TemplateBinding Background}" 
+                                             SnapsToDevicePixels="true">
+                            <ScrollViewer Name="PART_ContentHost" Background="{TemplateBinding Background}" 
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Value="Transparent" Property="Background" />
+                                <Setter Value="#BEDDDDDD" Property="Foreground" />
+                                <Setter TargetName="PART_ContentHost" Property="Background" Value="Blue"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>-->
+        
     </Window.Resources>
     <Window.InputBindings>
         <KeyBinding Modifiers="Control" Key="A"
@@ -194,12 +218,32 @@
                                                 <Setter Property="BorderBrush" Value="Transparent"/>
                                                 <Setter Property="Padding" Value="8,4,8,4"/>
                                                 <Setter Property="Margin" Value="0,0,8,0"/>
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="TextBox">
+                                                            <Border Name="Bd" BorderThickness="{TemplateBinding BorderThickness}" 
+                                                                              BorderBrush="{TemplateBinding BorderBrush}" 
+                                                                              Background="{TemplateBinding Background}" 
+                                                                              SnapsToDevicePixels="true">
+                                                                <ScrollViewer Name="PART_ContentHost" Background="{TemplateBinding Background}" 
+                                                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsEnabled" Value="False">
+                                                                    <Setter Value="Transparent" Property="Background" />
+                                                                    <Setter Value="#BEDDDDDD" Property="Foreground" />
+                                                                    <Setter TargetName="PART_ContentHost" Property="Background" Value="Transparent"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
                                                 <Style.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
                                                         <Setter Property="Background" Value="#10FFFFFF"/>
                                                     </Trigger>
                                                     <Trigger Property="IsFocused" Value="True">
-                                                        <Setter Property="Background" Value="#15FFFFFF"/>
+                                                        <Setter Property="Background" Value="#25FFFFFF"/>
                                                     </Trigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -220,23 +264,31 @@
                                                 Background="{Binding Background}"/>
 
                                         <TextBox Grid.Column="0"
-                                                   Text="{Binding Fastener.Quantity, UpdateSourceTrigger=PropertyChanged}"/>
+                                                 Text="{Binding Fastener.Quantity}"/>
                                         <TextBox Grid.Column="1"
-                                                   Text="{Binding Fastener.Price, UpdateSourceTrigger=PropertyChanged}"/>
+                                                 Text="{Binding Fastener.Price}"
+                                                 IsEnabled="{Binding IsEditable}"/>
                                         <TextBox Grid.Column="2"
-                                                   Text="{Binding Fastener.Mass, UpdateSourceTrigger=PropertyChanged}"/>
+                                                 Text="{Binding Fastener.Mass}"
+                                                 IsEnabled="{Binding IsEditable}"/>
                                         <TextBox Grid.Column="3"
-                                                   Text="{Binding Fastener.SizeString}"/>
+                                                 Text="{Binding Fastener.SizeString}"
+                                                 IsEnabled="{Binding IsEditable}"/>
                                         <TextBox Grid.Column="4"
-                                                   Text="{Binding Fastener.Length, UpdateSourceTrigger=PropertyChanged}"/>
+                                                 Text="{Binding Fastener.Length}"
+                                                 IsEnabled="{Binding IsEditable}"/>
                                         <TextBox Grid.Column="5"
-                                                   Text="{Binding Fastener.PitchString}"/>
+                                                 Text="{Binding Fastener.PitchString}"
+                                                 IsEnabled="{Binding IsEditable}"/>
                                         <TextBox Grid.Column="6"
-                                                   Text="{Binding Fastener.MaterialString}"/>
+                                                 Text="{Binding Fastener.MaterialString}"
+                                                 IsEnabled="{Binding IsEditable}"/>
                                         <TextBox Grid.Column="7"
-                                                   Text="{Binding Fastener.TypeString}"/>
+                                                 Text="{Binding Fastener.TypeString}"
+                                                 IsEnabled="{Binding IsEditable}"/>
                                         <TextBox Grid.Column="8"
-                                                   Text="{Binding Fastener.HoleTypeString}"/>
+                                                 Text="{Binding Fastener.HoleTypeString}"
+                                                 IsEnabled="{Binding IsEditable}"/>
 
                                     </Grid>
                                     <DataTemplate.Triggers>
@@ -314,7 +366,7 @@
                      DockPanel.Dock="Left"
                      VerticalContentAlignment="Bottom"
                      x:Name="QueryTextField"
-                     Text="{Binding SearchQuery}"
+                     Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
                      Padding="5,0,0,4"
                      Width="200" Height="26"
                      Margin="10,0,0,0">
@@ -334,8 +386,9 @@
                     Width="40"
                     Margin="30,0,15,0"
                     Command="{Binding SubmitChangesCommand}"
-                    ToolTip="Submit changes to the database">
-                <Image Source="/Slate_EK;component/Icons/ic_publish_black_24dp_2x.png"/>
+                    ToolTip="Submit changes to the database"
+                    IsEnabled="{Binding PendingOperations}">
+                <Image Source="{Binding SubmitImageSource}"/>
             </Button>
             <Button Style="{StaticResource FlatIconButtonStyle}"
                     DockPanel.Dock="Right"

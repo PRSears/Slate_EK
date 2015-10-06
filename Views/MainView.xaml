@@ -13,6 +13,7 @@
         Drop="MainWindow_Drop">
     <Window.InputBindings>
         <KeyBinding Modifiers="Control"
+                    
                     Key="O"
                     Command="{Binding LoadExistingCommand}"/>
     </Window.InputBindings>

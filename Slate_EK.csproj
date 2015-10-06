@@ -59,6 +59,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Models\Bom.cs" />
+    <Compile Include="ViewModels\FastenerControl.cs" />
     <Compile Include="Models\FastenerType.cs" />
     <Compile Include="Models\Fastener.cs" />
     <Compile Include="Models\HoleType.cs" />
@@ -147,6 +148,9 @@
     <Content Include="DefaultXml\sizes.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Icons\ic_publish_white_24dp_2x.png" />
+    <Resource Include="Icons\ic_publish_grey_24dp_2x.png" />
+    <Resource Include="Icons\ic_publish_shine_24dp_2x.png" />
     <Resource Include="Icons\ic_publish_black_24dp_1x.png" />
     <Resource Include="Icons\ic_publish_black_24dp_2x.png" />
     <Resource Include="Icons\ic_file_upload_black_24dp_1x.png" />

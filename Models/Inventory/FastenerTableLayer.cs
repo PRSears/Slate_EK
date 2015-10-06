@@ -2,7 +2,6 @@
 using Extender.ObjectUtils;
 using System;
 using System.Data.Linq.Mapping;
-using System.Linq;
 using System.Text;
 
 namespace Slate_EK.Models.Inventory
@@ -10,13 +9,9 @@ namespace Slate_EK.Models.Inventory
     [Table(Name = "Fasteners")]
     public class FastenerTableLayer : IStorable
     {
-        //
-        // TODO Ultimately, I want the inventory to be kept/maintained in a real DB, and importing and exporting can be done via
-        //       csv files. I could see if Eric has access to a real inventory database. -- Nope. I can make everything without 
-        //       worrying about overlap.
-
-        // BomViewModel can query the database when it is adding a fastener to the BOM.
-        // I can write a quick custom object to handle csv exporting of a completed BOM for print.
+        // TODO BomViewModel can query the database when it is adding a fastener to the BOM.
+        // I can write a quick custom object to handle csv exporting of a completed BOM for print. 
+        // Or just use string interpolation and a text file stream.
 
         // Adding a fastener to the BOM should search for the closest match from inventory & update stock at some point
 
@@ -32,7 +27,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = nameof(_Length))]
+        [Column(Storage = nameof(_Length), UpdateCheck = UpdateCheck.Never)]
         public double Length
         {
             get
@@ -45,7 +40,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = nameof(_Price))]
+        [Column(Storage = nameof(_Price), UpdateCheck = UpdateCheck.Never)]
         public double Price
         {
             get
@@ -58,7 +53,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = nameof(_Mass))]
+        [Column(Storage = nameof(_Mass), UpdateCheck = UpdateCheck.Never)]
         public double Mass
         {
             get
@@ -71,7 +66,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = nameof(_Size))]
+        [Column(Storage = nameof(_Size), UpdateCheck = UpdateCheck.Never)]
         public double Size
         {
             get
@@ -84,7 +79,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = nameof(_StockQuantity))]
+        [Column(Storage = nameof(_StockQuantity), UpdateCheck = UpdateCheck.Never)]
         public int StockQuantity
         {
             get
@@ -97,7 +92,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = nameof(_Price))]
+        [Column(Storage = nameof(_Price), UpdateCheck = UpdateCheck.Never)]
         public double Pitch
         {
             get
@@ -110,7 +105,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = nameof(_Material))]
+        [Column(Storage = nameof(_Material), UpdateCheck = UpdateCheck.Never)]
         public string Material
         {
             get
@@ -123,7 +118,7 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = nameof(_FastenerType))]
+        [Column(Storage = nameof(_FastenerType), UpdateCheck = UpdateCheck.Never)]
         public string FastenerType
         {
             get
@@ -136,14 +131,14 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        [Column(Storage = nameof(_Thickness))]
+        [Column(Storage = nameof(_Thickness), UpdateCheck = UpdateCheck.Never)]
         public double Thickness
         {
             get { return _Thickness; }
             set { _Thickness = value; }
         }
 
-        [Column(Storage = nameof(_HoleType))]
+        [Column(Storage = nameof(_HoleType), UpdateCheck = UpdateCheck.Never)]
         public string HoleType
         {
             get { return _HoleType; }
@@ -226,7 +221,7 @@ namespace Slate_EK.Models.Inventory
             blocks[7] = Encoding.Default.GetBytes(_HoleType);
             blocks[8] = BitConverter.GetBytes(_Thickness);
 
-            return Hashing.GenerateSHA256(blocks).Take(16).ToArray(); // I know... I know...
+            return Hashing.GenerateHashCode(blocks); // I know... I know...
         }
 
         public override int GetHashCode()
@@ -236,7 +231,7 @@ namespace Slate_EK.Models.Inventory
 
         public override bool Equals(object obj)
         {
-            if (!(obj is FastenerTableLayer))
+            if (obj == null || !(obj is FastenerTableLayer))
                 return false;
 
             return GetHashCode().Equals(obj.GetHashCode());
