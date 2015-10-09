@@ -115,7 +115,7 @@ namespace Slate_EK.Views
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            ViewModel.WindowManager.CloseAll(); //TODO Fix NullReferenceException OnClosing()
+            ViewModel.WindowManager.CloseAll();
 
             base.OnClosing(e);
 

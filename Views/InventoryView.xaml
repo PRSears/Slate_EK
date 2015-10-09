@@ -12,37 +12,19 @@
         Background="#494d4f">
     <Window.Resources>
         <ContextMenu x:Key="InventoryBoxContextMenu">
-            <MenuItem Header="Add new fastener" Command="{Binding AddNewFastenerCommand}"/>
-            <MenuItem Header="Remove fastener" Command="{Binding RemoveFastenerCommand}"/>
-            <MenuItem Header="Change quantity..." Command="{Binding ChangeQuantityCommand}"/>
+            <MenuItem Header="Retrieve All Fasteners" Command="{Binding ShowAllFastenersCommand}"/>
+            <MenuItem Header="Clear Query Results" Command="{Binding ClearQueryResultsCommand}"/>
             <Separator/>
-            <MenuItem Header="Select all" Command="{Binding SelectAllCommand}"/>
-            <MenuItem Header="Deselect all" Command="{Binding SelectNoneCommand}"/>
+            <MenuItem Header="Add New Fastener" Command="{Binding AddNewFastenerCommand}"/>
+            <MenuItem Header="Remove Fastener(s)" Command="{Binding RemoveFastenerCommand}"/>
+            <MenuItem Header="Duplicate Selected" Command="{Binding DuplicateFastenerCommand}"/>
+            <Separator/>
+            <MenuItem Header="Select All" Command="{Binding SelectAllCommand}"/>
+            <MenuItem Header="Deselect All" Command="{Binding SelectNoneCommand}"/>
+            <Separator/>
+            <Separator/>
+            <MenuItem Header="~TEST HARNESS~" Command="{Binding TestHarnessCommand}"/>
         </ContextMenu>
-        
-        <!--<Style TargetType="TextBox">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border Name="Bd" BorderThickness="{TemplateBinding BorderThickness}" 
-                                             BorderBrush="{TemplateBinding BorderBrush}" 
-                                             Background="{TemplateBinding Background}" 
-                                             SnapsToDevicePixels="true">
-                            <ScrollViewer Name="PART_ContentHost" Background="{TemplateBinding Background}" 
-                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Value="Transparent" Property="Background" />
-                                <Setter Value="#BEDDDDDD" Property="Foreground" />
-                                <Setter TargetName="PART_ContentHost" Property="Background" Value="Blue"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>-->
-        
     </Window.Resources>
     <Window.InputBindings>
         <KeyBinding Modifiers="Control" Key="A"
@@ -68,18 +50,22 @@
               Height="22"
               VerticalAlignment="Top">
             <MenuItem Header="_File">
-                <MenuItem Header="_Open a different inventory file..." Command="{Binding OpenCommand}"/>
+                <MenuItem Header="_Open A Different Inventory File..." Command="{Binding OpenCommand}"/>
                 <MenuItem Header="_Save Copy As..." Command="{Binding ExportCommand}"/>
                 <Separator/>
-                <MenuItem Header="E_xit" Command="{Binding ExitCommand}"/>
+                <MenuItem Header="E_xit" Command="{Binding CloseCommand}"/>
             </MenuItem>
             <MenuItem Header="_Tools">
-                <MenuItem Header="_Open in Excel" Command="{Binding OpenInExcelCommand}"/>
-                <MenuItem Header="_Update from .Csv" Command="{Binding ImportCommand}"/>
+                <MenuItem Header="DEBUG Drop Database" Command="{Binding DropDatabaseCommand}"/>
                 <Separator/>
-                <MenuItem Header="Retrieve all fasteners" Command="{Binding ShowAllFastenersCommand}"/>
-                <MenuItem Header="Clear query results" Command="{Binding ClearQueryResultsCommand}"/>
-                <MenuItem Header="Drop database" Command="{Binding DropDatabaseCommand}"/>
+                <MenuItem Header="_Open in Excel..." Command="{Binding OpenInExcelCommand}"/>
+                <MenuItem Header="_Update From .Csv..." Command="{Binding ImportCommand}"/>
+                <Separator/>
+                <MenuItem Header="Retrieve All Fasteners" Command="{Binding ShowAllFastenersCommand}"/>
+                <MenuItem Header="Clear Query Results" Command="{Binding ClearQueryResultsCommand}"/>
+                <Separator/>
+                <MenuItem Header="Submit Changes" Command="{Binding SubmitChangesCommand}"/>
+                <MenuItem Header="Discard Pending Operations" Command="{Binding DiscardChangesCommand}"/>
             </MenuItem>
             <MenuItem Header="_Options">
                 <MenuItem Header="_Units">
@@ -97,7 +83,6 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
@@ -170,20 +155,17 @@
                     Content="Size"
                     Command="{Binding SortBySizeCommand}"/>
             <Button Grid.Row="0" Grid.Column="4"
-                    Content="Length"
-                    Command="{Binding SortByLengthCommand}"/>
-            <Button Grid.Row="0" Grid.Column="5"
                     Content="Pitch"
                     Command="{Binding SortByPitchCommand}"/>
+            <Button Grid.Row="0" Grid.Column="5"
+                    Content="Length"
+                    Command="{Binding SortByLengthCommand}"/>
             <Button Grid.Row="0" Grid.Column="6"
                     Content="Material"
                     Command="{Binding SortByMaterialCommand}"/>
             <Button Grid.Row="0" Grid.Column="7"
                     Content="Fast. Type"
                     Command="{Binding SortByFastTypeCommand}"/>
-            <Button Grid.Row="0" Grid.Column="8"
-                    Content="Hole Type"
-                    Command="{Binding SortByHoleTypeCommand}"/>
 
             <ScrollViewer Grid.Row="1" Grid.Column="0"
                         Grid.ColumnSpan="10"
@@ -198,6 +180,9 @@
                       HorizontalAlignment="Stretch"
                       Background="Transparent"
                       ContextMenu="{StaticResource InventoryBoxContextMenu}">
+                    <Border BorderBrush="#649a7f"
+                            BorderThickness="4"
+                            Visibility="{Binding EditModeVisibility}"/>
                     <StackPanel Orientation="Vertical">
                         <ItemsControl x:Name="InventoryItemsControl"
                                         AlternationCount="2">
@@ -257,7 +242,6 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         <Border Grid.Column="0" Grid.ColumnSpan="10"
                                                 x:Name="ItemBackground"
@@ -272,22 +256,19 @@
                                                  Text="{Binding Fastener.Mass}"
                                                  IsEnabled="{Binding IsEditable}"/>
                                         <TextBox Grid.Column="3"
-                                                 Text="{Binding Fastener.SizeString}"
+                                                 Text="{Binding Fastener.SizeDisplay}"
                                                  IsEnabled="{Binding IsEditable}"/>
                                         <TextBox Grid.Column="4"
-                                                 Text="{Binding Fastener.Length}"
+                                                 Text="{Binding Fastener.Pitch}"
                                                  IsEnabled="{Binding IsEditable}"/>
                                         <TextBox Grid.Column="5"
-                                                 Text="{Binding Fastener.PitchString}"
+                                                 Text="{Binding Fastener.Length}"
                                                  IsEnabled="{Binding IsEditable}"/>
                                         <TextBox Grid.Column="6"
-                                                 Text="{Binding Fastener.MaterialString}"
+                                                 Text="{Binding Fastener.Material}"
                                                  IsEnabled="{Binding IsEditable}"/>
                                         <TextBox Grid.Column="7"
-                                                 Text="{Binding Fastener.TypeString}"
-                                                 IsEnabled="{Binding IsEditable}"/>
-                                        <TextBox Grid.Column="8"
-                                                 Text="{Binding Fastener.HoleTypeString}"
+                                                 Text="{Binding Fastener.Type}"
                                                  IsEnabled="{Binding IsEditable}"/>
 
                                     </Grid>
@@ -336,9 +317,6 @@
             <Border Grid.Row="1" Grid.Column="7"
                     BorderThickness="0,0,1,0"
                     BorderBrush="#6b6b6b"/>
-            <Border Grid.Row="1" Grid.Column="8"
-                    BorderThickness="0,0,1,0"
-                    BorderBrush="#6b6b6b"/>
 
         </Grid>
         
@@ -384,10 +362,17 @@
             <Button Style="{StaticResource FlatIconButtonStyle}"
                     DockPanel.Dock="Right"
                     Width="40"
-                    Margin="30,0,15,0"
+                    Margin="10,0,15,0"
+                    Command="{Binding DiscardChangesCommand}"
+                    ToolTip="Discard changes to the database">
+                <Image Source="{Binding DiscardImageSource}"/>
+            </Button>
+            <Button Style="{StaticResource FlatIconButtonStyle}"
+                    DockPanel.Dock="Right"
+                    Width="40"
+                    Margin="30,0,0,0"
                     Command="{Binding SubmitChangesCommand}"
-                    ToolTip="Submit changes to the database"
-                    IsEnabled="{Binding PendingOperations}">
+                    ToolTip="Submit changes to the database">
                 <Image Source="{Binding SubmitImageSource}"/>
             </Button>
             <Button Style="{StaticResource FlatIconButtonStyle}"

@@ -34,12 +34,12 @@ namespace Slate_EK.ViewModels
         #endregion
 
         public string WindowTitle => string.Format
-            (
-                "Assembly #{1} [{2}] - {0}",
-                Properties.Settings.Default.ShortTitle,
-                Bom.AssemblyNumber,
-                Bom.SourceList != null ? Bom.SourceList.Length.ToString() : "0"
-            );
+        (
+            "Assembly #{1} [{2}] - {0}",
+            Properties.Settings.Default.ShortTitle,
+            Bom.AssemblyNumber,
+            Bom.SourceList != null ? Bom.SourceList.Length.ToString() : "0"
+        );
 
         public bool OverrideLength
         {
@@ -55,7 +55,7 @@ namespace Slate_EK.ViewModels
             }
         }
 
-        public Fastener WorkingFastener
+        public UnifiedFastener WorkingFastener
         {
             get
             {
@@ -69,28 +69,20 @@ namespace Slate_EK.ViewModels
         }
 
         // Drop-down list data sources
-        public Material[] MaterialsList => Material.Materials;
+        public Material[] MaterialsList     => Material.Materials;
+        public HoleType[] HoleTypesList     => HoleType.HoleTypes;
+        public string[]   SizeOptionsList   => XmlSizes.SourceList?.Select(s => s.ToString()).ToArray();
+        public string[]   PitchOptionsList  => XmlPitches.SourceList?.Select(p => p.ToString()).ToArray();
+        public string[]   FastenerTypesList => FastenerType.Types.Select(t => $"{t.Callout} ({t.Type})").ToArray();
 
-        public string[] FastenerTypesList
+        private Models.IO.Sizes XmlSizes
         {
-            get
-            {
-                return FastenerType.Types.Select(t => $"{t.Callout} ({t.Type})").ToArray();
-            }
+            get; set;
         }
 
-        public HoleType[] HoleTypesList => HoleType.HoleTypes;
-
-        public Models.IO.Sizes XmlSizes
+        private Models.IO.Pitches XmlPitches
         {
-            get;
-            protected set;
-        }
-
-        public Models.IO.Pitches XmlPitches
-        {
-            get;
-            protected set;
+            get; set;
         }
 
         public Bom Bom
@@ -121,9 +113,9 @@ namespace Slate_EK.ViewModels
 
         #region boxed properties
 
-        private Bom         _Bom;
-        private Fastener    _WorkingFastener;
-        private bool        _OverrideLength;
+        private Bom                _Bom;
+        private UnifiedFastener    _WorkingFastener;
+        private bool               _OverrideLength;
 
         private ObservableCollection<FastenerControl> _ObservableFasteners;
 
@@ -135,9 +127,9 @@ namespace Slate_EK.ViewModels
         public BomViewModel(string assemblyNumber)
         {
             Bom                    = new Bom(assemblyNumber); // TODO fix saving when assembly # changes // Should it 'move' or just copy?
-            WorkingFastener        = new Fastener(assemblyNumber);
+            WorkingFastener        = new UnifiedFastener();
             ObservableFasteners    = Bom.SourceList != null ? new ObservableCollection<FastenerControl>(FastenerControl.FromArray(Bom.SourceList)) :
-                                                                   new ObservableCollection<FastenerControl>();
+                                                              new ObservableCollection<FastenerControl>();
 
             Bom.PropertyChanged += (s, e) =>
             {
@@ -148,8 +140,8 @@ namespace Slate_EK.ViewModels
                     // Hook up context menu for FastenerControls
                     foreach (FastenerControl control in ObservableFasteners)
                     {
-                        control.RequestingRemoval += sender => Bom.Remove((sender as FastenerControl).Fastener, Int32.MaxValue);
-                        control.RequestingQuantityChange += sender => ChangeQuantity(sender);
+                        control.RequestingRemoval += sender => Bom.Remove((sender as FastenerControl)?.Fastener, Int32.MaxValue);
+                        control.RequestingQuantityChange += ChangeQuantity;
                     }
                 }
 
@@ -158,13 +150,21 @@ namespace Slate_EK.ViewModels
 
             WorkingFastener.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName.Equals(nameof(Fastener.Material))       ||
-                    e.PropertyName.Equals(nameof(Fastener.Size))           ||
-                    e.PropertyName.Equals(nameof(Fastener.PlateThickness)) ||
-                    e.PropertyName.Equals(nameof(Fastener.HoleType)))
+                if (e.PropertyName.Equals(nameof(UnifiedFastener.Material)) ||
+                    e.PropertyName.Equals(nameof(UnifiedFastener.Size)))     
                 {
                     if (!OverrideLength)
-                        WorkingFastener.CalculateDesiredLength();
+                        WorkingFastener.CalculateLength(true);
+                }
+            };
+
+            WorkingFastener.PlateInfo.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName.Equals(nameof(PlateInfo.Thickness)) ||
+                    e.PropertyName.Equals(nameof(PlateInfo.HoleType)))
+                {
+                    if (!OverrideLength)
+                        WorkingFastener.CalculateLength(true);
                 }
             };
 
@@ -274,8 +274,8 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-                    WorkingFastener.GetNewId();
-                    Bom.Add(WorkingFastener.Copy<Fastener>());
+                    WorkingFastener.ForceNewUniqueID();
+                    Bom.Add(WorkingFastener.Copy());
                 }
             );
 
@@ -292,7 +292,7 @@ namespace Slate_EK.ViewModels
                     }
 
                     // re-select what was selected before we replaced the ObservableCollection
-                    foreach (FastenerControl item in ObservableFasteners.Where(of => selected.Count(s => s.Fastener.Id.Equals(of.Fastener.Id)) > 0))
+                    foreach (FastenerControl item in ObservableFasteners.Where(of => selected.Count(s => s.Fastener.UniqueID.Equals(of.Fastener.UniqueID)) > 0))
                     {
                         item.IsSelected = true;
                     }
@@ -333,8 +333,8 @@ namespace Slate_EK.ViewModels
             // Hook up context menu commands for FastenerControls
             foreach (FastenerControl control in ObservableFasteners)
             {
-                control.RequestingRemoval           += sender => Bom.Remove((sender as FastenerControl).Fastener, Int32.MaxValue);
-                control.RequestingQuantityChange    += sender => ChangeQuantity(sender);
+                control.RequestingRemoval           += sender => Bom.Remove((sender as FastenerControl)?.Fastener, Int32.MaxValue);
+                control.RequestingQuantityChange    += ChangeQuantity;
             }
 
             // Lists from XML
@@ -346,15 +346,21 @@ namespace Slate_EK.ViewModels
 
             PropertyRefreshTimer = new Timer(Properties.Settings.Default.PropertyRefreshInterval);
             PropertyRefreshTimer.AutoReset = true;
-            PropertyRefreshTimer.Elapsed += (s, e) =>
+            PropertyRefreshTimer.Elapsed  += (s, e) =>
             {
                 XmlSizes.Reload();
                 XmlPitches.Reload();
+
+                OnPropertyChanged(nameof(SizeOptionsList));
+                OnPropertyChanged(nameof(PitchOptionsList));
 
                 GC.Collect();
             };
 
             PropertyRefreshTimer.Start();
+
+            OnPropertyChanged(nameof(SizeOptionsList));
+            OnPropertyChanged(nameof(PitchOptionsList));
         }
 
         protected bool SaveAs()
@@ -381,7 +387,7 @@ namespace Slate_EK.ViewModels
                     .ToLower()
                     .EndsWith("csv"))
             {
-                Extender.IO.CsvSerializer<Fastener> csv = new Extender.IO.CsvSerializer<Fastener>();
+                Extender.IO.CsvSerializer<UnifiedFastener> csv = new Extender.IO.CsvSerializer<UnifiedFastener>();
 
                 using (FileStream stream = new FileStream(dialog.FileName, FileMode.OpenOrCreate,
                                                                            FileAccess.ReadWrite,

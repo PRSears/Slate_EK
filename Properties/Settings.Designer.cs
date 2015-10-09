@@ -163,7 +163,7 @@ namespace Slate_EK.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("3000")]
+        [global::System.Configuration.DefaultSettingValueAttribute("2000")]
         public int PropertyRefreshInterval {
             get {
                 return ((int)(this["PropertyRefreshInterval"]));
@@ -278,6 +278,18 @@ namespace Slate_EK.Properties {
             }
             set {
                 this["Inventory_DefaultSearchBy"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ConfirmClose {
+            get {
+                return ((bool)(this["ConfirmClose"]));
+            }
+            set {
+                this["ConfirmClose"] = value;
             }
         }
     }

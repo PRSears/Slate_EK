@@ -28,17 +28,17 @@
     </Window.Resources>
     <Window.InputBindings>
         <KeyBinding Modifiers="Control" Key="K"
-                    Command="{Binding Shortcut_CtrlK}"/>
+                    Command="{Binding ShortcutCtrlK}"/>
         <KeyBinding Modifiers="Control" Key="S"
-                    Command="{Binding Shortcut_CtrlS}"/>
+                    Command="{Binding ShortcutCtrlS}"/>
         <KeyBinding Modifiers="Control" Key="E"
-                    Command="{Binding Shortcut_CtrlE}"/>
+                    Command="{Binding ShortcutCtrlE}"/>
         <KeyBinding Modifiers="Control" Key="D"
-                    Command="{Binding Shortcut_CtrlD}"/>
+                    Command="{Binding ShortcutCtrlD}"/>
         <KeyBinding Modifiers="Control" Key="A"
-                    Command="{Binding Shortcut_CtrlA}"/>
+                    Command="{Binding ShortcutCtrlA}"/>
         <KeyBinding Modifiers="Ctrl" Key="P"
-                    Command="{Binding Shortcut_CtrlP}"/>
+                    Command="{Binding ShortcutCtrlP}"/>
         <KeyBinding Key="Delete"
                     Command="{Binding RemoveItemCommand}"/>
         <KeyBinding Modifiers="Shift" Key="Delete"
@@ -99,7 +99,7 @@
                           x:Name="MaterialsDropdown"
                           TabIndex="2"
                           ItemsSource="{Binding MaterialsList}"
-                          SelectedValue="{Binding WorkingFastener.MaterialString, Mode=TwoWay}"
+                          SelectedValue="{Binding WorkingFastener.Material, Mode=TwoWay}"
                           DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
@@ -108,7 +108,7 @@
                        DockPanel.Dock="Left"/>
                 <TextBox x:Name="PlateThicknessTextField"
                          Style="{StaticResource FlatTextFieldStyle}"
-                         Text="{Binding WorkingFastener.PlateThicknessString, Mode=TwoWay}"
+                         Text="{Binding WorkingFastener.PlateInfo.Thickness, UpdateSourceTrigger=PropertyChanged}"
                          Width="250" Height="22"
                          TabIndex="3"
                          DockPanel.Dock="Right"/>
@@ -120,7 +120,7 @@
                 <ComboBox Style="{StaticResource Dropdown}"
                           TabIndex="4"
                           ItemsSource="{Binding HoleTypesList}"
-                          SelectedValue="{Binding WorkingFastener.HoleTypeString, Mode=TwoWay}"
+                          SelectedValue="{Binding WorkingFastener.PlateInfo.HoleTypeDisplay, Mode=TwoWay}"
                           DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
@@ -129,8 +129,8 @@
                        DockPanel.Dock="Left"/>
                 <ComboBox Style="{StaticResource Dropdown}"
                           TabIndex="5"
-                          ItemsSource="{Binding XmlSizes.SourceList}"
-                          SelectedValue="{Binding WorkingFastener.SizeString, Mode=TwoWay}"
+                          ItemsSource="{Binding SizeOptionsList}"
+                          SelectedValue="{Binding WorkingFastener.SizeDisplay, Mode=TwoWay}"
                           DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
@@ -139,8 +139,8 @@
                        DockPanel.Dock="Left"/>
                 <ComboBox Style="{StaticResource Dropdown}"
                           TabIndex="6"
-                          ItemsSource="{Binding XmlPitches.SourceList}"
-                          SelectedValue="{Binding WorkingFastener.PitchString, Mode=TwoWay}"
+                          ItemsSource="{Binding PitchOptionsList}"
+                          SelectedValue="{Binding WorkingFastener.Pitch, Mode=TwoWay}"
                           DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>

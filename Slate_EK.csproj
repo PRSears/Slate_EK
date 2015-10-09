@@ -59,12 +59,12 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Models\Bom.cs" />
+    <Compile Include="Models\PlateInfo.cs" />
+    <Compile Include="Models\UnifiedFastener.cs" />
     <Compile Include="ViewModels\FastenerControl.cs" />
     <Compile Include="Models\FastenerType.cs" />
-    <Compile Include="Models\Fastener.cs" />
     <Compile Include="Models\HoleType.cs" />
     <Compile Include="Models\Inventory\Inventory.cs" />
-    <Compile Include="Models\Inventory\FastenerTableLayer.cs" />
     <Compile Include="Models\Inventory\InventoryDataContext.cs" />
     <Compile Include="Models\IO\Pitches.cs" />
     <Compile Include="Models\IO\Sizes.cs" />
@@ -148,6 +148,9 @@
     <Content Include="DefaultXml\sizes.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Icons\ic_delete_grey_24dp_2x.png" />
+    <Resource Include="Icons\ic_delete_black_24dp_1x.png" />
+    <Resource Include="Icons\ic_delete_black_24dp_2x.png" />
     <Resource Include="Icons\ic_publish_white_24dp_2x.png" />
     <Resource Include="Icons\ic_publish_grey_24dp_2x.png" />
     <Resource Include="Icons\ic_publish_shine_24dp_2x.png" />

@@ -39,7 +39,7 @@
       <Value Profile="(Default)">0.01</Value>
     </Setting>
     <Setting Name="PropertyRefreshInterval" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">3000</Value>
+      <Value Profile="(Default)">2000</Value>
     </Setting>
     <Setting Name="ItemSelectedBackgroundColor" Type="System.String" Scope="User">
       <Value Profile="(Default)">#585A77</Value>
@@ -67,6 +67,9 @@
     </Setting>
     <Setting Name="Inventory_DefaultSearchBy" Type="System.String" Scope="User">
       <Value Profile="(Default)">Length</Value>
+    </Setting>
+    <Setting Name="ConfirmClose" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>

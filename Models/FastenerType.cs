@@ -1,10 +1,9 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Linq;
 
 namespace Slate_EK.Models
 {
-    public class FastenerType : INotifyPropertyChanged
+    public class FastenerType
     {
         public static FastenerType SocketHeadFlatScrew              => new FastenerType("socket head flat screw");
 
@@ -44,40 +43,54 @@ namespace Slate_EK.Models
             }
         }
 
-        public static FastenerType Parse(string familyType)
+        public static FastenerType Parse(string fastenerType)
         {
             // Check for exact _FamilyType match
             foreach (FastenerType f in Types)
             {
-                if (familyType.ToLower().Equals(f.Type.ToLower()))
+                if (fastenerType.ToLower().Equals(f.Type.ToLower()))
                     return f;
             }
 
             // Check for exact Callout match
             foreach (FastenerType f in Types)
             {
-                if (f.Callout.ToLower().Equals(familyType.ToLower()))
+                if (f.Callout.ToLower().Equals(fastenerType.ToLower()))
                     return f;
             }
 
             // Fuzzy check for _FamilyType match
             foreach (FastenerType f in Types)
             {
-                if (f.Type.ToLower().Contains(familyType.ToLower()))
+                if (f.Type.ToLower().Contains(fastenerType.ToLower()))
                     return f;
             }
 
             // Fuzzy Callout match
             foreach (FastenerType f in Types)
             {
-                if (familyType.ToLower().Contains(f.Callout.ToLower()))
+                if (fastenerType.ToLower().Contains(f.Callout.ToLower()))
                     return f;
             }
 
             throw new ArgumentException
             (
-                $@"Specified string ""{familyType}"" was not a valid FamilyType"
+                $@"Specified string ""{fastenerType}"" was not a valid FastenerType"
             );
+        }
+        
+        /// <returns>Returns FastenerType.Unspecified if a parse did not succeed.</returns>
+        public static FastenerType TryParse(string fastenerType)
+        {
+            try
+            {
+                return Parse(fastenerType);
+            }
+            catch (ArgumentException e)
+            {
+                Extender.Debugging.ExceptionTools.WriteExceptionText(e, true);
+                return FastenerType.Unspecified;
+            }
         }
 
         public override bool Equals(object obj)
@@ -97,18 +110,5 @@ namespace Slate_EK.Models
         {
             return Type.GetHashCode();
         }
-
-        #region INotifyPropertyChanged Members
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged(string propertyName)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-
-            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        #endregion
     }
 }

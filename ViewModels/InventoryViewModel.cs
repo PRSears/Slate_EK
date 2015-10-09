@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 
 namespace Slate_EK.ViewModels
@@ -19,17 +20,17 @@ namespace Slate_EK.ViewModels
 
         //
         // InventoryBoxContextMenu commands
-        public ICommand AddNewFastenerCommand   { get; private set; }
-        public ICommand RemoveFastenerCommand   { get; private set; }
-        public ICommand ChangeQuantityCommand   { get; private set; }
-        public ICommand SelectAllCommand        { get; private set; }
-        public ICommand SelectNoneCommand       { get; private set; }
+        public ICommand AddNewFastenerCommand    { get; private set; }
+        public ICommand RemoveFastenerCommand    { get; private set; }
+        public ICommand DuplicateFastenerCommand { get; private set; }
+        public ICommand SelectAllCommand         { get; private set; }
+        public ICommand SelectNoneCommand        { get; private set; }
+        public ICommand TestHarnessCommand       { get; private set; }
 
         //
         // Main menu commands
         public ICommand OpenCommand                 { get; private set; }
         public ICommand ExportCommand               { get; private set; }
-        public ICommand ExitCommand                 { get; private set; }
         public ICommand OpenInExcelCommand          { get; private set; }
         public ICommand ImportCommand               { get; private set; }
         public ICommand ShowAllFastenersCommand     { get; private set; }
@@ -48,26 +49,39 @@ namespace Slate_EK.ViewModels
         public ICommand SortByPitchCommand      { get; private set; }
         public ICommand SortByMaterialCommand   { get; private set; }
         public ICommand SortByFastTypeCommand   { get; private set; }
-        public ICommand SortByHoleTypeCommand   { get; private set; }
 
         //
         // Lower controls
         public ICommand SubmitChangesCommand    { get; private set; }
+        public ICommand DiscardChangesCommand   { get; private set; }
         public ICommand ExecuteSearchCommand    { get; private set; }
 
         #endregion
+
+        private static string[] SubmitImageSourceStrings => new[]
+        {
+            "/Slate_EK;component/Icons/ic_publish_grey_24dp_2x.png",
+            "/Slate_EK;component/Icons/ic_publish_black_24dp_2x.png"
+        };
+        private static string[] DiscardImageSourceStrings => new[]
+        {
+            "/Slate_EK;component/Icons/ic_delete_grey_24dp_2x.png",
+            "/Slate_EK;component/Icons/ic_delete_black_24dp_2x.png"
+        };
 
         //
         // Bound properties
         private ObservableCollection<FastenerControl> _FastenerList;
 
-        private string          _WindowTitle = "Inventory Viewer";
-        private UnitType        _CurrentUnit;
-        private SortMethod      _LastSortBy;
-        private bool            _OrderByDescending;
-        private Inventory       _Inventory;
-        private Queue<Fastener> _PendingFasteners;
-        private List<Fastener>  _FastenersMarkedForRemoval;
+        private UnitType               _CurrentUnit;
+        private SortMethod             _LastSortBy;
+        private bool                   _OrderByDescending;
+        private bool                   _PendingOperations;
+        private bool                   _EditMode;
+        private Inventory              _Inventory;
+        private Queue<UnifiedFastener> _PendingFasteners;
+        private List<UnifiedFastener>  _FastenersMarkedForRemoval;
+        private string                 _WindowTitle = "Inventory Viewer";
 
         public string   WindowTitle
         {
@@ -153,20 +167,38 @@ namespace Slate_EK.ViewModels
                 OnPropertyChanged(nameof(OrderByDescending));
             }
         }
-        public string     SubmitImageSource
+        public string     SubmitImageSource  => PendingOperations ? SubmitImageSourceStrings[1]  : SubmitImageSourceStrings[0];
+        public string     DiscardImageSource => PendingOperations ? DiscardImageSourceStrings[1] : DiscardImageSourceStrings[0];
+        public Visibility EditModeVisibility => EditMode ? Visibility.Visible : Visibility.Hidden;
+        public bool       PendingOperations
         {
             get
             {
-                return PendingOperations ? SubmitImageSourceStrings[1] : SubmitImageSourceStrings[0];
+                return _PendingOperations;
+            }
+            set
+            {
+                _PendingOperations = value;
+                OnPropertyChanged(nameof(PendingOperations));
+                OnPropertyChanged(nameof(SubmitImageSource));
+                OnPropertyChanged(nameof(DiscardImageSource));
             }
         }
-
-        public bool       PendingOperations { get; private set; }
-        private string[]  SubmitImageSourceStrings => new[]
+        public bool       EditMode
         {
-            "/Slate_EK;component/Icons/ic_publish_grey_24dp_2x.png",
-            "/Slate_EK;component/Icons/ic_publish_black_24dp_2x.png"
-        };
+            get
+            {
+                return _EditMode; 
+            }
+            set
+            {
+                _EditMode = value;
+                PendingOperations = PendingOperations | _EditMode;
+
+                OnPropertyChanged(nameof(EditMode));
+                OnPropertyChanged(nameof(EditModeVisibility));
+            }
+        }
 
         public ObservableCollection<FastenerControl> FastenerList
         {
@@ -192,8 +224,9 @@ namespace Slate_EK.ViewModels
             Initialize();
 
             FastenerList               = new ObservableCollection<FastenerControl>();
-            _PendingFasteners          = new Queue<Fastener>();
-            _FastenersMarkedForRemoval = new List<Fastener>();
+            SearchQuery                = string.Empty;
+            _PendingFasteners          = new Queue<UnifiedFastener>();
+            _FastenersMarkedForRemoval = new List<UnifiedFastener>();
             _Inventory                 = new Inventory(filename);
             _LastSortBy                = SortMethod.None;
         }
@@ -208,13 +241,16 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-                    Fastener empty = new Fastener();
+                    UnifiedFastener empty = new UnifiedFastener();
                     _PendingFasteners.Enqueue(empty);
-                    FastenerList.Add(new FastenerControl(empty));
+
+                    if (!EditMode)
+                        FastenerList.Clear();
+
+                    AddToFastenerList(new FastenerControl(empty));
 
                     PendingOperations = true;
-                    OnPropertyChanged(nameof(SubmitImageSource));
-                    OnPropertyChanged(nameof(PendingOperations));
+                    EnterEditMode(false);
                 }    
             );
 
@@ -226,24 +262,21 @@ namespace Slate_EK.ViewModels
 
                     foreach (var item in removal)
                     {
-                        _Inventory.Remove(item.Fastener);
+                        PendingOperations = PendingOperations | _Inventory.Remove(item.Fastener);
                         FastenerList.Remove(item);
 
                         if (_PendingFasteners.Contains(item.Fastener))
                             _FastenersMarkedForRemoval.Add(item.Fastener);
                     }
-
-                    PendingOperations = true;
-                    OnPropertyChanged(nameof(SubmitImageSource));
-                    OnPropertyChanged(nameof(PendingOperations));
                 }
             );
 
-            ChangeQuantityCommand = new RelayCommand
+            DuplicateFastenerCommand = new RelayCommand
             (
                 () =>
                 {
-                    throw new NotImplementedException("ChangeQuantityCommand is not in use.");
+
+                    PendingOperations = true;
                 }
             );
 
@@ -263,6 +296,18 @@ namespace Slate_EK.ViewModels
                 }
             );
 
+            TestHarnessCommand = new RelayCommand
+            (
+                () =>
+                {
+                    if (ConfirmationDialog.Show("Empty the database?", ""))
+                    {
+                        _Inventory.Fasteners.ForEach(f => _Inventory.Remove(f));
+                        _Inventory.SubmitChanges();
+                    }
+                }
+            );
+
             #endregion
 
             #region // Main menu commands
@@ -276,14 +321,6 @@ namespace Slate_EK.ViewModels
             );
 
             ExportCommand = new RelayCommand
-            (
-                () =>
-                {
-
-                }
-            );
-
-            ExitCommand = new RelayCommand
             (
                 () =>
                 {
@@ -312,7 +349,9 @@ namespace Slate_EK.ViewModels
                 () =>
                 {
                     FastenerList.Clear();
-                    _Inventory.Dump().ForEach(f => FastenerList.Add(new FastenerControl(f)));
+                    _Inventory.Dump().ForEach(f => AddToFastenerList(new FastenerControl(f)));
+
+                    SearchQuery = "*";
                 }
             );
 
@@ -328,7 +367,7 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-
+                    _Inventory.DEBUG_DropDatabase();
                 }
             );
 
@@ -374,7 +413,7 @@ namespace Slate_EK.ViewModels
                     }
 
                     FastenerList.Clear();
-                    foreach (var item in sorted) FastenerList.Add(item);
+                    foreach (var item in sorted) AddToFastenerList(item);
                 }
             );
 
@@ -400,7 +439,7 @@ namespace Slate_EK.ViewModels
                     }
 
                     FastenerList.Clear();
-                    foreach (var item in sorted) FastenerList.Add(item);
+                    foreach (var item in sorted) AddToFastenerList(item);
                 }
             );
 
@@ -426,7 +465,7 @@ namespace Slate_EK.ViewModels
                     }
 
                     FastenerList.Clear();
-                    foreach (var item in sorted) FastenerList.Add(item);
+                    foreach (var item in sorted) AddToFastenerList(item);
                 }
             );
 
@@ -442,17 +481,17 @@ namespace Slate_EK.ViewModels
                     FastenerControl[] sorted;
                     if (OrderByDescending)
                     {
-                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.Size.OuterDiameter)
+                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.Size)
                                               .ToArray();
                     }
                     else
                     {
-                        sorted = _FastenerList.OrderBy(f => f.Fastener.Size.OuterDiameter)
+                        sorted = _FastenerList.OrderBy(f => f.Fastener.Size)
                                               .ToArray();
                     }
 
                     FastenerList.Clear();
-                    foreach (var item in sorted) FastenerList.Add(item);
+                    foreach (var item in sorted) AddToFastenerList(item);
                 }
             );
 
@@ -478,7 +517,7 @@ namespace Slate_EK.ViewModels
                     }
 
                     FastenerList.Clear();
-                    foreach (var item in sorted) FastenerList.Add(item);
+                    foreach (var item in sorted) AddToFastenerList(item);
                 }
             );
 
@@ -494,17 +533,17 @@ namespace Slate_EK.ViewModels
                     FastenerControl[] sorted;
                     if (OrderByDescending)
                     {
-                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.Pitch.Distance)
+                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.Pitch)
                                               .ToArray();
                     }
                     else
                     {
-                        sorted = _FastenerList.OrderBy(f => f.Fastener.Pitch.Distance)
+                        sorted = _FastenerList.OrderBy(f => f.Fastener.Pitch)
                                               .ToArray();
                     }
 
                     FastenerList.Clear();
-                    foreach (var item in sorted) FastenerList.Add(item);
+                    foreach (var item in sorted) AddToFastenerList(item);
                 }
             );
 
@@ -520,17 +559,17 @@ namespace Slate_EK.ViewModels
                     FastenerControl[] sorted;
                     if (OrderByDescending)
                     {
-                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.MaterialString)
+                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.Material)
                                               .ToArray();
                     }
                     else
                     {
-                        sorted = _FastenerList.OrderBy(f => f.Fastener.MaterialString)
+                        sorted = _FastenerList.OrderBy(f => f.Fastener.Material)
                                               .ToArray();
                     }
 
                     FastenerList.Clear();
-                    foreach (var item in sorted) FastenerList.Add(item);
+                    foreach (var item in sorted) AddToFastenerList(item);
                 }
             );
 
@@ -546,43 +585,17 @@ namespace Slate_EK.ViewModels
                     FastenerControl[] sorted;
                     if (OrderByDescending)
                     {
-                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.TypeString)
+                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.Type)
                                               .ToArray();
                     }
                     else
                     {
-                        sorted = _FastenerList.OrderBy(f => f.Fastener.TypeString)
+                        sorted = _FastenerList.OrderBy(f => f.Fastener.Type)
                                               .ToArray();
                     }
 
                     FastenerList.Clear();
-                    foreach (var item in sorted) FastenerList.Add(item);
-                }
-            );
-
-            SortByHoleTypeCommand = new RelayCommand
-            (
-                () =>
-                {
-                    if (_LastSortBy == SortMethod.HoleType)
-                        OrderByDescending = !OrderByDescending;
-                    else
-                        _LastSortBy = SortMethod.HoleType;
-
-                    FastenerControl[] sorted;
-                    if (OrderByDescending)
-                    {
-                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.HoleTypeString)
-                                              .ToArray();
-                    }
-                    else
-                    {
-                        sorted = _FastenerList.OrderBy(f => f.Fastener.HoleTypeString)
-                                              .ToArray();
-                    }
-
-                    FastenerList.Clear();
-                    foreach (var item in sorted) FastenerList.Add(item);
+                    foreach (var item in sorted) AddToFastenerList(item);
                 }
             );
 
@@ -606,9 +619,27 @@ namespace Slate_EK.ViewModels
                     _Inventory.SubmitChanges();
 
                     PendingOperations = false;
-                    OnPropertyChanged(nameof(SubmitImageSource));
-                    OnPropertyChanged(nameof(PendingOperations));
-                }
+                    _Inventory.ReplaceDataContext();
+                    LeaveEditMode();
+                },
+                () => PendingOperations
+            );
+
+            DiscardChangesCommand = new RelayCommand
+            (
+                () =>
+                {
+                    if (ConfirmationDialog.Show("Confirm", "Are you sure you want to discard all pending operations?"))
+                    {
+                        _PendingFasteners.Clear();
+                        _FastenersMarkedForRemoval.Clear();
+                        _Inventory.ReplaceDataContext();
+
+                        PendingOperations = false;
+                        LeaveEditMode();
+                    }
+                },
+                () => PendingOperations
             );
 
             ExecuteSearchCommand = new RelayCommand
@@ -619,110 +650,385 @@ namespace Slate_EK.ViewModels
                         return;
 
                     FastenerList.Clear();
-
                     SearchQuery = SearchQuery.Trim();
-
-                    if (SearchQuery.Equals("*"))
-                    {
-                        ShowAllFastenersCommand.Execute(null);
-                        return;
-                    }
-
-                    List<FastenerControl> queryResults = new List<FastenerControl>();
-
-                    switch (SelectedSearchType)
-                    {
-                        case SearchType.FastenerType:
-                            queryResults.AddRange(_Inventory.Fasteners.Where(ft  => ft.FastenerType.Contains(SearchQuery))
-                                                                      .Select(ft => new FastenerControl(ft)));
-                            break;
-                        case SearchType.HoleType:
-                            queryResults.AddRange(_Inventory.Fasteners.Where(ft  => ft.HoleType.Contains(SearchQuery))
-                                                                      .Select(ft => new FastenerControl(ft)));
-                            break;
-                        case SearchType.Material:
-                            queryResults.AddRange(_Inventory.Fasteners.Where(ft  => ft.Material.Contains(SearchQuery))
-                                                                      .Select(ft => new FastenerControl(ft)));
-                            break;
-                        case SearchType.Length:
-                            double parsed;
-                            if (double.TryParse(SearchQuery, out parsed))
-                            {
-                                queryResults.AddRange(_Inventory.Fasteners.Where(ft  => ft.Length.Equals(parsed))
-                                                                          .Select(ft => new FastenerControl(ft)));
-                            }
-                            break;
-                        case SearchType.Mass:
-                            if (double.TryParse(SearchQuery, out parsed))
-                            {
-                                queryResults.AddRange(_Inventory.Fasteners.Where(ft  => ft.Mass.Equals(parsed))
-                                                                          .Select(ft => new FastenerControl(ft)));
-                            }
-                            break;
-                        case SearchType.Pitch:
-                            if (double.TryParse(SearchQuery, out parsed))
-                            {
-                                queryResults.AddRange(_Inventory.Fasteners.Where(ft  => ft.Pitch.Equals(parsed))
-                                                                          .Select(ft => new FastenerControl(ft)));
-                            }
-                            break;
-                        case SearchType.Price:
-                            if (double.TryParse(SearchQuery, out parsed))
-                            {
-                                queryResults.AddRange(_Inventory.Fasteners.Where(ft  => ft.Price.Equals(parsed))
-                                                                          .Select(ft => new FastenerControl(ft)));
-                            }
-                            break;
-                        case SearchType.Size:
-                            if (double.TryParse(SearchQuery, out parsed))
-                            {
-                                queryResults.AddRange(_Inventory.Fasteners.Where(ft  => ft.Size.Equals(parsed))
-                                                                          .Select(ft => new FastenerControl(ft)));
-                            }
-                            break;
-                        case SearchType.Quantity:
-                            int parsedInt;
-                            if (int.TryParse(SearchQuery, out parsedInt))
-                            {
-                                queryResults.AddRange(_Inventory.Fasteners.Where(ft  => ft.StockQuantity.Equals(parsedInt))
-                                                                          .Select(ft => new FastenerControl(ft)));
-                            }
-                            break;
-                    }
-                    
-                    queryResults.ForEach(f => FastenerList.Add(f));
+                    ExecuteSearch();
                 }
             );
 
             #endregion
-            
-            //TODO  when add button is pressed, should it clear the previous query? That way
-            //      we'd only have pending operations in the view. Have to make sure there's 
-            //      some visual indication of what's happening if we went this route.
+        }
 
-            //TODO  think of a good way to track changes to a fastener and replace them in the database
-            //      - Could copy the UID in OnPropertyChanged() of a fastener
-            //      - Could simply only allow edits to quantity in normal view, full fastener edit
-            //        only when adding new fastener(s)
+        //TODO  think of a good way to track changes to a fastener and replace them in the database
+        //      - Could copy the UID in OnPropertyChanged() of a fastener
+        //      - Could simply only allow edits to quantity in normal view, full fastener edit
+        //        only when adding new fastener(s) -- Still has the same issues, but makes it 
+        //        a bit clearer to the user so they don't fuck things up.
+        //      - Could always bruteforce it. Check every fastener in the database.
+        //        This still has the problem of knowing what was actually changed. 
 
-            //TODO  Make added/editable fasteners actually editable. Make sure to turn off editable
-            //      on SubmitChanges()
+        //TODO  move drop database command from the tools menu somewhere less accessible, like the 
+        //      settings panel perhaps. -- there is no settings panel for the Inventory Viewer itself,
+        //      so that might not work. 
 
-            //TODO  move drop database command from the tools menu somewhere less accessible, like the 
-            //      settings panel perhaps.
+        //TODO  Make editing quantity show pending operations
 
-            //TODO  There should be a button/function for discarding changes to the database,
-            //      as an opposite to Submit.
+        //TODO_ Hook up the rest of the main menu buttons
 
-            //TODO  Add 'Duplicate' to fastener context menu
+        //THOUGHT Maybe add / remove / submit shouldn't be anonymous methods. Could split them into 
+        //        full functions to make keeping track of pending changes clearer / less code duplication.
 
-            //TODO  Make editing quantity show pending operations
+        private void EnterEditMode(bool clearFirst)
+        {
+            if(clearFirst)
+                FastenerList.Clear();
+            else
+                FastenerList.ForEach(f => f.IsEditable = true);
 
-            //TODO_ Hook up the rest of the main menu buttons
+            EditMode = true;
+        }
 
+        private void LeaveEditMode()
+        {
+            EditMode = false;
+            FastenerList.Clear();
 
-            //THOUGHT Maybe add / remove / submit shouldn't be anonymous methods. Could split them into 
-            //        full functions to make keeping track of pending changes clearer / less code duplication.
+            ExecuteSearch(); // go back to search query if we had one.
+        }
+
+        private void AddToFastenerList(FastenerControl fastener)
+        {
+            //TODOh subscribe to OnPropertyChanged for each new fastener to keep track of quantity changed
+            fastener.Fastener.PropertyChanged += (sender, args) =>
+            {
+                // THOUGHT Do I need to check which property changed here?
+                //         If we're in edit mode then it will already be in the list,
+                //         so it's not doing anything unnecessary.
+                if (!_PendingFasteners.Contains(fastener.Fastener))
+                {
+                    _PendingFasteners.Enqueue(fastener.Fastener);
+                    PendingOperations = true;
+                }
+            };
+
+            FastenerList.Add(fastener);
+        }
+
+        private void ExecuteSearch()
+        {
+
+            if (SearchQuery.Equals("*"))
+            {
+                ShowAllFastenersCommand.Execute(null);
+                return;
+            }
+
+            List<FastenerControl> queryResults = new List<FastenerControl>();
+
+            #region Note:
+            // This could be inverted -- Do one big switch statement, with checks for the modifiers
+            // within each case. At the time of writing the current method seemed clearer - albeit 
+            // at the cost of a lot of code duplication. 
+            #endregion
+            if (SearchQuery.StartsWith("<="))
+            {
+                #region // Less than or equal to search
+                string query = SearchQuery.TrimStart(new char[] {'<', '>', '='}).Trim();
+                switch (SelectedSearchType)
+                {
+                    case SearchType.Length:
+                        double parsed;
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Length <= parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Mass:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Mass <= parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Pitch:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Pitch <= parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Price:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Price <= parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Size:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Size <= parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Quantity:
+                        int parsedInt;
+                        if (int.TryParse(query, out parsedInt))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Quantity <= parsedInt)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    default:
+                        Extender.Debugging.Debug.WriteMessage(@"Operator ""<="" cannot be applied to string searches.", "warn");
+                        SearchQuery = query;
+                        ExecuteSearch();
+                        return;
+                }
+                #endregion
+            }
+            else if (SearchQuery.StartsWith(">="))
+            {
+                #region // Greater than or equal to search
+                string query = SearchQuery.TrimStart(new char[] {'<', '>', '='}).Trim();
+                switch (SelectedSearchType)
+                {
+                    case SearchType.Length:
+                        double parsed;
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Length >= parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Mass:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Mass >= parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Pitch:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Pitch >= parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Price:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Price >= parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Size:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Size >= parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Quantity:
+                        int parsedInt;
+                        if (int.TryParse(query, out parsedInt))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Quantity >= parsedInt)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    default:
+                        Extender.Debugging.Debug.WriteMessage(@"Operator "">="" cannot be applied to string searches.", "warn");
+                        SearchQuery = query;
+                        ExecuteSearch();
+                        return;
+                }
+                #endregion
+            }
+            else if (SearchQuery.StartsWith("<"))
+            {
+                #region // Less than search
+                string query = SearchQuery.TrimStart(new char[] {'<', '>'}).Trim();
+                switch (SelectedSearchType)
+                {
+                    case SearchType.Length:
+                        double parsed;
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Length < parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Mass:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Mass < parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Pitch:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Pitch < parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Price:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Price < parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Size:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Size < parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Quantity:
+                        int parsedInt;
+                        if (int.TryParse(query, out parsedInt))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Quantity < parsedInt)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    default:
+                        Extender.Debugging.Debug.WriteMessage(@"Operator ""<"" cannot be applied to string searches.", "warn");
+                        SearchQuery = query;
+                        ExecuteSearch();
+                        return;
+                } 
+                #endregion
+            }
+            else if (SearchQuery.StartsWith(">"))
+            {
+                #region // Greater than search
+                string query = SearchQuery.TrimStart(new char[] {'<', '>'}).Trim();
+                switch (SelectedSearchType)
+                {
+                    case SearchType.Length:
+                        double parsed;
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Length > parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Mass:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Mass > parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Pitch:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Pitch > parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Price:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Price > parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Size:
+                        if (double.TryParse(query, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Size > parsed)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Quantity:
+                        int parsedInt;
+                        if (int.TryParse(query, out parsedInt))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Quantity > parsedInt)
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    default:
+                        Extender.Debugging.Debug.WriteMessage(@"Operator "">"" cannot be applied to string searches.", "warn");
+                        SearchQuery = query;
+                        ExecuteSearch();
+                        return;
+                }
+                #endregion
+            }
+            else
+            {
+                #region // Regular search
+
+                switch (SelectedSearchType)
+                {
+                    case SearchType.FastenerType:
+                        queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Type.Contains(SearchQuery))
+                                                        .Select(ft => new FastenerControl(ft)));
+                        break;
+                    case SearchType.HoleType:
+                        queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.PlateInfo.HoleTypeDisplay.Contains(SearchQuery))
+                                                        .Select(ft => new FastenerControl(ft)));
+                        break;
+                    case SearchType.Material:
+                        queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Material.Contains(SearchQuery))
+                                                        .Select(ft => new FastenerControl(ft)));
+                        break;
+                    case SearchType.Length:
+                        float parsed;
+                        if (float.TryParse(SearchQuery, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Length.Equals(parsed))
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Mass:
+                        if (float.TryParse(SearchQuery, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Mass.Equals(parsed))
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Pitch:
+                        if (float.TryParse(SearchQuery, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Pitch.Equals(parsed))
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Price:
+                        if (float.TryParse(SearchQuery, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Price.Equals(parsed))
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Size:
+                        if (float.TryParse(SearchQuery, out parsed))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Size.Equals(parsed))
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                    case SearchType.Quantity:
+                        int parsedInt;
+                        if (int.TryParse(SearchQuery, out parsedInt))
+                        {
+                            queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Quantity.Equals(parsedInt))
+                                                            .Select(ft => new FastenerControl(ft)));
+                        }
+                        break;
+                }
+
+                #endregion
+            }
+
+            queryResults.ForEach(AddToFastenerList);
         }
 
         private List<FastenerControl> CreateDummies()
@@ -731,50 +1037,45 @@ namespace Slate_EK.ViewModels
 
             for(int i = 0; i < 10; i++)
             {
-                dummies.Add(new FastenerControl(new Fastener
+                dummies.Add(new FastenerControl(new UnifiedFastener
                     (
-                        new Size("M2"),
-                        new Pitch(0.25),
-                        new Thickness(1),
+                        4,
+                        0.25f,
                         Material.Steel,
-                        HoleType.Straight,
-                        FastenerType.SocketHeadFlatScrew
+                        FastenerType.SocketHeadFlatScrew,
+                        new PlateInfo(4, HoleType.CBore)
                     )));
-                dummies.Add(new FastenerControl(new Fastener
+                dummies.Add(new FastenerControl(new UnifiedFastener
                     (
-                        new Size("M5"),
-                        new Pitch(0.5),
-                        new Thickness(1.25),
+                        6,
+                        0.25f,
                         Material.Steel,
-                        HoleType.CSink,
-                        FastenerType.SocketCountersunkHeadCapScrew
+                        FastenerType.FlatCountersunkHeadCapScrew,
+                        new PlateInfo(4, HoleType.CSink)
                     )));
-                dummies.Add(new FastenerControl(new Fastener
+                dummies.Add(new FastenerControl(new UnifiedFastener
                     (
-                        new Size("M4"),
-                        new Pitch(0.25),
-                        new Thickness(1),
+                        8,
+                        0.5f,
                         Material.Steel,
-                        HoleType.Straight,
-                        FastenerType.SocketHeadFlatScrew
+                        FastenerType.LowHeadSocketHeadCapScrew,
+                        new PlateInfo(4, HoleType.Straight)
                     )));
-                dummies.Add(new FastenerControl(new Fastener
+                dummies.Add(new FastenerControl(new UnifiedFastener
                     (
-                        new Size("M6"),
-                        new Pitch(0.75),
-                        new Thickness(5),
+                        10,
+                        0.5f,
                         Material.Steel,
-                        HoleType.CSink,
-                        FastenerType.FlatCountersunkHeadCapScrew
+                        FastenerType.SocketHeadFlatScrew,
+                        new PlateInfo(4, HoleType.CBore)
                     )));
-                dummies.Add(new FastenerControl(new Fastener
+                dummies.Add(new FastenerControl(new UnifiedFastener
                     (
-                        new Size("M8"),
-                        new Pitch(1),
-                        new Thickness(8),
+                        8,
+                        0.75f,
                         Material.Steel,
-                        HoleType.CBore,
-                        FastenerType.LowHeadSocketHeadCapScrew
+                        FastenerType.SocketHeadFlatScrew,
+                        new PlateInfo(4, HoleType.CBore)
                     )));
             }
 

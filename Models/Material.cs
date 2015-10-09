@@ -56,7 +56,7 @@ namespace Slate_EK.Models
                     $@"Could not parse material ""{material}""\n{e.Message}",
                     "error"
                 );
-                return null;
+                return Unspecified;
             }
         }
 
@@ -105,11 +105,10 @@ namespace Slate_EK.Models
         }
         #endregion
 
-        public static Material Steel => new Material("steel", 1d);
+        public static Material Steel       => new Material("steel", 1d);
+        public static Material Aluminum    => new Material("aluminum", 1.5d);
+        public static Material Unspecified => new Material("unspecified", Steel.Multiplier); // default to steel
 
-        public static Material Aluminum => new Material("aluminum", 1.5d);
-        public static Material Unspecified => new Material("unspecified", 0d);
-
-        public static Material[] Materials = { Steel, Aluminum, Unspecified };
+        public static readonly Material[] Materials = { Steel, Aluminum, Unspecified };
     }
 }

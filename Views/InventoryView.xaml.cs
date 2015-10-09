@@ -30,7 +30,7 @@ namespace Slate_EK.Views
         {
             InitializeComponent();
 
-            ViewModel = new InventoryViewModel("E:\\code\\GitHub\\Slate_EK\\.example_files\\TestInventory_001.mdf"); //HACK temporary Inventory for testing
+            ViewModel = new InventoryViewModel("E:\\code\\GitHub\\Slate_EK\\.example_files\\TestInventory_002.mdf"); //HACK temporary Inventory for testing
             ViewModel.RegisterCloseAction(Close);
 
             InventoryItemsControl.ItemsSource = ViewModel.FastenerList; 

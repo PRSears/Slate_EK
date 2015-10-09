@@ -6,14 +6,13 @@ using System.Linq;
 
 namespace Slate_EK.Models.Inventory
 {
-    public class Inventory : IDisposable
+    public sealed class Inventory : IDisposable
     {
-        private readonly InventoryDataContext  _Database;
+        private InventoryDataContext           _Database;
         private readonly string                _Filename;
-        
-        public string InventoryConnectionString    => $"Data Source=(LocalDB)\\v11.0;AttachDbFilename={_Filename};Integrated Security=False;Pooling=false;";
 
-        public Table<FastenerTableLayer> Fasteners => _Database?.Fasteners;
+        private string InventoryConnectionString   => $"Data Source=(LocalDB)\\v11.0;AttachDbFilename={_Filename};Integrated Security=False;Pooling=false;";
+        public Table<UnifiedFastener> Fasteners    => _Database?.Fasteners;
 
         /// <summary>
         /// Initializes a new instance of the Inventory for the database at the specified path.
@@ -29,24 +28,37 @@ namespace Slate_EK.Models.Inventory
                 _Database.CreateDatabase();
         }
 
+        public void DEBUG_DropDatabase()
+        {
+            _Database.DeleteDatabase();
+        }
+
         public void SubmitChanges()
         {
             _Database.SubmitChanges();
         }
 
-        public void Add(Fastener fastener)
+        public void ReplaceDataContext()
         {
-            Add((FastenerTableLayer)fastener);
+            _Database.Dispose();
+            _Database = new InventoryDataContext(InventoryConnectionString);
         }
 
-        public void Add(FastenerTableLayer fastener)
+        public void Add(UnifiedFastener fastener)
         {
             var inTable = Fasteners.FirstOrDefault(f => f.UniqueID.Equals(fastener.UniqueID));
 
-            if (inTable != null && !inTable.Equals(default(FastenerTableLayer)))
+            if (inTable != null && !inTable.Equals(default(UnifiedFastener)))
             {
                 // It was in the table
-                Replace(inTable, fastener);
+                if (inTable.Quantity != fastener.Quantity) // Only replace if the quantities are different
+                {
+                    _Database.Fasteners.DeleteOnSubmit(inTable);
+                    _Database.SubmitChanges();
+
+                    ReplaceDataContext();
+                    _Database.Fasteners.InsertOnSubmit(fastener); //TODOh figure out why this is breaking Linq to SQL
+                }
             }
             else
             {
@@ -55,36 +67,15 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        public Fastener Pull(Guid fastenerId)
+        //TODO Make Add() behave like remove - have an Add(Fastener[] array) as base
+        
+
+        public bool Remove(UnifiedFastener fastener)
         {
-            return (Fastener)_Database.Fasteners.FirstOrDefault(f => f.UniqueID.Equals(fastenerId));
+            return Remove(new[] { fastener }) > 0;
         }
 
-        public void Replace(Fastener inDatabase, Fastener replacement)
-        {
-            Replace((FastenerTableLayer)inDatabase, (FastenerTableLayer)replacement);
-        }
-
-        public void Replace(FastenerTableLayer inDatabase, FastenerTableLayer replacement)
-        {
-            if (Fasteners.Any(f => f.UniqueID.Equals(inDatabase.UniqueID)))
-                _Database.Fasteners.DeleteOnSubmit(inDatabase);
-
-            if (!Fasteners.Any(f => f.UniqueID.Equals(replacement.UniqueID)))
-                _Database.Fasteners.InsertOnSubmit(replacement);
-        }
-
-        public void Remove(Fastener fastener)
-        {
-            Remove(new[] { (FastenerTableLayer)fastener });
-        }
-
-        public void Remove(FastenerTableLayer fastener)
-        {
-            Remove(new[] { fastener });
-        }
-
-        public void Remove(FastenerTableLayer[] fasteners)
+        public int Remove(UnifiedFastener[] fasteners)
         {
             var matches = _Database.Fasteners.Where
             ( 
@@ -95,17 +86,19 @@ namespace Slate_EK.Models.Inventory
             if (!matches.Any())
             {
                 Debug.WriteMessage("Remove could not find any matching items in the database.", "info");
-                return;
+                return 0;
             }
 
             _Database.Fasteners.DeleteAllOnSubmit(matches);
+
+            return matches.Count();
         }
 
         public void Export(string filename)
         {
-            Fastener[] allFasteners = Dump();
+            UnifiedFastener[] allFasteners = Dump();
 
-            Extender.IO.CsvSerializer<Fastener> csv = new Extender.IO.CsvSerializer<Fastener>();
+            Extender.IO.CsvSerializer<UnifiedFastener> csv = new Extender.IO.CsvSerializer<UnifiedFastener>();
 
             using (FileStream stream = new FileStream(filename, FileMode.OpenOrCreate,
                                                                 FileAccess.ReadWrite,
@@ -115,30 +108,30 @@ namespace Slate_EK.Models.Inventory
             }
         }
 
-        public Fastener[] Dump()
+        public UnifiedFastener[] Dump()
         {
-            Fastener[] dumped = new Fastener[Fasteners.Count()];
+            UnifiedFastener[] dumped = new UnifiedFastener[Fasteners.Count()];
 
             int i = 0;
-            foreach (FastenerTableLayer f in Fasteners)
+            foreach (UnifiedFastener f in Fasteners)
             {
-                dumped[i++] = (Fastener)f; // explicit cast operator performs a shallow copy
+                dumped[i++] = f; // explicit cast operator performs a shallow copy
             }
-
+            
             return dumped;
         }
 
         #region IDisposable Support
         private bool _DisposedValue; // To detect redundant calls
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!_DisposedValue)
             {
                 if (disposing)
                 {
                     //  dispose managed state (managed objects).
-                    _Database.SubmitChanges(); // THOUGHT Make sure I should actually do this
+                    //_Database.SubmitChanges(); // THOUGHT Make sure I should actually do this
                     _Database.Dispose();
                 }
 

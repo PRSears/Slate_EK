@@ -4,7 +4,7 @@ namespace Slate_EK.Models.Inventory
 {
     public class InventoryDataContext : DataContext
     {
-        public Table<FastenerTableLayer> Fasteners;
+        public Table<UnifiedFastener> Fasteners;
 
         public InventoryDataContext(string connectionString) : base (connectionString)
         {

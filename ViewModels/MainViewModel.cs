@@ -31,7 +31,7 @@ namespace Slate_EK.ViewModels
 
         public bool WindowsMenuEnabled => WindowManager.ChildOpen();
 
-        public WindowManager WindowManager;
+        public readonly WindowManager WindowManager;
 
         private string _AssemblyNumber;
 
@@ -39,68 +39,68 @@ namespace Slate_EK.ViewModels
         {
             WindowManager = new WindowManager();
 
-            WindowManager.WindowOpened += (s, w) => OnPropertyChanged("WindowsMenuEnabled");
-            WindowManager.WindowClosed += (s, w) => OnPropertyChanged("WindowsMenuEnabled");
+            WindowManager.WindowOpened += (s, w) => OnPropertyChanged(nameof(WindowsMenuEnabled));
+            WindowManager.WindowClosed += (s, w) => OnPropertyChanged(nameof(WindowsMenuEnabled));
 
             TestHarnessCommand = new RelayCommand
-                (
-                    () => { WindowManager.OpenWindow(new InventoryView()); }
-                );
+            (
+                () => { WindowManager.OpenWindow(new InventoryView()); }
+            );
 
             LoadExistingCommand = new RelayCommand
-                (
-                    () =>
+            (
+                () =>
+                {
+                    var dialog = new Microsoft.Win32.OpenFileDialog
                     {
-                        var dialog = new Microsoft.Win32.OpenFileDialog
-                        {
-                            DefaultExt = ".xml",
-                            Filter = @"XML documents (*.txt, *.xml)
-                    |*.txt;*.xml|All files (*.*)|*.*",
-                            CheckFileExists = true
-                        };
+                        DefaultExt = ".xml",
+                        Filter = @"XML documents (*.txt, *.xml)
+                |*.txt;*.xml|All files (*.*)|*.*",
+                        CheckFileExists = true
+                    };
 
-                        if (dialog.ShowDialog() == true)
-                            LoadExisting(dialog.FileName);
-                    }
-                );
+                    if (dialog.ShowDialog() == true)
+                        LoadExisting(dialog.FileName);
+                }
+            );
 
             CreateNewBomCommand = new RelayCommand
-                (
-                    () =>
-                    {
-                        WindowManager.OpenWindow(new BomView(AssemblyNumber), true);
-                        AssemblyNumber = string.Empty;
-                    },
-                    () => !string.IsNullOrWhiteSpace(AssemblyNumber)
-                );
+            (
+                () =>
+                {
+                    WindowManager.OpenWindow(new BomView(AssemblyNumber), true);
+                    AssemblyNumber = string.Empty;
+                },
+                () => !string.IsNullOrWhiteSpace(AssemblyNumber)
+            );
 
             OpenSettingsEditorCommand = new RelayCommand
-                (
-                    () => System.Windows.MessageBox.Show("Settings not implemented.")
-                );
+            (
+                () => System.Windows.MessageBox.Show("Settings not implemented.")
+            );
 
             ExitAllCommand = new RelayCommand
-                (
-                    () =>
+            (
+                () =>
+                {
+                    if (!ConfirmClose || ConfirmationDialog.Show("Confirm exit", "Are you sure you want to close the application?"))
                     {
-                        if (ConfirmationDialog.Show("Confirm exit", "Are you sure you want to close the application?"))
-                        {
-                            WindowManager.CloseAll();
-                            CloseCommand.Execute(null);
-                        }
+                        WindowManager.CloseAll();
+                        CloseCommand.Execute(null);
                     }
-                );
+                }
+            );
 
             CloseAllBomWindows = new RelayCommand
-                (
-                    () => WindowManager.CloseAll(),
-                    () => WindowManager.ChildOpen()
-                );
+            (
+                () => WindowManager.CloseAll(),
+                () => WindowManager.ChildOpen()
+            );
 
             FileDroppedCommand = new RelayFunction
-                (
-                    file => LoadExisting(file.ToString())
-                );
+            (
+                file => LoadExisting(file.ToString())
+            );
 
             AssemblyNumber = string.Empty;
 
@@ -175,6 +175,7 @@ namespace Slate_EK.ViewModels
         public double DefaultPitch                               => Properties.Settings.Default.DefaultPitch;
         public string BomFilenameFormat                          => Properties.Settings.Default.BomFilenameFormat;
         public bool Debug                                        => Properties.Settings.Default.Debug;
+        public bool ConfirmClose                                 => Properties.Settings.Default.ConfirmClose;
         public System.Windows.Visibility DebugControlsVisibility => Debug ? System.Windows.Visibility.Visible : System.Windows.Visibility.Hidden;
 
         #endregion

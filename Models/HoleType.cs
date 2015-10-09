@@ -49,6 +49,20 @@ namespace Slate_EK.Models
             throw new ArgumentException($@"HoleType name ""{holeType}"" is not a valid HoleType.");
         }
 
+        /// <returns>Returns FastenerType.Unspecified if a parse did not succeed.</returns>
+        public static HoleType TryParse(string holeType)
+        {
+            try
+            {
+                return Parse(holeType);
+            }
+            catch (ArgumentException e)
+            {
+                Extender.Debugging.ExceptionTools.WriteExceptionText(e, true);
+                return Unspecified;
+            }
+        }
+
 
         public override string ToString()
         {

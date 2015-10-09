@@ -1,6 +1,5 @@
 ﻿using Extender.WPF;
 using Slate_EK.Models;
-using Slate_EK.Models.Inventory;
 using System.ComponentModel;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -9,7 +8,7 @@ namespace Slate_EK.ViewModels
 {
     public class FastenerControl : INotifyPropertyChanged
     {
-        public Fastener Fastener
+        public UnifiedFastener Fastener
         {
             get;
             set;
@@ -117,22 +116,16 @@ namespace Slate_EK.ViewModels
             );
         }
 
-        public FastenerControl(Fastener fastener)
+        public FastenerControl(UnifiedFastener fastener)
             : this()
         {
             Fastener = fastener;
         }
 
-        public FastenerControl(FastenerTableLayer fastener)
-            : this()
-        {
-            Fastener = (Models.Fastener)fastener;
-        }
-
         /// <summary>
         /// Creates an array of FastenerControls from an array of plain Fastener objects.
         /// </summary>
-        public static FastenerControl[] FromArray(Fastener[] fasteners)
+        public static FastenerControl[] FromArray(UnifiedFastener[] fasteners)
         {
             FastenerControl[] controls = new FastenerControl[fasteners.Length];
             for (int i = 0; i < fasteners.Length; i++)

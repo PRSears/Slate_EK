@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Slate_EK.Models
 {
-    public class Bom : SerializedArray<Fastener>
+    public class Bom : SerializedArray<UnifiedFastener>
     {
         public string AssemblyNumber
         {
@@ -49,7 +49,7 @@ namespace Slate_EK.Models
 
             BomXmlOperationsQueue.Enqueue
             (
-                new SerializeTask<Fastener>(xmlFile, this, SerializeOperations.Load)
+                new SerializeTask<UnifiedFastener>(xmlFile, this, SerializeOperations.Load)
             );
         }
 
@@ -59,15 +59,15 @@ namespace Slate_EK.Models
 
             BomXmlOperationsQueue.Enqueue
             (
-                new SerializeTask<Fastener>(xmlFile, this, SerializeOperations.Save)
+                new SerializeTask<UnifiedFastener>(xmlFile, this, SerializeOperations.Save)
             );
         }
 
-        public override void Add(Fastener item)
+        public override void Add(UnifiedFastener item)
         {
             if (SourceList != null && SourceList.Contains(item))
             {
-                SourceList.First(f => f.Id.Equals(item.Id))
+                SourceList.First(f => f.UniqueID.Equals(item.UniqueID))
                           .Quantity += item.Quantity;
                 Sort();
                 Save();
@@ -80,18 +80,18 @@ namespace Slate_EK.Models
             }
         }
 
-        public override bool Remove(Fastener item)
+        public override bool Remove(UnifiedFastener item)
         {
             return Remove(item, 1);
         }
 
-        public bool Remove(Fastener item, int quantity)
+        public bool Remove(UnifiedFastener item, int quantity)
         {
-            item.GetNewId();
+            item.ForceNewUniqueID();
 
             if (SourceList != null && SourceList.Contains(item))
             {
-                if ((SourceList.First(f => f.Id.Equals(item.Id))
+                if ((SourceList.First(f => f.UniqueID.Equals(item.UniqueID))
                                .Quantity -= quantity) <= 0)
                 {
                     base.Remove(item);
@@ -106,11 +106,11 @@ namespace Slate_EK.Models
 
         public override void Sort()
         {
-            List<Fastener> sorted = new List<Fastener>();
+            List<UnifiedFastener> sorted = new List<UnifiedFastener>();
 
-            foreach (var typeGroup in SourceList.OrderBy(f => f.Length).GroupBy(f => f.TypeString))
+            foreach (var typeGroup in SourceList.OrderBy(f => f.Length).GroupBy(f => f.Type))
             {
-                sorted.AddRange(typeGroup.OrderBy(f => f.SizeString));
+                sorted.AddRange(typeGroup.OrderBy(f => f.Size));
             }
 
             SourceList = sorted.ToArray();
@@ -131,7 +131,7 @@ namespace Slate_EK.Models
         {
             List<byte[]> blocks = new List<byte[]> {System.Text.Encoding.Default.GetBytes(AssemblyNumber)};
 
-            foreach (Fastener f in SourceList)
+            foreach (UnifiedFastener f in SourceList)
             {
                 if (f != null)
                 blocks.Add(f.GetHashData());
@@ -147,6 +147,9 @@ namespace Slate_EK.Models
 
         public static bool operator ==(Bom a, Bom b)
         {
+            if (ReferenceEquals(null, a))
+                return ReferenceEquals(null, b);
+
             return a.Equals(b);
         }
 
@@ -161,19 +164,17 @@ namespace Slate_EK.Models
 
         #region Settings.Settings aliases
         private string FolderPath => Properties.Settings.Default.DefaultAssembliesFolder;
-
-        private string Filename => string.Format
+        private string Filename   => string.Format
         (
             Properties.Settings.Default.BomFilenameFormat,
             AssemblyNumber
         );
-
         #endregion
     }
 
     static class BomXmlOperationsQueue
     {
-        private static BlockingCollection<SerializeTask<Fastener>> _TaskQueue = new BlockingCollection<SerializeTask<Fastener>>();
+        private static BlockingCollection<SerializeTask<UnifiedFastener>> _TaskQueue = new BlockingCollection<SerializeTask<UnifiedFastener>>();
 
         static BomXmlOperationsQueue()
         {
@@ -191,7 +192,7 @@ namespace Slate_EK.Models
             thread.Start();
         }
 
-        public static void Enqueue(SerializeTask<Fastener> operation)
+        public static void Enqueue(SerializeTask<UnifiedFastener> operation)
         {
             _TaskQueue.Add(operation);
         }
