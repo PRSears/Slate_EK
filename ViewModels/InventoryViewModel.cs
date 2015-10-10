@@ -22,7 +22,6 @@ namespace Slate_EK.ViewModels
         // InventoryBoxContextMenu commands
         public ICommand AddNewFastenerCommand    { get; private set; }
         public ICommand RemoveFastenerCommand    { get; private set; }
-        public ICommand DuplicateFastenerCommand { get; private set; }
         public ICommand SelectAllCommand         { get; private set; }
         public ICommand SelectNoneCommand        { get; private set; }
         public ICommand TestHarnessCommand       { get; private set; }
@@ -82,6 +81,7 @@ namespace Slate_EK.ViewModels
         private Queue<UnifiedFastener> _PendingFasteners;
         private List<UnifiedFastener>  _FastenersMarkedForRemoval;
         private string                 _WindowTitle = "Inventory Viewer";
+        private string                 _SearchQuery;
 
         public string   WindowTitle
         {
@@ -97,8 +97,12 @@ namespace Slate_EK.ViewModels
         }
         public string   SearchQuery
         {
-            get;
-            set;
+            get { return _SearchQuery; }
+            set
+            {
+                _SearchQuery = value;
+                OnPropertyChanged(nameof(SearchQuery));
+            }
         }
         public UnitType CurrentUnit
         {
@@ -267,32 +271,18 @@ namespace Slate_EK.ViewModels
                         if (_PendingFasteners.Contains(item.Fastener))
                             _FastenersMarkedForRemoval.Add(item.Fastener);
                     }
-                }
-            );
-
-            DuplicateFastenerCommand = new RelayCommand
-            (
-                () =>
-                {
-
-                    PendingOperations = true;
-                }
+                },
+                () => FastenerList.Any(f => f.IsSelected)
             );
 
             SelectAllCommand = new RelayCommand
             (
-                () =>
-                {
-                    FastenerList.ForEach(f => f.IsSelected = true);
-                }
+                () => FastenerList.ForEach(f => f.IsSelected = true)
             );
 
             SelectNoneCommand = new RelayCommand
             (
-                () =>
-                {
-                    FastenerList.ForEach(f => f.IsSelected = false);
-                }
+                () => FastenerList.ForEach(f => f.IsSelected = false)
             );
 
             TestHarnessCommand = new RelayCommand
@@ -613,8 +603,7 @@ namespace Slate_EK.ViewModels
                         else
                             _FastenersMarkedForRemoval.Remove(_PendingFasteners.Dequeue());
                     }
-                    //TODOh Figure out why adding default fastener -> submitting -> removing -> adding -> and submitting
-                    //      again throws an exception
+
                     _Inventory.SubmitChanges();
 
                     PendingOperations = false;

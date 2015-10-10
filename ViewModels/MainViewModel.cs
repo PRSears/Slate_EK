@@ -21,13 +21,14 @@ namespace Slate_EK.ViewModels
 
         public string WindowTitle => Properties.Settings.Default.AppTitle;
 
-        public ICommand LoadExistingCommand         { get; private set; }
-        public ICommand CreateNewBomCommand         { get; private set; }
-        public ICommand OpenSettingsEditorCommand   { get; private set; }
-        public ICommand CloseAllBomWindows          { get; private set; }
-        public ICommand ExitAllCommand              { get; private set; }
-        public ICommand TestHarnessCommand          { get; private set; }
-        public ICommand FileDroppedCommand          { get; private set; }
+        public ICommand LoadExistingCommand                { get; private set; }
+        public ICommand CreateNewBomCommand                { get; private set; }
+        public ICommand OpenInventoryViewCommand           { get; private set; }
+        public ICommand OpenSettingsEditorCommand          { get; private set; }
+        public ICommand CloseAllBomWindows                 { get; private set; }
+        public ICommand ExitAllCommand                     { get; private set; }
+        public ICommand TestHarnessCommand                 { get; private set; }
+        public ICommand FileDroppedCommand                 { get; private set; }
 
         public bool WindowsMenuEnabled => WindowManager.ChildOpen();
 
@@ -43,6 +44,11 @@ namespace Slate_EK.ViewModels
             WindowManager.WindowClosed += (s, w) => OnPropertyChanged(nameof(WindowsMenuEnabled));
 
             TestHarnessCommand = new RelayCommand
+            (
+                () => { WindowManager.OpenWindow(new InventoryView()); }
+            );
+
+            OpenInventoryViewCommand = new RelayCommand
             (
                 () => { WindowManager.OpenWindow(new InventoryView()); }
             );
@@ -103,6 +109,7 @@ namespace Slate_EK.ViewModels
             );
 
             AssemblyNumber = string.Empty;
+            ConfirmClose   = Properties.Settings.Default.ConfirmClose;
 
             CheckXml();
         }
@@ -175,7 +182,6 @@ namespace Slate_EK.ViewModels
         public double DefaultPitch                               => Properties.Settings.Default.DefaultPitch;
         public string BomFilenameFormat                          => Properties.Settings.Default.BomFilenameFormat;
         public bool Debug                                        => Properties.Settings.Default.Debug;
-        public bool ConfirmClose                                 => Properties.Settings.Default.ConfirmClose;
         public System.Windows.Visibility DebugControlsVisibility => Debug ? System.Windows.Visibility.Visible : System.Windows.Visibility.Hidden;
 
         #endregion

@@ -13,9 +13,11 @@
         Drop="MainWindow_Drop">
     <Window.InputBindings>
         <KeyBinding Modifiers="Control"
-                    
                     Key="O"
                     Command="{Binding LoadExistingCommand}"/>
+        <KeyBinding Modifiers="Control"
+                    Key="I"
+                    Command="{Binding OpenInventoryViewCommand}"/>
     </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
@@ -38,6 +40,9 @@
             <MenuItem Header="_File" TabIndex="3">
                 <MenuItem Header="_Load BOM from file..." Command="{Binding LoadExistingCommand}"/>
                 <MenuItem Header="_Create new BOM..." Command="{Binding CreateNewBomCommand}"/>
+                <Separator/>
+                <MenuItem Header="Open _Inventory Viewer..." Command="{Binding OpenInventoryViewCommand}"/>
+                <Separator/>
                 <MenuItem Header="E_xit" Command="{Binding ExitAllCommand}"/>
             </MenuItem>
             <MenuItem Header="_Preferences" TabIndex="4">
@@ -85,7 +90,7 @@
                     Command="{Binding CreateNewBomCommand}"
                     TabIndex="2"/>
         </StackPanel>
-        <Button Content="(Test)"
+        <Button Content="[ TEST ]"
                 Style="{StaticResource FlatActionButtonStyle}"
                 Grid.Row="2" Grid.Column="0"
                 Command="{Binding TestHarnessCommand}"

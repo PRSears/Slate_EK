@@ -16,7 +16,6 @@
             <Separator/>
             <MenuItem Header="Add New Fastener" Command="{Binding AddNewFastenerCommand}"/>
             <MenuItem Header="Remove Fastener(s)" Command="{Binding RemoveFastenerCommand}"/>
-            <MenuItem Header="Duplicate Selected" Command="{Binding DuplicateFastenerCommand}"/>
             <Separator/>
             <MenuItem Header="Select All" Command="{Binding SelectAllCommand}"/>
             <MenuItem Header="Deselect All" Command="{Binding SelectNoneCommand}"/>

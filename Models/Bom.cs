@@ -65,48 +65,29 @@ namespace Slate_EK.Models
 
         public override void Add(UnifiedFastener item)
         {
-            //if (SourceList != null && SourceList.Contains(item))
-            //{
-            //    SourceList.First(f => f.UniqueID.Equals(item.UniqueID))
-            //              .Quantity += item.Quantity;
-            //    Sort();
-            //    Save();
-            //}
-            //else
-            //{
-            //    base.Add(item);
-            //    Sort();
-            //    Save(); // THOUGHT This makes base.Add()'s Save redundant.
-            //}
             Add(new[] {item});
         }
 
-        public void Add(UnifiedFastener[] fasteners)
+        public override void Add(UnifiedFastener[] fasteners)
         {
             if (SourceList == null || fasteners == null || fasteners.Length < 1) return;
 
-            var uniqueFasteners = new List<UnifiedFastener>();
-            throw new NotImplementedException();
+            var uniques = new List<UnifiedFastener>();
+            foreach (var addition in fasteners)
+            {
+                if (SourceList.Contains(addition))
+                {
+                    SourceList.First(sf => sf.UniqueID.Equals(addition.UniqueID))
+                              .Quantity += addition.Quantity;
+                }
+                else
+                {
+                    uniques.Add(addition);
+                }
+            }
 
-            // TODOh Finish fixing Bom.Add()
-            //
-            // Make two lists => one with all the fasteners that don't appear in SourceList
-            //                 & one with all which do
-            // Iterate the pre-existing fasteners and update SourceLists' quantities
-            // Pass unique.ToArray() to base.Add( ...[] )
-
-            //foreach (var item in fasteners)
-            //{
-            //    if (SourceList.Contains(item))
-            //    {
-            //        SourceList.First(f => f.UniqueID.Equals(item.UniqueID))
-            //                  .Quantity += item.Quantity;
-            //    }
-            //    else
-            //    {
-            //        base.Add(item);
-            //    }
-            //}
+            if (uniques.Count > 0)
+                base.Add(uniques.ToArray());
 
             Sort();
             Save();

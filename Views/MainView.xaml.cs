@@ -76,7 +76,11 @@ namespace Slate_EK.Views
                     WindowsMenu.Items.Remove(item);
                 }
             };
+        }
 
+        public MainView(Window openWith) : this()
+        {
+            ViewModel.WindowManager.OpenWindow(openWith);
         }
 
         public Window FindBomWindow(string assemblyNumber)

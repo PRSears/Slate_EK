@@ -1,4 +1,9 @@
-﻿using System.Windows;
+﻿using System.Linq;
+using System;
+using Extender;
+using Extender.Debugging;
+using System.Windows;
+using Slate_EK.Views;
 
 namespace Slate_EK
 {
@@ -16,7 +21,21 @@ namespace Slate_EK
             // Caps framerate at 5fps.
             System.Windows.Media.Animation.Timeline.DesiredFrameRateProperty.OverrideMetadata(
                 typeof(System.Windows.Media.Animation.Timeline),
-                new FrameworkPropertyMetadata { DefaultValue = 5 });   
+                new FrameworkPropertyMetadata { DefaultValue = 5 });
+
+            Window main;
+
+            if (e.Args.Any(a => a.ToLower().Contains("inv")))
+            {
+                if (e.Args.Any(a => a.ToLower().Contains("only")))
+                    main = new InventoryView();
+                else
+                    main = new MainView(new InventoryView());
+            }
+            else
+                main = new MainView();
+
+            main.Show();
         }
     }
 }

@@ -14,6 +14,10 @@ using System.Windows.Input;
 namespace Slate_EK.ViewModels
 {
     //TODO  allow input to be in either inches or mm and handle all appropriate conversions in the background
+    //TODO  hook up Bom export to Inventory
+    //TODO  change saveas csv to be of print format (or maybe as a third option?)
+    //      Qty, callout, mass per * qty, price per, total price
+
     public class BomViewModel : ViewModel
     {
         protected Timer PropertyRefreshTimer;
@@ -42,7 +46,7 @@ namespace Slate_EK.ViewModels
             "Assembly #{1} [{2}] - {0}",
             Properties.Settings.Default.ShortTitle,
             Bom.AssemblyNumber,
-            Bom.SourceList != null ? Bom.SourceList.Length.ToString() : "0"
+            Bom.SourceList?.Length.ToString() ?? "0"
         );
 
         public bool OverrideLength
@@ -55,7 +59,6 @@ namespace Slate_EK.ViewModels
             {
                 _OverrideLength = value;
                 OnPropertyChanged(nameof(OverrideLength));
-                //OnPropertyChanged("LengthOverrideVisibility");
             }
         }
 
@@ -306,15 +309,8 @@ namespace Slate_EK.ViewModels
 
             ShortcutCtrlV = new RelayCommand
             (
-                () => //TODO allow multiple fastener descriptions to get pasted at once (break around new line char? or just use stringreader)
+                () =>
                 {
-                    //string clipped = Clipboard.GetText();
-                    //if (!string.IsNullOrWhiteSpace(clipped))
-                    //{
-                    //    var parsedFastener = UnifiedFastener.FromString(clipped);
-                    //    if (parsedFastener != null)
-                    //        Bom.Add(parsedFastener);
-                    //}
                     StringReader clips  = new StringReader(Clipboard.GetText());
                     var newFasteners    = new List<UnifiedFastener>();
                     while (clips.Peek() > -1)
@@ -333,6 +329,7 @@ namespace Slate_EK.ViewModels
 
             ShortcutPressedCtrlS += () => SaveAs();
 
+            //
             // ICommands
 
             AddToListCommand = new RelayCommand
