@@ -1,4 +1,5 @@
-﻿using Extender.WPF;
+﻿using Extender;
+using Extender.WPF;
 using Slate_EK.Models;
 using System.ComponentModel;
 using System.Windows.Input;
@@ -119,7 +120,8 @@ namespace Slate_EK.ViewModels
         public FastenerControl(UnifiedFastener fastener)
             : this()
         {
-            Fastener = fastener;
+            // Make a copy so we don't bind UI elements to cached data from the db.
+            Fastener = fastener.Copy(); 
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ using System.Windows.Input;
 namespace Slate_EK.ViewModels
 {
     public enum UnitType   : byte { Metric, Imperial }
-    public enum SortMethod        { None, Quantity, Price, Mass, Size, Length, Pitch, Material, FastType, HoleType }
+    public enum SortMethod        { None, Quantity, Price, Mass, Size, Length, Pitch, Material, FastType }
 
     public sealed class InventoryViewModel : ViewModel
     {
@@ -125,8 +125,7 @@ namespace Slate_EK.ViewModels
             Length,
             Pitch,
             Material,
-            FastenerType,
-            HoleType 
+            FastenerType
         }
         public string[] SearchByPropertyList => new[]
         {
@@ -619,7 +618,7 @@ namespace Slate_EK.ViewModels
                     _Inventory.SubmitChanges();
 
                     PendingOperations = false;
-                    _Inventory.ReplaceDataContext();
+                    _Inventory.InitDataContext();
                     LeaveEditMode();
                 },
                 () => PendingOperations
@@ -633,7 +632,7 @@ namespace Slate_EK.ViewModels
                     {
                         _PendingFasteners.Clear();
                         _FastenersMarkedForRemoval.Clear();
-                        _Inventory.ReplaceDataContext();
+                        _Inventory.InitDataContext();
 
                         PendingOperations = false;
                         LeaveEditMode();
@@ -658,19 +657,9 @@ namespace Slate_EK.ViewModels
             #endregion
         }
 
-        //TODO  think of a good way to track changes to a fastener and replace them in the database
-        //      - Could copy the UID in OnPropertyChanged() of a fastener
-        //      - Could simply only allow edits to quantity in normal view, full fastener edit
-        //        only when adding new fastener(s) -- Still has the same issues, but makes it 
-        //        a bit clearer to the user so they don't fuck things up.
-        //      - Could always bruteforce it. Check every fastener in the database.
-        //        This still has the problem of knowing what was actually changed. 
-
         //TODO  move drop database command from the tools menu somewhere less accessible, like the 
         //      settings panel perhaps. -- there is no settings panel for the Inventory Viewer itself,
         //      so that might not work. 
-
-        //TODO  Make editing quantity show pending operations
 
         //TODO_ Hook up the rest of the main menu buttons
 
@@ -697,7 +686,6 @@ namespace Slate_EK.ViewModels
 
         private void AddToFastenerList(FastenerControl fastener)
         {
-            //TODOh subscribe to OnPropertyChanged for each new fastener to keep track of quantity changed
             fastener.Fastener.PropertyChanged += (sender, args) =>
             {
                 // THOUGHT Do I need to check which property changed here?
@@ -969,10 +957,6 @@ namespace Slate_EK.ViewModels
                 {
                     case SearchType.FastenerType:
                         queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Type.Contains(SearchQuery))
-                                                        .Select(ft => new FastenerControl(ft)));
-                        break;
-                    case SearchType.HoleType:
-                        queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.PlateInfo.HoleTypeDisplay.Contains(SearchQuery))
                                                         .Select(ft => new FastenerControl(ft)));
                         break;
                     case SearchType.Material:

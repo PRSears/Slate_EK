@@ -4,6 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Data.Linq.Mapping;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 
 
@@ -282,6 +283,30 @@ namespace Slate_EK.Models
                 return false;
 
             return GetHashCode().Equals(((UnifiedFastener)obj).GetHashCode());
+        }
+
+        public static UnifiedFastener FromString(string fastenerDescription)
+        {
+            Regex verify = new Regex(@"([Mm0-9 .]{4})-([0-9 .]{3,})x([ 0-9]{3,5})([FfCcHhSsLl]{4,6})");
+            var match    = verify.Match(fastenerDescription);
+
+            if (match.Success)
+            {
+                var captures = match.Groups;
+                if (captures.Count == 5)
+                {
+                    return new UnifiedFastener
+                    (
+                        (float)(new Size(captures[1].ToString()).OuterDiameter),
+                        float.Parse(captures[2].ToString()),
+                        Models.Material.Steel,
+                        FastenerType.Parse(captures[4].ToString()),
+                        new PlateInfo()
+                    ) {Length = float.Parse(captures[3].ToString())};
+                }
+            }
+
+            return null;
         }
 
         private void OnPropertyChanged(string propertyName)

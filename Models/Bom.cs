@@ -65,19 +65,51 @@ namespace Slate_EK.Models
 
         public override void Add(UnifiedFastener item)
         {
-            if (SourceList != null && SourceList.Contains(item))
-            {
-                SourceList.First(f => f.UniqueID.Equals(item.UniqueID))
-                          .Quantity += item.Quantity;
-                Sort();
-                Save();
-            }
-            else
-            {
-                base.Add(item);
-                Sort();
-                Save(); // THOUGHT This makes base.Add()'s Save redundant.
-            }
+            //if (SourceList != null && SourceList.Contains(item))
+            //{
+            //    SourceList.First(f => f.UniqueID.Equals(item.UniqueID))
+            //              .Quantity += item.Quantity;
+            //    Sort();
+            //    Save();
+            //}
+            //else
+            //{
+            //    base.Add(item);
+            //    Sort();
+            //    Save(); // THOUGHT This makes base.Add()'s Save redundant.
+            //}
+            Add(new[] {item});
+        }
+
+        public void Add(UnifiedFastener[] fasteners)
+        {
+            if (SourceList == null || fasteners == null || fasteners.Length < 1) return;
+
+            var uniqueFasteners = new List<UnifiedFastener>();
+            throw new NotImplementedException();
+
+            // TODOh Finish fixing Bom.Add()
+            //
+            // Make two lists => one with all the fasteners that don't appear in SourceList
+            //                 & one with all which do
+            // Iterate the pre-existing fasteners and update SourceLists' quantities
+            // Pass unique.ToArray() to base.Add( ...[] )
+
+            //foreach (var item in fasteners)
+            //{
+            //    if (SourceList.Contains(item))
+            //    {
+            //        SourceList.First(f => f.UniqueID.Equals(item.UniqueID))
+            //                  .Quantity += item.Quantity;
+            //    }
+            //    else
+            //    {
+            //        base.Add(item);
+            //    }
+            //}
+
+            Sort();
+            Save();
         }
 
         public override bool Remove(UnifiedFastener item)
@@ -85,23 +117,23 @@ namespace Slate_EK.Models
             return Remove(item, 1);
         }
 
-        public bool Remove(UnifiedFastener item, int quantity)
+        public bool Remove(UnifiedFastener item, int quantityToRemove)
         {
-            item.ForceNewUniqueID();
+            if (SourceList == null || !SourceList.Contains(item))
+                return false;
 
-            if (SourceList != null && SourceList.Contains(item))
-            {
-                if ((SourceList.First(f => f.UniqueID.Equals(item.UniqueID))
-                               .Quantity -= quantity) <= 0)
-                {
-                    base.Remove(item);
-                }
+            bool result = false;
+            int  newQty = item.Quantity - quantityToRemove;
 
-                Sort();
-                Save();
-                return true;
-            }
-            else return false;
+            if (newQty <= 0 || quantityToRemove == Int32.MaxValue)
+                result = base.Remove(item);
+            else
+                result = (SourceList.First(i => i.UniqueID.Equals(item.UniqueID)).Quantity = newQty) > 0;
+
+            Sort();
+            Save();
+
+            return result;
         }
 
         public override void Sort()
@@ -120,22 +152,18 @@ namespace Slate_EK.Models
 
         public override bool Equals(object obj)
         {
-            if (!(obj is Bom))
-                return false;
-
-            return GetHashCode() == (obj as Bom).GetHashCode();
-
+            return GetHashCode() == (obj as Bom)?.GetHashCode();
         }
 
         public override int GetHashCode()
         {
             List<byte[]> blocks = new List<byte[]> {System.Text.Encoding.Default.GetBytes(AssemblyNumber)};
 
-            foreach (UnifiedFastener f in SourceList)
-            {
-                if (f != null)
-                blocks.Add(f.GetHashData());
-            }
+            blocks.AddRange
+            (
+                SourceList.Where(f => f != null)
+                          .Select(f => f.GetHashData())
+            );
 
             return BitConverter.ToInt32(Extender.ObjectUtils.Hashing.GenerateHashCode(blocks), 0);
         }
@@ -179,15 +207,15 @@ namespace Slate_EK.Models
         static BomXmlOperationsQueue()
         {
             var thread = new System.Threading.Thread
-                (
-                    () =>
+            (
+                () =>
+                {
+                    while (true)
                     {
-                        while (true)
-                        {
-                            _TaskQueue.Take().Execute();
-                        }
+                        _TaskQueue.Take().Execute();
                     }
-                ) {IsBackground = true};
+                }
+            ) {IsBackground = true};
 
             thread.Start();
         }

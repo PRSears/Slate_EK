@@ -20,6 +20,11 @@
                       Command="{Binding RequestRemoval}"/>
         </ContextMenu>
         <ContextMenu x:Key="FastenerListContextMenu">
+            <MenuItem Header="Copy"
+                      Command="{Binding ShortcutCtrlC}"/>
+            <MenuItem Header="Paste"
+                      Command="{Binding ShortcutCtrlV}"/>
+            <Separator/>
             <MenuItem Header="Change quantity..."
                       Command="{Binding ListChangeQuantityCommand}"/>
             <MenuItem Header="Delete"
@@ -37,8 +42,12 @@
                     Command="{Binding ShortcutCtrlD}"/>
         <KeyBinding Modifiers="Control" Key="A"
                     Command="{Binding ShortcutCtrlA}"/>
-        <KeyBinding Modifiers="Ctrl" Key="P"
+        <KeyBinding Modifiers="Control" Key="P"
                     Command="{Binding ShortcutCtrlP}"/>
+        <KeyBinding Modifiers="Control" Key="C"
+                    Command="{Binding ShortcutCtrlC}"/>
+        <KeyBinding Modifiers="Control" Key="V"
+                    Command="{Binding ShortcutCtrlV}"/>
         <KeyBinding Key="Delete"
                     Command="{Binding RemoveItemCommand}"/>
         <KeyBinding Modifiers="Shift" Key="Delete"
@@ -172,14 +181,8 @@
                          Width="250" Height="22"
                          TabIndex="8"
                          DockPanel.Dock="Right"/>
-                
+
             </DockPanel>
-            <Button Style="{StaticResource FlatActionButtonStyle}"
-                    Content="Add"
-                    Command="{Binding AddToListCommand}"
-                    HorizontalAlignment="Right"
-                    Margin="0"
-                    TabIndex="9"/> 
         </StackPanel>
 
         <ScrollViewer Grid.Row="1" Grid.Column="1"
@@ -291,12 +294,21 @@
                     Command="{Binding SaveAsCommand}"
                     IsTabStop="False"
                     Content="Save as..."/>
-            <Button Style="{StaticResource FlatActionButtonStyle}"
+            <Button Style="{StaticResource FlatIconButtonStyle}"
                     DockPanel.Dock="Right"
-                    Margin="0"
                     Command="{Binding RemoveItemCommand}"
                     IsTabStop="False"
-                    Content="Remove"/>
+                    ToolTip="Remove selected item(s) from the BOM">
+                <Image Source="/Slate_EK;component/Icons/ic_remove_black_24dp_1x.png"/>
+            </Button>
+            <Button Style="{StaticResource FlatIconButtonStyle}"
+                    DockPanel.Dock="Right"
+                    Margin="0"
+                    Command="{Binding AddToListCommand}"
+                    TabIndex="9"
+                    ToolTip="Add working faster to the BOM">
+                <Image Source="/Slate_EK;component/Icons/ic_add_black_24dp_1x.png"/>
+            </Button>
         </DockPanel>
     </Grid>
 </Window>

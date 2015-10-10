@@ -3,6 +3,9 @@ using System;
 using System.Data.Linq;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Windows;
+using Extender;
 
 namespace Slate_EK.Models.Inventory
 {
@@ -20,9 +23,9 @@ namespace Slate_EK.Models.Inventory
         /// <param name="filename">Full name and path of the inventory database being managed.</param>
         public Inventory(string filename)
         {
-            _Filename = filename;
+            _Filename     = filename;
 
-            _Database = new InventoryDataContext(InventoryConnectionString);
+            InitDataContext();
 
             if (!_Database.DatabaseExists())
                 _Database.CreateDatabase();
@@ -38,10 +41,11 @@ namespace Slate_EK.Models.Inventory
             _Database.SubmitChanges();
         }
 
-        public void ReplaceDataContext()
+        public void InitDataContext()
         {
-            _Database.Dispose();
-            _Database = new InventoryDataContext(InventoryConnectionString);
+            _Database?.Dispose();
+            _Database     = new InventoryDataContext(InventoryConnectionString);
+            _Database.Log = new ActionTextWriter(Console.WriteLine);
         }
 
         public void Add(UnifiedFastener fastener)
@@ -54,10 +58,7 @@ namespace Slate_EK.Models.Inventory
                 if (inTable.Quantity != fastener.Quantity) // Only replace if the quantities are different
                 {
                     _Database.Fasteners.DeleteOnSubmit(inTable);
-                    _Database.SubmitChanges();
-
-                    ReplaceDataContext();
-                    _Database.Fasteners.InsertOnSubmit(fastener); //TODOh figure out why this is breaking Linq to SQL
+                    _Database.Fasteners.InsertOnSubmit(fastener);
                 }
             }
             else
@@ -66,9 +67,6 @@ namespace Slate_EK.Models.Inventory
                 _Database.Fasteners.InsertOnSubmit(fastener);
             }
         }
-
-        //TODO Make Add() behave like remove - have an Add(Fastener[] array) as base
-        
 
         public bool Remove(UnifiedFastener fastener)
         {
@@ -92,6 +90,24 @@ namespace Slate_EK.Models.Inventory
             _Database.Fasteners.DeleteAllOnSubmit(matches);
 
             return matches.Count();
+        }
+
+        public void ChangeQuantity(Guid id, int newQuantity)
+        {
+            var inTable = Fasteners.FirstOrDefault(f => f.UniqueID.Equals(id));
+
+            if (inTable != null && !inTable.Equals(default(UnifiedFastener)))
+            {
+                var modifiedFastener      = inTable.Copy();
+                modifiedFastener.Quantity = newQuantity;
+
+                _Database.Fasteners.DeleteOnSubmit(inTable);
+                _Database.Fasteners.InsertOnSubmit(modifiedFastener);
+            }
+            else
+            {
+                Debug.WriteMessage($"There was no item in the database with id {id.ToString()}. Could not change quantity.", "info");
+            }
         }
 
         public void Export(string filename)
@@ -158,5 +174,30 @@ namespace Slate_EK.Models.Inventory
         }
         #endregion
 
+    }
+
+    class ActionTextWriter : TextWriter
+    {
+        private readonly Action<string> _Action;
+
+        public ActionTextWriter(Action<string> action)
+        {
+            this._Action = action;
+        }
+
+        public override void Write(char[] buffer, int index, int count)
+        {
+            Write(new string(buffer, index, count));
+        }
+
+        public override void Write(string value)
+        {
+            _Action.Invoke(value);
+        }
+
+        public override Encoding Encoding
+        {
+            get { return System.Text.Encoding.Default; }
+        }
     }
 }

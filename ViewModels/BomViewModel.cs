@@ -2,9 +2,11 @@
 using Extender.WPF;
 using Slate_EK.Models;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
@@ -28,6 +30,8 @@ namespace Slate_EK.ViewModels
         public ICommand ShortcutCtrlD               { get; private set; }
         public ICommand ShortcutCtrlA               { get; private set; }
         public ICommand ShortcutCtrlP               { get; private set; }
+        public ICommand ShortcutCtrlC               { get; private set; }
+        public ICommand ShortcutCtrlV               { get; private set; }
 
         public event ShortcutEventHandler ShortcutPressedCtrlK;
         public event ShortcutEventHandler ShortcutPressedCtrlS;
@@ -135,14 +139,15 @@ namespace Slate_EK.ViewModels
             {
                 if (Bom.SourceList != null && e.PropertyName.Equals(nameof(Bom.SourceList)))
                 {
-                    ObservableFasteners = new ObservableCollection<FastenerControl>(FastenerControl.FromArray(Bom.SourceList));
+                    RefreshBom();
+                    //ObservableFasteners = new ObservableCollection<FastenerControl>(FastenerControl.FromArray(Bom.SourceList));
 
-                    // Hook up context menu for FastenerControls
-                    foreach (FastenerControl control in ObservableFasteners)
-                    {
-                        control.RequestingRemoval += sender => Bom.Remove((sender as FastenerControl)?.Fastener, Int32.MaxValue);
-                        control.RequestingQuantityChange += ChangeQuantity;
-                    }
+                    //// Hook up context menu for FastenerControls
+                    //foreach (FastenerControl control in ObservableFasteners)
+                    //{
+                    //    control.RequestingRemoval += sender => Bom.Remove((sender as FastenerControl)?.Fastener, Int32.MaxValue);
+                    //    control.RequestingQuantityChange += ChangeQuantity;
+                    //}
                 }
 
                 OnPropertyChanged(nameof(WindowTitle)); // do this regardless of which property changed
@@ -171,6 +176,21 @@ namespace Slate_EK.ViewModels
             Initialize();
         }
 
+        private void RefreshBom()
+        {
+            ObservableFasteners.Clear();
+            
+            Bom.SourceList.ForEach(f => ObservableFasteners.Add(new FastenerControl(f)));
+            ObservableFasteners.ForEach
+            (
+                c =>
+                {
+                    c.RequestingRemoval         += sender => Bom.Remove((sender as FastenerControl)?.Fastener, Int32.MaxValue);
+                    c.RequestingQuantityChange  += ChangeQuantity;
+                }
+            );
+        }
+
         private void RemoveN(object sender)
         {
             if (sender is FastenerControl)
@@ -181,27 +201,34 @@ namespace Slate_EK.ViewModels
 
                 if (dialog.Value > 0)
                 {
-                    Bom.Remove((sender as FastenerControl).Fastener, dialog.Value);
+                    Bom.Remove(((FastenerControl)sender).Fastener, dialog.Value);
                 }
             }
         }
 
         private void ChangeQuantity(object sender)
         {
-            if (sender is FastenerControl)
-            {
-                Views.NumberPickerDialog dialog = new Views.NumberPickerDialog((sender as FastenerControl).Fastener.Quantity);
-                dialog.Owner = FindThisWindow();
-                dialog.ShowDialog();                
+            if (!(sender is FastenerControl)) return;
 
-                if (dialog.Success)
-                {
-                    if (dialog.Value > 0)
-                        (sender as FastenerControl).Fastener.Quantity = dialog.Value;
-                    else
-                        Bom.Remove(((FastenerControl)sender).Fastener, Int32.MaxValue);
-                }
+            var dialog = new Views.NumberPickerDialog(((FastenerControl)sender).Fastener.Quantity);
+
+            dialog.Owner = FindThisWindow();
+            dialog.ShowDialog();
+
+            if (!dialog.Success) return;
+
+            if (dialog.Value > 0)
+            {
+                // Edit the value in the source list directly... need to select the fastener control from Bom.SourceList first.
+                var match = Bom.SourceList.FirstOrDefault(f => ((FastenerControl)sender).Fastener.UniqueID.Equals(f.UniqueID));
+                if (match != null && !match.Equals(default(UnifiedFastener)))
+                    match.Quantity = dialog.Value;
+
+                Bom.Save();
             }
+            else Bom.Remove(((FastenerControl)sender).Fastener, Int32.MaxValue);
+
+            RefreshBom(); // Make sure the ObservableCollection is updated to reflect the change in Bom.SourceList.
         }
 
         private Window FindThisWindow()
@@ -239,20 +266,12 @@ namespace Slate_EK.ViewModels
 
             ShortcutCtrlD = new RelayCommand
             (
-                () =>
-                {
-                    foreach (FastenerControl item in ObservableFasteners.Where(c => c.IsSelected))
-                        item.IsSelected = false;
-                }
+                () => ObservableFasteners.ForEach(item => item.IsSelected = false)
             );
 
             ShortcutCtrlA = new RelayCommand
             (
-                () =>
-                {
-                    foreach (FastenerControl item in ObservableFasteners)
-                        item.IsSelected = true;
-                }
+                () => ObservableFasteners.ForEach(item => item.IsSelected = true)
             );
 
             ShortcutCtrlP = new RelayCommand
@@ -263,10 +282,56 @@ namespace Slate_EK.ViewModels
                 }
             );
 
-            ShortcutPressedCtrlS += () =>
-            {
-                SaveAs();
-            };
+            ShortcutCtrlC = new RelayCommand
+            (
+                () =>
+                {
+                    if (!ObservableFasteners.Any(f => f.IsSelected))
+                    {
+                        // None selected
+                        Clipboard.SetText(WorkingFastener.Description);
+                    }
+                    else
+                    {
+                        // Has something selected in the BOM list
+                        StringBuilder descriptionsBuilder = new StringBuilder();
+                        ObservableFasteners.Where  (f => f.IsSelected)
+                                           .ForEach(f => descriptionsBuilder.AppendLine(f.Fastener.Description));
+
+                        Clipboard.SetText(descriptionsBuilder.ToString());
+                    }
+                },
+                () => ObservableFasteners.Any(f => f.IsSelected)
+            );
+
+            ShortcutCtrlV = new RelayCommand
+            (
+                () => //TODO allow multiple fastener descriptions to get pasted at once (break around new line char? or just use stringreader)
+                {
+                    //string clipped = Clipboard.GetText();
+                    //if (!string.IsNullOrWhiteSpace(clipped))
+                    //{
+                    //    var parsedFastener = UnifiedFastener.FromString(clipped);
+                    //    if (parsedFastener != null)
+                    //        Bom.Add(parsedFastener);
+                    //}
+                    StringReader clips  = new StringReader(Clipboard.GetText());
+                    var newFasteners    = new List<UnifiedFastener>();
+                    while (clips.Peek() > -1)
+                    {
+                        string line           = clips.ReadLine();
+                        var    parsedFastener = UnifiedFastener.FromString(line);
+
+                        if (parsedFastener != null)
+                            newFasteners.Add(parsedFastener);
+                    }
+
+                    Bom.Add(newFasteners.ToArray());
+                },
+                () => !string.IsNullOrWhiteSpace(Clipboard.GetText())
+            );
+
+            ShortcutPressedCtrlS += () => SaveAs();
 
             // ICommands
 
@@ -283,8 +348,8 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-                    FastenerControl[] selected = ObservableFasteners.Where(c => c.IsSelected).ToArray();
-                    bool removeAll = (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift));
+                    var  selected   = ObservableFasteners.Where(c => c.IsSelected).ToArray();
+                    bool removeAll  = Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
 
                     foreach (FastenerControl fc in selected)
                     {
@@ -292,11 +357,13 @@ namespace Slate_EK.ViewModels
                     }
 
                     // re-select what was selected before we replaced the ObservableCollection
-                    foreach (FastenerControl item in ObservableFasteners.Where(of => selected.Count(s => s.Fastener.UniqueID.Equals(of.Fastener.UniqueID)) > 0))
+                    foreach (var prevSelected in selected)
                     {
-                        item.IsSelected = true;
+                        var match = ObservableFasteners.FirstOrDefault(f => f.Fastener.UniqueID.Equals(prevSelected.Fastener.UniqueID));
+                        if (match != null) match.IsSelected = true;
                     }
-                }
+                },
+                () => ObservableFasteners.Any(f => f.IsSelected)
             );
 
             ListChangeQuantityCommand = new RelayCommand
@@ -318,11 +385,12 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-                    FastenerControl[] selected = ObservableFasteners.Where(c => c.IsSelected).ToArray();
-
-                    foreach (FastenerControl fc in selected)
-                        Bom.Remove(fc.Fastener, Int32.MaxValue);
-                }
+                    // Cast to array so we aren't modifying the collection as we iterate.
+                    ObservableFasteners.Where(control => control.IsSelected)
+                                       .ToArray()
+                                       .ForEach(f => Bom.Remove(f.Fastener, Int32.MaxValue));
+                },
+                () => ObservableFasteners.Any(f => f.IsSelected)
             );
             
             SaveAsCommand = new RelayCommand
@@ -344,7 +412,7 @@ namespace Slate_EK.ViewModels
             XmlSizes.Reload();
             XmlPitches.Reload();
 
-            PropertyRefreshTimer = new Timer(Properties.Settings.Default.PropertyRefreshInterval);
+            PropertyRefreshTimer           = new Timer(Properties.Settings.Default.PropertyRefreshInterval);
             PropertyRefreshTimer.AutoReset = true;
             PropertyRefreshTimer.Elapsed  += (s, e) =>
             {
@@ -388,6 +456,7 @@ namespace Slate_EK.ViewModels
                     .EndsWith("csv"))
             {
                 Extender.IO.CsvSerializer<UnifiedFastener> csv = new Extender.IO.CsvSerializer<UnifiedFastener>();
+
 
                 using (FileStream stream = new FileStream(dialog.FileName, FileMode.OpenOrCreate,
                                                                            FileAccess.ReadWrite,
