@@ -37,6 +37,7 @@
     <Reference Include="Extender">
       <HintPath>..\Extensions\bin\Release\Extender.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationFramework.Classic" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Linq" />
@@ -59,7 +60,11 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Models\Bom.cs" />
+    <Compile Include="Models\IO\ImperialSizes.cs" />
     <Compile Include="Models\PlateInfo.cs" />
+    <Compile Include="Models\ThreadParameters\Pitch.cs" />
+    <Compile Include="Models\ThreadParameters\Size.cs" />
+    <Compile Include="Models\ThreadParameters\UnifiedThreadStandard.cs" />
     <Compile Include="Models\UnifiedFastener.cs" />
     <Compile Include="ViewModels\FastenerControl.cs" />
     <Compile Include="Models\FastenerType.cs" />
@@ -68,12 +73,10 @@
     <Compile Include="Models\Inventory\InventoryDataContext.cs" />
     <Compile Include="Models\IO\Pitches.cs" />
     <Compile Include="Models\IO\Sizes.cs" />
-    <Compile Include="Models\Pitch.cs" />
-    <Compile Include="Models\Size.cs" />
-    <Compile Include="Models\Thickness.cs" />
     <Compile Include="ViewModels\BomViewModel.cs" />
     <Compile Include="ViewModels\InventoryViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\SettingsViewModel.cs" />
     <Compile Include="Views\InventoryView.xaml.cs">
       <DependentUpon>InventoryView.xaml</DependentUpon>
     </Compile>
@@ -82,6 +85,9 @@
     </Compile>
     <Compile Include="Views\NumberPickerDialog.xaml.cs">
       <DependentUpon>NumberPickerDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SettingsView.xaml.cs">
+      <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
     <Page Include="Views\BomView.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -105,6 +111,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\NumberPickerDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -139,14 +149,15 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="DefaultXml\default_fastener.xml">
+    <Content Include="Lists\imperialSizes.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="DefaultXml\pitches.xml">
+    <Content Include="Lists\pitches.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="DefaultXml\sizes.xml">
+    <Content Include="Lists\sizes.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <Resource Include="Icons\ic_delete_grey_24dp_2x.png" />
     <Resource Include="Icons\ic_delete_black_24dp_1x.png" />
@@ -178,6 +189,7 @@
   <ItemGroup>
     <Resource Include="Icons\icon_25.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

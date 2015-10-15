@@ -4,10 +4,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Slate_EK.Models
 {
-    public class Bom : SerializedArray<UnifiedFastener>
+
+    public sealed class Bom : SerializedArray<UnifiedFastener>
     {
         public string AssemblyNumber
         {
@@ -43,26 +45,6 @@ namespace Slate_EK.Models
             }
         }
 
-        public override void Reload()
-        {
-            FileInfo xmlFile = new FileInfo(FilePath);
-
-            BomXmlOperationsQueue.Enqueue
-            (
-                new SerializeTask<UnifiedFastener>(xmlFile, this, SerializeOperations.Load)
-            );
-        }
-
-        public override void Save()
-        {
-            FileInfo xmlFile = new FileInfo(FilePath);
-
-            BomXmlOperationsQueue.Enqueue
-            (
-                new SerializeTask<UnifiedFastener>(xmlFile, this, SerializeOperations.Save)
-            );
-        }
-
         public override void Add(UnifiedFastener item)
         {
             Add(new[] {item});
@@ -90,7 +72,7 @@ namespace Slate_EK.Models
                 base.Add(uniques.ToArray());
 
             Sort();
-            Save();
+            SaveAsync();
         }
 
         public override bool Remove(UnifiedFastener item)
@@ -112,7 +94,7 @@ namespace Slate_EK.Models
                 result = (SourceList.First(i => i.UniqueID.Equals(item.UniqueID)).Quantity = newQty) > 0;
 
             Sort();
-            Save();
+            SaveAsync();
 
             return result;
         }
@@ -127,6 +109,54 @@ namespace Slate_EK.Models
             }
 
             SourceList = sorted.ToArray();
+        }
+
+        /// <summary>
+        /// Asynchronously reloads the source list. 
+        /// </summary>
+        public override async Task ReloadAsync()
+        {
+            FileInfo xmlFile = new FileInfo(FilePath);
+
+            BomXmlOperationsQueue.Enqueue
+            (
+                new SerializeTask<UnifiedFastener>(xmlFile, this, SerializeOperations.Load)
+            );
+
+            await Task.Run
+            (
+                () =>
+                {
+                    while (!BomXmlOperationsQueue.IsCompleted() || SourceList == null)
+                    {
+                        System.Threading.Thread.Sleep(10);
+                    }
+                }
+            );
+        }
+
+        /// <summary>
+        /// Asynchronously saves the source list.
+        /// </summary>
+        public override async Task SaveAsync()
+        {
+            FileInfo xmlFile = new FileInfo(FilePath);
+
+            BomXmlOperationsQueue.Enqueue
+            (
+                new SerializeTask<UnifiedFastener>(xmlFile, this, SerializeOperations.Save)
+            );
+
+            await Task.Run
+            (
+                () =>
+                {
+                    while (!BomXmlOperationsQueue.IsCompleted())
+                    {
+                        System.Threading.Thread.Sleep(10);
+                    }
+                }
+            );
         }
 
         #region operators & overrides
@@ -204,6 +234,11 @@ namespace Slate_EK.Models
         public static void Enqueue(SerializeTask<UnifiedFastener> operation)
         {
             _TaskQueue.Add(operation);
+        }
+
+        public static bool IsCompleted()
+        {
+            return _TaskQueue.Count < 1;
         }
     }
 }

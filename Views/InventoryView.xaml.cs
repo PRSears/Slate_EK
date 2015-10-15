@@ -30,12 +30,16 @@ namespace Slate_EK.Views
         {
             InitializeComponent();
 
-            ViewModel = new InventoryViewModel("E:\\code\\GitHub\\Slate_EK\\.example_files\\TestInventory_002.mdf"); //HACK temporary Inventory for testing
+            ViewModel = new InventoryViewModel("E:\\code\\GitHub\\Slate_EK\\.example_files\\TestInventory_003.mdf"); //HACK temporary Inventory for testing
             ViewModel.RegisterCloseAction(Close);
 
             InventoryItemsControl.ItemsSource = ViewModel.FastenerList; 
         }
 
+        private void UIElement_OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            (e.OriginalSource as TextBox)?.SelectAll();
+        }
 
         #region // Click / drag / selection handling
         
@@ -396,5 +400,6 @@ namespace Slate_EK.Views
         public bool Debug => Properties.Settings.Default.Debug;
 
         #endregion
+
     }
 }

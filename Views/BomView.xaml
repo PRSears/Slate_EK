@@ -13,12 +13,6 @@
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="LastChildFill" Value="False"/>
         </Style>
-        <ContextMenu x:Key="FastenerContextMenu">
-            <MenuItem Header="Change quantity..."
-                      Command="{Binding RequestQuantityChange}"/>
-            <MenuItem Header="Delete"
-                      Command="{Binding RequestRemoval}"/>
-        </ContextMenu>
         <ContextMenu x:Key="FastenerListContextMenu">
             <MenuItem Header="Copy"
                       Command="{Binding ShortcutCtrlC}"/>
@@ -90,6 +84,17 @@
                     Margin="0,10,0,0"
                     Orientation="Vertical">
             <DockPanel>
+                <Label Content="Unit"
+                       Style="{StaticResource LabelStyle}"
+                       DockPanel.Dock="Left"/>
+                <ComboBox Style="{StaticResource Dropdown}"
+                          ItemsSource="{Binding UnitsList}"
+                          SelectedValue="{Binding WorkingFastener.Unit, Mode=TwoWay}"
+                          x:Name="UnitDropdown"
+                          TabIndex="1"
+                          DockPanel.Dock="Right"/>
+            </DockPanel>
+            <DockPanel>
                 <Label Content="Fastener Type"
                        Style="{StaticResource LabelStyle}"
                        DockPanel.Dock="Left"/>
@@ -97,7 +102,7 @@
                           ItemsSource="{Binding FastenerTypesList}"
                           SelectedValue="{Binding WorkingFastener.Type, Mode=TwoWay}"
                           x:Name="TypeDropdown"
-                          TabIndex="1"
+                          TabIndex="2"
                           DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
@@ -106,7 +111,7 @@
                        DockPanel.Dock="Left"/>
                 <ComboBox Style="{StaticResource Dropdown}"
                           x:Name="MaterialsDropdown"
-                          TabIndex="2"
+                          TabIndex="3"
                           ItemsSource="{Binding MaterialsList}"
                           SelectedValue="{Binding WorkingFastener.Material, Mode=TwoWay}"
                           DockPanel.Dock="Right"/>
@@ -117,9 +122,9 @@
                        DockPanel.Dock="Left"/>
                 <TextBox x:Name="PlateThicknessTextField"
                          Style="{StaticResource FlatTextFieldStyle}"
-                         Text="{Binding WorkingFastener.PlateInfo.Thickness, UpdateSourceTrigger=PropertyChanged}"
+                         Text="{Binding WorkingFastener.PlateInfo.Thickness}"
                          Width="250" Height="22"
-                         TabIndex="3"
+                         TabIndex="4"
                          DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
@@ -127,7 +132,7 @@
                        Style="{StaticResource LabelStyle}"
                        DockPanel.Dock="Left"/>
                 <ComboBox Style="{StaticResource Dropdown}"
-                          TabIndex="4"
+                          TabIndex="5"
                           ItemsSource="{Binding HoleTypesList}"
                           SelectedValue="{Binding WorkingFastener.PlateInfo.HoleTypeDisplay, Mode=TwoWay}"
                           DockPanel.Dock="Right"/>
@@ -137,7 +142,8 @@
                        Style="{StaticResource LabelStyle}"
                        DockPanel.Dock="Left"/>
                 <ComboBox Style="{StaticResource Dropdown}"
-                          TabIndex="5"
+                          TabIndex="6"
+                          FontFamily="/Slate_EK;component/#DejaVu Sans Mono"
                           ItemsSource="{Binding SizeOptionsList}"
                           SelectedValue="{Binding WorkingFastener.SizeDisplay, Mode=TwoWay}"
                           DockPanel.Dock="Right"/>
@@ -147,9 +153,11 @@
                        Style="{StaticResource LabelStyle}"
                        DockPanel.Dock="Left"/>
                 <ComboBox Style="{StaticResource Dropdown}"
-                          TabIndex="6"
+                          x:Name="PitchOptionsDropdown"
+                          TabIndex="7"
+                          FontFamily="/Slate_EK;component/#DejaVu Sans Mono"
                           ItemsSource="{Binding PitchOptionsList}"
-                          SelectedValue="{Binding WorkingFastener.Pitch, Mode=TwoWay}"
+                          SelectedValue="{Binding WorkingFastener.PitchDisplay, Mode=TwoWay}"
                           DockPanel.Dock="Right"/>
             </DockPanel>
             <DockPanel>
@@ -157,7 +165,7 @@
                        Style="{StaticResource LabelStyle}"
                        DockPanel.Dock="Left"/>
                 <TextBox Style="{StaticResource FlatTextFieldStyle}"
-                         TabIndex="7"
+                         TabIndex="8"
                          Text="{Binding WorkingFastener.Quantity, Mode=TwoWay}"
                          Width="250" Height="22"
                          DockPanel.Dock="Right"/>
@@ -179,7 +187,7 @@
                          Text="{Binding WorkingFastener.Length, Mode=TwoWay}"
                          IsEnabled="{Binding OverrideLength}"
                          Width="250" Height="22"
-                         TabIndex="8"
+                         TabIndex="9"
                          DockPanel.Dock="Right"/>
 
             </DockPanel>
@@ -237,17 +245,15 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                     <Grid x:Name="ItemRowGrid"
-                                      Background="{Binding Background}">
+                                          Background="{Binding Background}">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="60*"/>
                                             <ColumnDefinition Width="40*"/>
                                         </Grid.ColumnDefinitions>
                                         <Grid.Resources>
-                                            <Style TargetType="TextBlock"
+                                        <Style TargetType="TextBlock"
                                                BasedOn="{StaticResource DejaVu}">
-                                                <Setter Property="FontSize" Value="{Binding BomFontSize}"/>
-                                                <Setter Property="Foreground" Value="#dddddd"/>
-                                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
                                                 <Setter Property="HorizontalAlignment" Value="Left"/>
                                                 <Setter Property="Foreground" Value="#c6c6c6"/>
                                                 <Setter Property="Padding" Value="0,4,0,4"/>
@@ -305,7 +311,7 @@
                     DockPanel.Dock="Right"
                     Margin="0"
                     Command="{Binding AddToListCommand}"
-                    TabIndex="9"
+                    TabIndex="10"
                     ToolTip="Add working faster to the BOM">
                 <Image Source="/Slate_EK;component/Icons/ic_add_black_24dp_1x.png"/>
             </Button>

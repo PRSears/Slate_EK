@@ -1,5 +1,8 @@
 ﻿using Extender.Databases;
 using Extender.ObjectUtils;
+using Extender.UnitConversion;
+using Extender.UnitConversion.Lengths;
+using Slate_EK.Models.ThreadParameters;
 using System;
 using System.ComponentModel;
 using System.Data.Linq.Mapping;
@@ -10,6 +13,8 @@ using System.Xml.Serialization;
 
 namespace Slate_EK.Models
 {
+    public enum Units { Millimeters, Inches }
+
     [Table(Name = "Fasteners")]
     public class UnifiedFastener : IStorable, INotifyPropertyChanged
     {
@@ -23,6 +28,8 @@ namespace Slate_EK.Models
         private string    _Type;
         private PlateInfo _PlateInfo;
         private Guid      _UniqueId;
+
+        private Slate_EK.Models.Units _Unit;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -150,6 +157,20 @@ namespace Slate_EK.Models
             }
         }
 
+        [Column(Storage =  nameof(_Unit), DbType = "NVarChar(15)", CanBeNull = true)]
+        public Slate_EK.Models.Units Unit
+        {
+            get
+            {
+                return _Unit;
+            }
+            set
+            {
+                _Unit = value;
+                OnPropertyChanged(nameof(Unit));
+            }
+        }
+
         [XmlIgnore]
         public PlateInfo PlateInfo
         {
@@ -169,16 +190,104 @@ namespace Slate_EK.Models
         {
             get
             {
-                return new Models.Size(Size).ToString();
+                //return new Size(Size).ToString();
+                switch (Unit)
+                {
+                    case Units.Millimeters:
+                        return new Size(Size).ToString();
+                    case Units.Inches:
+                        return UnifiedThreadStandard.FromMillimeters(Size)?.Designation;
+                }
+
+                return "Something fucked up.";
             }
             set
             {
-                Size = (float)Models.Size.TryParse(value).OuterDiameter;
+                float? parsed = null;
+                switch (Unit)
+                {
+                    case Units.Millimeters:
+                        parsed = ThreadParameters.Size.TryParse(value)?.OuterDiameter;
+                        break;
+                    case Units.Inches:
+                        parsed = (float?)Measure.Convert<Inch, Millimeter>(UnifiedThreadStandard.FromDesignation(value)?.MajorDiameter);
+                        break; 
+                }
+
+                Size = parsed ?? Size; // If it failed to parse, don't change the value.
                 OnPropertyChanged(nameof(SizeDisplay));
             }
         }
+
         [XmlIgnore]
-        public string Description  => $"{SizeDisplay} - {Pitch} x {Length,-3} {Type}";
+        public string PitchDisplay
+        {
+            get
+            {
+                switch (Unit)
+                {
+                    case Units.Millimeters:
+                        return Pitch.ToString(Spec);
+                    case Units.Inches:
+                        return UnifiedThreadStandard.FromMillimeters(Size)?.GetThreadDensityDisplay(Pitch);
+                }
+
+                return "Something fucked up.";
+            }
+            set
+            {
+                float? parsed = null;
+                switch (Unit)
+                {
+                    case Units.Millimeters:
+                        float n;
+                        parsed = float.TryParse(value, out n) ? (float?)n : null;
+                        break;
+                    case Units.Inches:
+                        parsed = (float?)Measure.Convert<Inch, Millimeter>
+                        (
+                            1f / (UnifiedThreadStandard.FromMillimeters(Size)?.GetThreadDensity(value))
+                        );
+                        break;
+                }
+
+                Pitch = parsed ?? Pitch; // If it failed to parse, don't change the value.
+                OnPropertyChanged(nameof(PitchDisplay));
+            }
+        }
+
+        [XmlIgnore]
+        public string LengthDisplay
+        {
+            get
+            {
+                return Length.ToString(Spec);
+            }
+            set
+            {
+                float parsed;
+                Length = !float.TryParse(value, out parsed) ? 0f : parsed;
+
+                OnPropertyChanged(nameof(LengthDisplay));
+            }
+        } 
+
+        [XmlIgnore]
+        public string MassDisplay
+        {
+            get
+            {
+                return Mass.ToString(Spec);
+            }
+            set
+            {
+                float parsed;
+                Mass = !float.TryParse(value, out parsed) ? 0f : parsed;
+            }
+        } 
+
+        [XmlIgnore]
+        public string Description  => $"{SizeDisplay} - {PitchDisplay} x {LengthDisplay} {Type}";
 
         //
         // Constructors
@@ -187,6 +296,7 @@ namespace Slate_EK.Models
             Material  = Models.Material.Unspecified.ToString();
             Type      = Models.FastenerType.Unspecified.ToString();
             PlateInfo = new PlateInfo();
+            Unit      = Units.Millimeters;
         }
 
         public UnifiedFastener(
@@ -210,21 +320,19 @@ namespace Slate_EK.Models
         {
             Material material = Models.Material.TryParse(Material);
 
-            float threadEngagemnt = (float)material.Multiplier * Size; // number of threads engaging the hole
+            float threadEngagemnt = (float)material.Multiplier * _Size; // number of threads engaging the hole
 
             float result = 0;
 
             if (PlateInfo.HoleType.Equals(HoleType.Straight) || PlateInfo.HoleType.Equals(HoleType.CSink))
                 result = threadEngagemnt + PlateInfo.Thickness;
             else if (PlateInfo.HoleType.Equals(HoleType.CBore))
-                result = threadEngagemnt + PlateInfo.Thickness - Size;
+                result = threadEngagemnt + PlateInfo.Thickness - _Size;
 
             if (overwrite)
                 Length = result;
 
             return result;
-
-            // TODO When the fastener gets added to the BOM, search inventory for closest match and insert that.
         }
 
         public byte[] GetHashData()
@@ -285,10 +393,15 @@ namespace Slate_EK.Models
             return GetHashCode().Equals(((UnifiedFastener)obj).GetHashCode());
         }
 
+        /// <summary>
+        /// Attempts to create a new UnifiedFastener from a string Description.
+        /// </summary>
+        /// <param name="fastenerDescription"></param>
+        /// <returns></returns>
         public static UnifiedFastener FromString(string fastenerDescription)
         {
-            Regex verify = new Regex(@"([Mm0-9 .]{4})-([0-9 .]{3,})x([ 0-9]{3,5})([FfCcHhSsLl]{4,6})");
-            var match    = verify.Match(fastenerDescription);
+            Regex verify = new Regex(@"([Mm0-9 .]{4})-([0-9 .]{3,})x([ 0-9]{3,5})([FfCcHhSsLl]{4,6})"); //TODO this is going to need some work for accommodating imperial units
+            var   match  = verify.Match(fastenerDescription);
 
             if (match.Success)
             {
@@ -313,5 +426,11 @@ namespace Slate_EK.Models
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        #region //Aliases
+
+        private string Spec => Properties.Settings.Default.FloatFormatSpecifier;
+
+        #endregion
     }
 }

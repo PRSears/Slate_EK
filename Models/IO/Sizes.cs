@@ -1,14 +1,15 @@
 ﻿using Extender.IO;
-using System;
+using Slate_EK.Models.ThreadParameters;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Xml.Serialization;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Slate_EK.Models.IO
+//TODO We might have to bake units into the size (and maybe pitch) lists / objects
+//     could store them as a separate field?
 {
-    public class Sizes : SerializedArray<Size>
+    public sealed class Sizes : SerializedArray<Size>
     {
         public Sizes()
         {
@@ -19,7 +20,7 @@ namespace Slate_EK.Models.IO
             SourceList = sourceList;
         }
 
-        public override void Reload()
+        public override async Task ReloadAsync()
         {
             FileInfo xmlFile = new FileInfo(FilePath);
 
@@ -27,9 +28,18 @@ namespace Slate_EK.Models.IO
             (
                 new SerializeTask<Size>(xmlFile, this, SerializeOperations.Load)
             );
+
+            await Task.Run
+            (
+                () =>
+                {
+                    while (!SizesXmlOperationsQueue.IsCompleted() || SourceList == null)
+                        System.Threading.Thread.Sleep(10);
+                }
+            );
         }
 
-        public override void Save()
+        public override async Task SaveAsync()
         {
             FileInfo xmlFile = new FileInfo(FilePath);
 
@@ -37,153 +47,43 @@ namespace Slate_EK.Models.IO
             (
                 new SerializeTask<Size>(xmlFile, this, SerializeOperations.Save)
             );
-        }
 
-        #region TestHarnesses
-        public static void TestHarness()
-        {
-            Test_GenericImplementation();
-        }
-
-        private static void Test_Deserialze()
-        {
-            Sizes loaded = new Sizes();
-            loaded.Reload();
-
-            Extender.Debugging.Debug.WriteMessage("Deserialized: ");
-            System.Threading.Thread.Sleep(100);
-
-            foreach (var item in loaded.SourceList)
-                Console.Write(item.OuterDiameter + @", ");
-        }
-
-        private static void Test_ArrayVsList()
-        {
-            // Perform 10,000 operations & time it
-            Stopwatch timer = new Stopwatch();
-
-            timer.Start();
-            for (int x = 0; x < 500; x++)
-            {
-                // Create the initial SourceList
-                Size[] sourceList = new Size[250];
-                for (int i = 0; i < sourceList.Length; i++)
-                    sourceList[i] = new Size(i);
-
-                // Add a value to it
-                Size[] appendedList = new Size[sourceList.Length + 1];
-                Array.Copy(sourceList, appendedList, sourceList.Length);
-                appendedList[sourceList.Length] = new Size(250);
-                sourceList = appendedList;
-
-                // Serialize
-                using (MemoryStream stream = new MemoryStream())
-                {
-                    XmlSerializer xml = new XmlSerializer(typeof(Size));
-                    foreach (Size size in sourceList)
-                        xml.Serialize(stream, size);
-                }
-
-                if (x % 100 == 0) // rather hacky solution to lessen OutOfMemory errors
-                {
-                    timer.Stop();
-                    GC.Collect();
-                    timer.Start();
-                }
-            }
-            timer.Stop();
-            Extender.Debugging.Debug.WriteMessage
+            await Task.Run
             (
-                $"Array: {timer.ElapsedMilliseconds}ms",
-                "info"
-            );
-
-            System.Threading.Thread.Sleep(2000);
-            GC.Collect();
-
-            timer.Restart();
-            for (int x = 0; x < 500; x++)
-            {
-                // Create the initial SourceList
-                List<Size> sourceList = new List<Size>();
-                for (int i = 0; i < 250; i++)
-                    sourceList.Add(new Size(i));
-
-                // Add a value to it
-                sourceList.Add(new Size(250));
-
-                // Serialize
-                using (MemoryStream stream = new MemoryStream())
+                () =>
                 {
-                    XmlSerializer xml = new XmlSerializer(typeof(Size));
-                    foreach (Size size in sourceList)
-                        xml.Serialize(stream, size);
+                    while (!SizesXmlOperationsQueue.IsCompleted())
+                        System.Threading.Thread.Sleep(10);
                 }
-
-                if (x % 100 == 0) // rather hacky solution to lessen OutOfMemory errors
-                {
-                    timer.Stop();
-                    GC.Collect();
-                    timer.Start();
-                }
-            }
-            timer.Stop();
-            Extender.Debugging.Debug.WriteMessage
-            (
-                $"List : {timer.ElapsedMilliseconds}ms",
-                "info"
             );
         }
 
-        private static void Test_Serialization()
+        public override string FilePath => Path.Combine
+        (
+            Properties.Settings.Default.DefaultPropertiesFolder,
+            Properties.Settings.Default.SizesFilename
+        );
+    }
+
+    public static class SizesCache 
+    {
+        public static Size[] Table;
+
+        public static bool IsBuilt()
         {
-            Size[] dummies = new Size[15];
-            // Makeup some sizes
-            for (int i = 0; i < 10; i++)
-            {
-                dummies[i] = new Size(i);
-            }
-            dummies[10] = new Size(6.75d);
-            dummies[11] = new Size(8.25d);
-            dummies[12] = new Size(4.33333d);
-            dummies[13] = new Size(9.115d);
-            dummies[14] = new Size(20.000000005d);
-
-            Sizes list = new Sizes(dummies);
-
-
-            XmlSerializer s = new XmlSerializer(typeof(Sizes));
-
-            using (FileStream stream = new FileStream(list.FilePath, FileMode.Create, FileAccess.Write))
-            {
-                s.Serialize(stream, list);
-            }
+            return Table != null;
         }
 
-        private static void Test_GenericImplementation()
+        static SizesCache()
         {
-            Size[] dummies = new Size[20];
+            Sizes table = new Sizes();
 
-            for(int i = 0; i < dummies.Length; i++)
+            Task.Run(async () =>
             {
-                dummies[i] = new Size(i);
-            }
-
-            Sizes tester = new Sizes(dummies);
-
-            tester.Save();
+                await table.ReloadAsync();
+                Table = table.SourceList.ToArray();
+            });
         }
-
-        #endregion
-
-        #region Settings.Settings aliases
-        public string PropertiesPath => Properties.Settings.Default.DefaultPropertiesFolder;
-
-        public string Filename       => Properties.Settings.Default.SizesFilename;
-
-        #endregion
-
-        public override string FilePath => Path.Combine(PropertiesPath, Filename);
     }
 
     /// <summary>
@@ -214,6 +114,11 @@ namespace Slate_EK.Models.IO
         public static void Enqueue(SerializeTask<Size> operation)
         {
             _TaskQueue.Add(operation);
+        }
+
+        public static bool IsCompleted()
+        {
+            return _TaskQueue.Count < 1;
         }
     }
 }

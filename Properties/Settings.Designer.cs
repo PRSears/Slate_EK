@@ -41,27 +41,12 @@ namespace Slate_EK.Properties {
             }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Fasteners")]
-        public string DefaultFastenersFolder {
-            get {
-                return ((string)(this["DefaultFastenersFolder"]));
-            }
-            set {
-                this["DefaultFastenersFolder"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("DefaultXml")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Lists")]
         public string DefaultPropertiesFolder {
             get {
                 return ((string)(this["DefaultPropertiesFolder"]));
-            }
-            set {
-                this["DefaultPropertiesFolder"] = value;
             }
         }
         
@@ -115,18 +100,6 @@ namespace Slate_EK.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1000")]
-        public int SerializedUpdateInterval {
-            get {
-                return ((int)(this["SerializedUpdateInterval"]));
-            }
-            set {
-                this["SerializedUpdateInterval"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("bom-{0}.xml")]
         public string BomFilenameFormat {
             get {
@@ -139,22 +112,10 @@ namespace Slate_EK.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("4")]
-        public double DefaultSize {
-            get {
-                return ((double)(this["DefaultSize"]));
-            }
-            set {
-                this["DefaultSize"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0.01")]
-        public double DefaultPitch {
+        public float DefaultPitch {
             get {
-                return ((double)(this["DefaultPitch"]));
+                return ((float)(this["DefaultPitch"]));
             }
             set {
                 this["DefaultPitch"] = value;
@@ -163,7 +124,7 @@ namespace Slate_EK.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("2000")]
+        [global::System.Configuration.DefaultSettingValueAttribute("5000")]
         public int PropertyRefreshInterval {
             get {
                 return ((int)(this["PropertyRefreshInterval"]));
@@ -223,18 +184,6 @@ namespace Slate_EK.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Properties\\\\default_fastener.xml")]
-        public string DefaultFastenerFilePath {
-            get {
-                return ((string)(this["DefaultFastenerFilePath"]));
-            }
-            set {
-                this["DefaultFastenerFilePath"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("12")]
         public int BomListFontSize {
             get {
@@ -242,18 +191,6 @@ namespace Slate_EK.Properties {
             }
             set {
                 this["BomListFontSize"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public byte DefaultUnit {
-            get {
-                return ((byte)(this["DefaultUnit"]));
-            }
-            set {
-                this["DefaultUnit"] = value;
             }
         }
         
@@ -290,6 +227,126 @@ namespace Slate_EK.Properties {
             }
             set {
                 this["ConfirmClose"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("#494d4f")]
+        public string WindowBackgroundColor {
+            get {
+                return ((string)(this["WindowBackgroundColor"]));
+            }
+            set {
+                this["WindowBackgroundColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("#dddddd")]
+        public string MenuBarBackgroundColor {
+            get {
+                return ((string)(this["MenuBarBackgroundColor"]));
+            }
+            set {
+                this["MenuBarBackgroundColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("#dddddd")]
+        public string FieldButtonBackgroundColor {
+            get {
+                return ((string)(this["FieldButtonBackgroundColor"]));
+            }
+            set {
+                this["FieldButtonBackgroundColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("#dddddd")]
+        public string LabelForegroundColor {
+            get {
+                return ((string)(this["LabelForegroundColor"]));
+            }
+            set {
+                this["LabelForegroundColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("#454545")]
+        public string TextboxForegroundColor {
+            get {
+                return ((string)(this["TextboxForegroundColor"]));
+            }
+            set {
+                this["TextboxForegroundColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("#4f626d")]
+        public string TextboxBorderColor {
+            get {
+                return ((string)(this["TextboxBorderColor"]));
+            }
+            set {
+                this["TextboxBorderColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("4")]
+        public float DefaultSize {
+            get {
+                return ((float)(this["DefaultSize"]));
+            }
+            set {
+                this["DefaultSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Inventory.mdf")]
+        public string DefaultInventoryPath {
+            get {
+                return ((string)(this["DefaultInventoryPath"]));
+            }
+            set {
+                this["DefaultInventoryPath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.###")]
+        public string FloatFormatSpecifier {
+            get {
+                return ((string)(this["FloatFormatSpecifier"]));
+            }
+            set {
+                this["FloatFormatSpecifier"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("imperialSizes.xml")]
+        public string ImperialSizesFilename {
+            get {
+                return ((string)(this["ImperialSizesFilename"]));
+            }
+            set {
+                this["ImperialSizesFilename"] = value;
             }
         }
     }

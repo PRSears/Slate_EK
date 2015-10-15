@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="{Binding WindowTitle}" 
-        MinWidth="800" MinHeight="600"
-        Width="850" Height="600"
+        MinWidth="740" MinHeight="350"
+        Width="900" Height="600"
         Icon="/Slate_EK;component/Icons/icon_25.ico"
         Background="#494d4f">
     <Window.Resources>
@@ -19,9 +19,10 @@
             <Separator/>
             <MenuItem Header="Select All" Command="{Binding SelectAllCommand}"/>
             <MenuItem Header="Deselect All" Command="{Binding SelectNoneCommand}"/>
-            <Separator/>
-            <Separator/>
-            <MenuItem Header="~TEST HARNESS~" Command="{Binding TestHarnessCommand}"/>
+            <Separator Visibility="{Binding DebugModeVisibilty}"/>
+            <Separator Visibility="{Binding DebugModeVisibilty}"/>
+            <MenuItem Header="~TEST HARNESS~" Command="{Binding TestHarnessCommand}"
+                      Visibility="{Binding DebugModeVisibilty}"/>
         </ContextMenu>
     </Window.Resources>
     <Window.InputBindings>
@@ -29,6 +30,8 @@
                     Command="{Binding SelectAllCommand}"/>
         <KeyBinding Modifiers="Control" Key="D"
                     Command="{Binding SelectNoneCommand}"/>
+        <KeyBinding Key="Delete"
+                    Command="{Binding RemoveFastenerCommand}"/>
         
     </Window.InputBindings>
     <Grid>
@@ -54,8 +57,9 @@
                 <MenuItem Header="E_xit" Command="{Binding CloseCommand}"/>
             </MenuItem>
             <MenuItem Header="_Tools">
-                <MenuItem Header="DEBUG Drop Database" Command="{Binding DropDatabaseCommand}"/>
-                <Separator/>
+                <MenuItem Header="DEBUG Drop Database" Command="{Binding DropDatabaseCommand}"
+                          Visibility="{Binding DebugModeVisibilty}"/>
+                <Separator Visibility="{Binding DebugModeVisibilty}"/>
                 <MenuItem Header="_Open in Excel..." Command="{Binding OpenInExcelCommand}"/>
                 <MenuItem Header="_Update From .Csv..." Command="{Binding ImportCommand}"/>
                 <Separator/>
@@ -65,14 +69,6 @@
                 <MenuItem Header="Submit Changes" Command="{Binding SubmitChangesCommand}"/>
                 <MenuItem Header="Discard Pending Operations" Command="{Binding DiscardChangesCommand}"/>
             </MenuItem>
-            <MenuItem Header="_Options">
-                <MenuItem Header="_Units">
-                    <MenuItem Header="_Metric" Command="{Binding SwitchToMetricCommand}" 
-                              IsChecked="{Binding UsingMetric, Mode=OneWay}"/>
-                    <MenuItem Header="_Imperial" Command="{Binding SwitchToImperialCommand}" 
-                              IsChecked="{Binding UsingImperial, Mode=OneWay}"/>
-                </MenuItem>
-            </MenuItem>
         </Menu>
 
         <Grid Grid.Row="1" Grid.Column="0">
@@ -81,14 +77,15 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="75"/>
+                <ColumnDefinition Width="75"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="100"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="125"/>
                 <ColumnDefinition Width="16"/>
             </Grid.ColumnDefinitions>
             <Grid.Resources>
@@ -162,8 +159,11 @@
                     Content="Material"
                     Command="{Binding SortByMaterialCommand}"/>
             <Button Grid.Row="0" Grid.Column="7"
-                    Content="Fast. Type"
+                    Content="Type"
                     Command="{Binding SortByFastTypeCommand}"/>
+            <Button Grid.Row="0" Grid.Column="8"
+                    Content="Unit"
+                    Command="{Binding SortByUnitCommand}"/>
 
             <ScrollViewer Grid.Row="1" Grid.Column="0"
                         Grid.ColumnSpan="10"
@@ -232,42 +232,55 @@
                                             </Style>
                                         </Grid.Resources>
                                         <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="75"/>
+                                            <ColumnDefinition Width="75"/>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="100"/>
                                             <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="125"/>
                                         </Grid.ColumnDefinitions>
                                         <Border Grid.Column="0" Grid.ColumnSpan="10"
                                                 x:Name="ItemBackground"
                                                 Background="{Binding Background}"/>
 
                                         <TextBox Grid.Column="0"
-                                                 Text="{Binding Fastener.Quantity}"/>
+                                                 Text="{Binding Fastener.Quantity}"
+                                                 GotFocus="UIElement_OnGotFocus"/>
                                         <TextBox Grid.Column="1"
                                                  Text="{Binding Fastener.Price}"
-                                                 IsEnabled="{Binding IsEditable}"/>
+                                                 IsEnabled="{Binding IsEditable}"
+                                                 GotFocus="UIElement_OnGotFocus"/>
                                         <TextBox Grid.Column="2"
-                                                 Text="{Binding Fastener.Mass}"
-                                                 IsEnabled="{Binding IsEditable}"/>
+                                                 Text="{Binding Fastener.MassDisplay}"
+                                                 IsEnabled="{Binding IsEditable}"
+                                                 GotFocus="UIElement_OnGotFocus"/>
                                         <TextBox Grid.Column="3"
                                                  Text="{Binding Fastener.SizeDisplay}"
-                                                 IsEnabled="{Binding IsEditable}"/>
+                                                 IsEnabled="{Binding IsEditable}"
+                                                 GotFocus="UIElement_OnGotFocus"/>
                                         <TextBox Grid.Column="4"
-                                                 Text="{Binding Fastener.Pitch}"
-                                                 IsEnabled="{Binding IsEditable}"/>
+                                                 Text="{Binding Fastener.PitchDisplay}"
+                                                 IsEnabled="{Binding IsEditable}"
+                                                 GotFocus="UIElement_OnGotFocus"/>
                                         <TextBox Grid.Column="5"
-                                                 Text="{Binding Fastener.Length}"
-                                                 IsEnabled="{Binding IsEditable}"/>
+                                                 Text="{Binding Fastener.LengthDisplay}"
+                                                 IsEnabled="{Binding IsEditable}"
+                                                 GotFocus="UIElement_OnGotFocus"/>
                                         <TextBox Grid.Column="6"
                                                  Text="{Binding Fastener.Material}"
-                                                 IsEnabled="{Binding IsEditable}"/>
+                                                 IsEnabled="{Binding IsEditable}"
+                                                 GotFocus="UIElement_OnGotFocus"/>
                                         <TextBox Grid.Column="7"
                                                  Text="{Binding Fastener.Type}"
-                                                 IsEnabled="{Binding IsEditable}"/>
+                                                 IsEnabled="{Binding IsEditable}"
+                                                 GotFocus="UIElement_OnGotFocus"/>
+                                        <TextBox Grid.Column="8"
+                                                 Text="{Binding Fastener.Unit}"
+                                                 IsEnabled="{Binding IsEditable}"
+                                                 GotFocus="UIElement_OnGotFocus"/>
 
                                     </Grid>
                                     <DataTemplate.Triggers>
@@ -313,6 +326,9 @@
                     BorderThickness="0,0,1,0"
                     BorderBrush="#6b6b6b"/>
             <Border Grid.Row="1" Grid.Column="7"
+                    BorderThickness="0,0,1,0"
+                    BorderBrush="#6b6b6b"/>
+            <Border Grid.Row="1" Grid.Column="8"
                     BorderThickness="0,0,1,0"
                     BorderBrush="#6b6b6b"/>
 

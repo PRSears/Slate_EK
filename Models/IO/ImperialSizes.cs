@@ -7,13 +7,14 @@ using System.Threading.Tasks;
 
 namespace Slate_EK.Models.IO
 {
-    public sealed class Pitches : SerializedArray<Pitch>
+    public sealed class ImperialSizes : SerializedArray<UnifiedThreadStandard>
     {
-        public Pitches()
+        public ImperialSizes()
         {
+            
         }
 
-        public Pitches(Pitch[] sourceList) : this()
+        private ImperialSizes(UnifiedThreadStandard[] sourceList)
         {
             SourceList = sourceList;
         }
@@ -22,16 +23,16 @@ namespace Slate_EK.Models.IO
         {
             FileInfo xmlFile = new FileInfo(FilePath);
 
-            PitchesXmlOperationsQueue.Enqueue
+            ImperialSizesXmlOperationsQueue.Enqueue
             (
-                new SerializeTask<Pitch>(xmlFile, this, SerializeOperations.Load)
+                new SerializeTask<UnifiedThreadStandard>(xmlFile, this, SerializeOperations.Load)
             );
 
             await Task.Run
             (
                 () =>
                 {
-                    while (!PitchesXmlOperationsQueue.IsCompleted() || SourceList == null)
+                    while (!ImperialSizesXmlOperationsQueue.IsCompleted() || SourceList == null)
                     {
                         System.Threading.Thread.Sleep(10);
                     }
@@ -43,42 +44,42 @@ namespace Slate_EK.Models.IO
         {
             FileInfo xmlFile = new FileInfo(FilePath);
 
-            PitchesXmlOperationsQueue.Enqueue
+            ImperialSizesXmlOperationsQueue.Enqueue
             (
-                new SerializeTask<Pitch>(xmlFile, this, SerializeOperations.Save)
+                new SerializeTask<UnifiedThreadStandard>(xmlFile, this, SerializeOperations.Save)
             );
 
             await Task.Run
             (
                 () =>
                 {
-                    while (!PitchesXmlOperationsQueue.IsCompleted())
+                    while (!ImperialSizesXmlOperationsQueue.IsCompleted())
                     {
                         System.Threading.Thread.Sleep(10);
                     }
                 }
             );
-        }
+        } 
 
         public override string FilePath => Path.Combine
         (
             Properties.Settings.Default.DefaultPropertiesFolder,
-            Properties.Settings.Default.PitchesFilename
+            Properties.Settings.Default.ImperialSizesFilename
         );
     }
-    
-    public static class PitchesCache
+
+    public static class ImperialSizesCache
     {
-        public static Pitch[] Table;
+        public static UnifiedThreadStandard[] Table;
 
         public static bool IsBuilt()
         {
             return Table != null;
         }
 
-        static PitchesCache()
+        static ImperialSizesCache()
         {
-            Pitches table = new Pitches();
+            ImperialSizes table = new ImperialSizes();
 
             Task.Run(async () =>
             {
@@ -92,11 +93,11 @@ namespace Slate_EK.Models.IO
     /// Use a static constructor and blocking collection to handle reads/writes to XML file
     /// to minimize IOExceptions and avoid blocking the main thread.
     /// </summary>
-    static class PitchesXmlOperationsQueue
+    static class ImperialSizesXmlOperationsQueue
     {
-        private static BlockingCollection<SerializeTask<Pitch>> _TaskQueue = new BlockingCollection<SerializeTask<Pitch>>();
+        private static BlockingCollection<SerializeTask<UnifiedThreadStandard>> _TaskQueue = new BlockingCollection<SerializeTask<UnifiedThreadStandard>>();
 
-        static PitchesXmlOperationsQueue()
+        static ImperialSizesXmlOperationsQueue()
         {
             var thread = new System.Threading.Thread
             (
@@ -113,7 +114,7 @@ namespace Slate_EK.Models.IO
             thread.Start();
         }
 
-        public static void Enqueue(SerializeTask<Pitch> operation)
+        public static void Enqueue(SerializeTask<UnifiedThreadStandard> operation)
         {
             _TaskQueue.Add(operation);
         }

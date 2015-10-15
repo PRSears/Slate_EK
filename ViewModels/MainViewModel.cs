@@ -1,5 +1,8 @@
 ﻿using Extender.WPF;
+using Slate_EK.Models.IO;
+using Slate_EK.Models.ThreadParameters;
 using Slate_EK.Views;
+using System;
 using System.IO;
 using System.Windows.Input;
 using System.Xml;
@@ -45,7 +48,43 @@ namespace Slate_EK.ViewModels
 
             TestHarnessCommand = new RelayCommand
             (
-                () => { WindowManager.OpenWindow(new InventoryView()); }
+                () =>
+                {
+                    while (ImperialSizesCache.Table == null)
+                    {
+                        Console.WriteLine("Creating cache...");
+                        System.Threading.Thread.Sleep(10);
+                    }
+
+                    Console.WriteLine("Cache build should be complete.\n");
+
+                    //System.Threading.Thread.Sleep(5000);
+                    //GC.Collect();
+                    //System.Threading.Thread.Sleep(2500);
+
+                    foreach (var item in ImperialSizesCache.Table)
+                    {
+                        Console.WriteLine(item.ToString());
+                    }
+
+                    //ImperialSizes tester = new ImperialSizes();
+
+                    //Console.WriteLine($"1) Source list should be empty. {tester.SourceList == null}");
+                    
+                    //Task.Run(async () =>
+                    //{
+                    //    await tester.ReloadAsync();
+                    //    Console.WriteLine($"Table loaded, found {tester.SourceList?.Length} results.");
+                    //});
+
+                    ////while (tester.SourceList == null)
+                    ////{
+                    ////    Console.WriteLine("Waiting...");
+                    ////    System.Threading.Thread.Sleep(10);
+                    ////}
+
+                    //Console.WriteLine($"2) Control should have come back to TestHarness, and the operation should be complete. Got {tester.SourceList?.Length}");
+                }
             );
 
             OpenInventoryViewCommand = new RelayCommand
@@ -82,7 +121,7 @@ namespace Slate_EK.ViewModels
 
             OpenSettingsEditorCommand = new RelayCommand
             (
-                () => System.Windows.MessageBox.Show("Settings not implemented.")
+                () => WindowManager.OpenWindow(new SettingsView())
             );
 
             ExitAllCommand = new RelayCommand
@@ -121,12 +160,12 @@ namespace Slate_EK.ViewModels
 
             if (!File.Exists(xmlSizes.FilePath))
             {
-                xmlSizes.Add(new Models.Size(DefaultSize));
+                xmlSizes.Add(new Size(DefaultSize));
             }
 
             if (!File.Exists(xmlPitches.FilePath))
             {
-                xmlPitches.Add(new Models.Pitch(DefaultPitch));
+                xmlPitches.Add(new Pitch(DefaultPitch));
             }
         }
 
@@ -178,8 +217,8 @@ namespace Slate_EK.ViewModels
 
         #region #settings.settings aliases
 
-        public double DefaultSize                                => Properties.Settings.Default.DefaultSize;
-        public double DefaultPitch                               => Properties.Settings.Default.DefaultPitch;
+        public float DefaultSize                                 => Properties.Settings.Default.DefaultSize;
+        public float DefaultPitch                                => Properties.Settings.Default.DefaultPitch;
         public string BomFilenameFormat                          => Properties.Settings.Default.BomFilenameFormat;
         public bool Debug                                        => Properties.Settings.Default.Debug;
         public System.Windows.Visibility DebugControlsVisibility => Debug ? System.Windows.Visibility.Visible : System.Windows.Visibility.Hidden;

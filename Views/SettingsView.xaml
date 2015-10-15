@@ -1,0 +1,225 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Slate_EK.Views"
+        xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic" x:Class="Slate_EK.Views.SettingsView"
+        mc:Ignorable="d"
+        Title="{Binding WindowTitle}"
+        Icon="/Slate_EK;component/Icons/icon_25.ico"
+        Width="450" Height="400"
+        WindowStyle="ToolWindow"
+        Background="#494d4f"
+        ResizeMode="CanMinimize">
+    <Window.Resources>
+        <Style x:Key="FlatTabItemStyle" TargetType="{x:Type TabItem}">
+            <Setter Property="FocusVisualStyle">
+                <Setter.Value>
+                    <Style>
+                        <Setter Property="Control.Template">
+                            <Setter.Value>
+                                <ControlTemplate>
+                                    <Rectangle Margin="4,4,4,2" SnapsToDevicePixels="True" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Padding" Value="12,2"/>
+            <Setter Property="Foreground" Value="#DDDDDD"/>
+            <Setter Property="Background" Value="#0FFFFFFF"/>
+            <Setter Property="BorderThickness" Value="0,1,0,0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TabItem}">
+                        <Themes:ClassicBorderDecorator x:Name="ClassicBorder" BorderBrush="#00000000" BorderThickness="2" BorderStyle="HorizontalLine" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                            <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" ContentStringFormat="{TemplateBinding HeaderStringFormat}" ContentSource="Header" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
+                        </Themes:ClassicBorderDecorator>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Panel.ZIndex" Value="1"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="Background" Value="#15FFFFFF"/>
+                                <Setter Property="BorderBrush" Value="Transparent"/>
+                            </Trigger>
+                            <Trigger Property="TabStripPlacement" Value="Bottom">
+                                <Setter Property="BorderStyle" TargetName="ClassicBorder" Value="TabBottom"/>
+                            </Trigger>
+                            <Trigger Property="TabStripPlacement" Value="Left">
+                                <Setter Property="BorderStyle" TargetName="ClassicBorder" Value="TabLeft"/>
+                            </Trigger>
+                            <Trigger Property="TabStripPlacement" Value="Right">
+                                <Setter Property="BorderStyle" TargetName="ClassicBorder" Value="TabRight"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="TabStripPlacement" Value="Top"/>
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Margin" Value="-2"/>
+                            </MultiTrigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="TabStripPlacement" Value="Bottom"/>
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Margin" Value="-2"/>
+                            </MultiTrigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="TabStripPlacement" Value="Left"/>
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Padding" Value="11,2,14,2"/>
+                                <Setter Property="Margin" Value="-2"/>
+                            </MultiTrigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="TabStripPlacement" Value="Right"/>
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Padding" Value="14,2,11,2"/>
+                                <Setter Property="Margin" Value="-2"/>
+                            </MultiTrigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.Resources>
+            <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource FlatTabItemStyle}"/>
+        </Grid.Resources>
+        <TabControl Background="#15FFFFFF"
+                    BorderBrush="#15FFFFFF">
+            <TabItem Header="Switches and Values">
+                <ScrollViewer BorderBrush="Transparent"
+                              Background="Transparent"
+                              VerticalAlignment="Top"
+                              HorizontalAlignment="Stretch"
+                              VerticalScrollBarVisibility="Auto"
+                              Margin="0,0,5,0">
+                    <StackPanel Orientation="Vertical">
+                        <DockPanel Margin="10,5,0,5">
+                            <CheckBox DockPanel.Dock="Left"
+                                      Style="{StaticResource CenteredCheckbox}"
+                                      IsChecked="{Binding ConfirmBeforeClosing}">
+                                <TextBlock Style="{StaticResource CheckboxLabelStyle}"
+                                           Text="Confirm before closing"
+                                           Margin="10,0,0,0"/>
+                            </CheckBox>
+                        </DockPanel>
+                        <DockPanel Margin="10,5,0,5">
+                            <CheckBox DockPanel.Dock="Left"
+                                      Style="{StaticResource CenteredCheckbox}"
+                                      IsChecked="{Binding EnableDebug}">
+                                <TextBlock Style="{StaticResource CheckboxLabelStyle}"
+                                           Text="Enable debug mode"
+                                           Margin="10,0,0,0"/>
+                            </CheckBox>
+                        </DockPanel>
+                        <DockPanel Margin="0,25,0,5" LastChildFill="False">
+                            <Label Style="{StaticResource LabelStyle}"
+                                   DockPanel.Dock="Left"
+                                   Content="Dropdown source refresh interval (ms)"
+                                   ToolTip="The time, in milliseconds, between refreshes for the size and pitch dropdown menus in BOM view."/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="200" Height="22"
+                                     Text="{Binding PropertyRefreshInterval}"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                            <Label Style="{StaticResource LabelStyle}"
+                                   DockPanel.Dock="Left"
+                                   Content="Decimal format specifier"
+                                   ToolTip="String formatter for displaying numbers."/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="200" Height="22"
+                                     Text="{Binding FloatFormatSpecifier}"/>
+                        </DockPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Filenames and Locations">
+                <ScrollViewer BorderBrush="Transparent"
+                              Background="Transparent"
+                              VerticalAlignment="Top"
+                              HorizontalAlignment="Stretch"
+                              VerticalScrollBarVisibility="Auto"
+                              Margin="0,0,5,0">
+                    <StackPanel Orientation="Vertical">
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                            <Label Style="{StaticResource LabelStyle}"
+                                   DockPanel.Dock="Left"
+                                   Content="Pitch list filename"
+                                   ToolTip="Name of the file to load fastener pitch options from."/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="250" Height="22"
+                                     Text="{Binding PitchListFilename}"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                            <Label Style="{StaticResource LabelStyle}"
+                                   DockPanel.Dock="Left"
+                                   Content="Size list filename"
+                                   ToolTip="Name of the file to load fastener size options from."/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="250" Height="22"
+                                     Text="{Binding SizeListFilename}"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                            <Label Style="{StaticResource LabelStyle}"
+                                   DockPanel.Dock="Left"
+                                   Content="BOM filename format"
+                                   ToolTip=".Net String.Format for individual BOM filename. '{0}' is replaced with the assembly number."/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="250" Height="22"
+                                     Text="{Binding BomFilenameFormat}"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                            <Label Style="{StaticResource LabelStyle}"
+                                   DockPanel.Dock="Left"
+                                   Content="BOM autosave folder"
+                                   ToolTip="Path to the folder where BOMs are stored, relative to the application's root folder."/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="250" Height="22"
+                                     Text="{Binding AssemblyAutosaveFolder}"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                            <Label Style="{StaticResource LabelStyle}"
+                                   DockPanel.Dock="Left"
+                                   Content="Path to default inventory"
+                                   ToolTip="Full path (including filename and extension) to the inventory database that gets loaded by default."/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="250" Height="22"
+                                     Text="{Binding DefaultInventoryPath}"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                            <Label Style="{StaticResource LabelStyle}"
+                                   DockPanel.Dock="Left"
+                                   Content="Debug log filename"/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="250" Height="22"
+                                     Text="{Binding DebugLogFilename}"
+                                     Visibility="{Binding DebugOptionsVisibilty}"/>
+                        </DockPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

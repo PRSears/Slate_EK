@@ -99,6 +99,22 @@ namespace Slate_EK.Views
             return bomWindow;
         }
 
+        public Window FindInventoryWindow()
+        {
+            Window invWindow;
+
+            try
+            {
+                invWindow = ViewModel.WindowManager.Children.First(w => w.Title.Contains("nventory"));
+            }
+            catch (System.InvalidOperationException)
+            {
+                return null;
+            }
+
+            return invWindow;
+        }
+
         private void MainWindow_Drop(object sender, DragEventArgs e)
         {
             var items = e.Data.GetData(DataFormats.FileDrop);

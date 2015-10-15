@@ -1,14 +1,14 @@
 ﻿using Extender;
 using System.Text.RegularExpressions;
 
-namespace Slate_EK.Models
+namespace Slate_EK.Models.ThreadParameters
 {
     public class Pitch
     {
         // These need to be publicly set-able for the serialized array to work correctly.
         // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
         // ReSharper disable once MemberCanBePrivate.Global
-        public double Distance { get; set; }
+        public float Distance { get; set; }
 
         protected const double SIGMA = 0.0001d;
 
@@ -16,7 +16,7 @@ namespace Slate_EK.Models
         {
         }
 
-        public Pitch(double pitch)
+        public Pitch(float pitch)
         {
             Distance = pitch;
         }
@@ -41,8 +41,8 @@ namespace Slate_EK.Models
             Regex query = new Regex("([^0-9.-])");
             string cleaned = query.Replace(pitch, "");
 
-            double distance = 0d;
-            double.TryParse(cleaned, out distance);
+            float distance = 0f;
+            float.TryParse(cleaned, out distance);
 
             return new Pitch(distance);
         }

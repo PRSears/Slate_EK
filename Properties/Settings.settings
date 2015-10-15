@@ -8,11 +8,8 @@
     <Setting Name="ShortTitle" Type="System.String" Scope="Application">
       <Value Profile="(Default)">FASTener</Value>
     </Setting>
-    <Setting Name="DefaultFastenersFolder" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Fasteners</Value>
-    </Setting>
-    <Setting Name="DefaultPropertiesFolder" Type="System.String" Scope="User">
-      <Value Profile="(Default)">DefaultXml</Value>
+    <Setting Name="DefaultPropertiesFolder" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Lists</Value>
     </Setting>
     <Setting Name="DefaultAssembliesFolder" Type="System.String" Scope="User">
       <Value Profile="(Default)">Assemblies</Value>
@@ -26,20 +23,14 @@
     <Setting Name="PitchesFilename" Type="System.String" Scope="User">
       <Value Profile="(Default)">pitches.xml</Value>
     </Setting>
-    <Setting Name="SerializedUpdateInterval" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">1000</Value>
-    </Setting>
     <Setting Name="BomFilenameFormat" Type="System.String" Scope="User">
       <Value Profile="(Default)">bom-{0}.xml</Value>
     </Setting>
-    <Setting Name="DefaultSize" Type="System.Double" Scope="User">
-      <Value Profile="(Default)">4</Value>
-    </Setting>
-    <Setting Name="DefaultPitch" Type="System.Double" Scope="User">
+    <Setting Name="DefaultPitch" Type="System.Single" Scope="User">
       <Value Profile="(Default)">0.01</Value>
     </Setting>
     <Setting Name="PropertyRefreshInterval" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">2000</Value>
+      <Value Profile="(Default)">5000</Value>
     </Setting>
     <Setting Name="ItemSelectedBackgroundColor" Type="System.String" Scope="User">
       <Value Profile="(Default)">#585A77</Value>
@@ -53,14 +44,8 @@
     <Setting Name="ItemAltnernateBackgroundColor" Type="System.String" Scope="User">
       <Value Profile="(Default)">#06FFFFFF</Value>
     </Setting>
-    <Setting Name="DefaultFastenerFilePath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Properties\\default_fastener.xml</Value>
-    </Setting>
     <Setting Name="BomListFontSize" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">12</Value>
-    </Setting>
-    <Setting Name="DefaultUnit" Type="System.Byte" Scope="User">
-      <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="DebugFilename" Type="System.String" Scope="User">
       <Value Profile="(Default)">debug.log</Value>
@@ -70,6 +55,36 @@
     </Setting>
     <Setting Name="ConfirmClose" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="WindowBackgroundColor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">#494d4f</Value>
+    </Setting>
+    <Setting Name="MenuBarBackgroundColor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">#dddddd</Value>
+    </Setting>
+    <Setting Name="FieldButtonBackgroundColor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">#dddddd</Value>
+    </Setting>
+    <Setting Name="LabelForegroundColor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">#dddddd</Value>
+    </Setting>
+    <Setting Name="TextboxForegroundColor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">#454545</Value>
+    </Setting>
+    <Setting Name="TextboxBorderColor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">#4f626d</Value>
+    </Setting>
+    <Setting Name="DefaultSize" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">4</Value>
+    </Setting>
+    <Setting Name="DefaultInventoryPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Inventory.mdf</Value>
+    </Setting>
+    <Setting Name="FloatFormatSpecifier" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0.###</Value>
+    </Setting>
+    <Setting Name="ImperialSizesFilename" Type="System.String" Scope="User">
+      <Value Profile="(Default)">imperialSizes.xml</Value>
     </Setting>
   </Settings>
 </SettingsFile>

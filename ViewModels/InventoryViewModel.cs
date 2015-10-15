@@ -2,6 +2,7 @@
 using Extender.WPF;
 using Slate_EK.Models;
 using Slate_EK.Models.Inventory;
+using Slate_EK.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,8 +12,7 @@ using System.Windows.Input;
 
 namespace Slate_EK.ViewModels
 {
-    public enum UnitType   : byte { Metric, Imperial }
-    public enum SortMethod        { None, Quantity, Price, Mass, Size, Length, Pitch, Material, FastType }
+    public enum SortMethod { None, Quantity, Price, Mass, Size, Length, Pitch, Material, FastType, Unit }
 
     public sealed class InventoryViewModel : ViewModel
     {
@@ -35,8 +35,6 @@ namespace Slate_EK.ViewModels
         public ICommand ShowAllFastenersCommand     { get; private set; }
         public ICommand ClearQueryResultsCommand    { get; private set; }
         public ICommand DropDatabaseCommand         { get; private set; }
-        public ICommand SwitchToMetricCommand       { get; private set; }
-        public ICommand SwitchToImperialCommand     { get; private set; }
 
         //
         // Sort commands
@@ -48,6 +46,7 @@ namespace Slate_EK.ViewModels
         public ICommand SortByPitchCommand      { get; private set; }
         public ICommand SortByMaterialCommand   { get; private set; }
         public ICommand SortByFastTypeCommand   { get; private set; }
+        public ICommand SortByUnitCommand       { get; private set; }
 
         //
         // Lower controls
@@ -71,8 +70,7 @@ namespace Slate_EK.ViewModels
         //
         // Bound properties
         private ObservableCollection<FastenerControl> _FastenerList;
-
-        private UnitType               _CurrentUnit;
+        
         private SortMethod             _LastSortBy;
         private bool                   _OrderByDescending;
         private bool                   _PendingOperations;
@@ -82,6 +80,8 @@ namespace Slate_EK.ViewModels
         private List<UnifiedFastener>  _FastenersMarkedForRemoval;
         private string                 _WindowTitle = "Inventory Viewer";
         private string                 _SearchQuery;
+
+        private bool Debug => Properties.Settings.Default.Debug;
 
         public string   WindowTitle
         {
@@ -104,22 +104,6 @@ namespace Slate_EK.ViewModels
                 OnPropertyChanged(nameof(SearchQuery));
             }
         }
-        public UnitType CurrentUnit
-        {
-            get
-            {
-                return _CurrentUnit;
-            }
-            set
-            {
-                _CurrentUnit = value;
-                OnPropertyChanged(nameof(CurrentUnit));
-                OnPropertyChanged(nameof(UsingMetric));
-                OnPropertyChanged(nameof(UsingImperial));
-            }
-        }
-        public bool     UsingMetric   => CurrentUnit == UnitType.Metric;
-        public bool     UsingImperial => CurrentUnit == UnitType.Imperial;
         public enum     SearchType : byte
         {
             Quantity,
@@ -173,6 +157,7 @@ namespace Slate_EK.ViewModels
         public string     SubmitImageSource  => PendingOperations ? SubmitImageSourceStrings[1]  : SubmitImageSourceStrings[0];
         public string     DiscardImageSource => PendingOperations ? DiscardImageSourceStrings[1] : DiscardImageSourceStrings[0];
         public Visibility EditModeVisibility => EditMode ? Visibility.Visible : Visibility.Hidden;
+        public Visibility DebugModeVisibilty => Debug ? Visibility.Visible : Visibility.Hidden;
         public bool       PendingOperations
         {
             get
@@ -244,16 +229,30 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-                    UnifiedFastener empty = new UnifiedFastener();
-                    _PendingFasteners.Enqueue(empty);
+                    int number = 1;
 
-                    if (!EditMode)
-                        FastenerList.Clear();
+                    if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                    {
+                        var dialog = new Views.NumberPickerDialog(1);
 
-                    AddToFastenerList(new FastenerControl(empty));
+                        dialog.Owner = (Application.Current.MainWindow as MainView)?.FindInventoryWindow();
+                        dialog.ShowDialog();
 
-                    PendingOperations = true;
-                    EnterEditMode(false);
+                        if (!dialog.Success || dialog.Value < 1) return;
+
+                        number = dialog.Value;
+                    }
+
+                    while ((number--) > 0)
+                    {
+                        if (!EditMode)
+                            FastenerList.Clear();
+
+                        AddToFastenerList(new FastenerControl(new UnifiedFastener()));
+
+                        PendingOperations = true;
+                        EnterEditMode(false);
+                    }
                 }    
             );
 
@@ -360,232 +359,53 @@ namespace Slate_EK.ViewModels
                 }
             );
 
-            SwitchToMetricCommand = new RelayCommand
-            (
-                () =>
-                {
-
-                }
-            );
-
-            SwitchToImperialCommand = new RelayCommand
-            (
-                () =>
-                {
-
-                }
-            );
-
             #endregion
 
             #region // SortBy Commands
 
             SortByQuantityCommand = new RelayCommand
             (
-                () =>
-                {
-                    if (_LastSortBy == SortMethod.Quantity)
-                        OrderByDescending = !OrderByDescending;
-                    else
-                        _LastSortBy = SortMethod.Quantity;
-
-                    FastenerControl[] sorted;
-                    if (OrderByDescending)
-                    {
-                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.Quantity)
-                                              .ToArray();
-                    }
-                    else
-                    {
-                        sorted = _FastenerList.OrderBy(f => f.Fastener.Quantity)
-                                              .ToArray();
-                    }
-
-                    FastenerList.Clear();
-                    foreach (var item in sorted) AddToFastenerList(item);
-                }
+                () => SortFastenerListBy(f => f.Fastener.Quantity, SortMethod.Quantity)
             );
 
             SortByPriceCommand = new RelayCommand
             (
-                () =>
-                {
-                    if (_LastSortBy == SortMethod.Price)
-                        OrderByDescending = !OrderByDescending;
-                    else
-                        _LastSortBy = SortMethod.Price;
-
-                    FastenerControl[] sorted;
-                    if (OrderByDescending)
-                    {
-                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.Price)
-                                              .ToArray();
-                    }
-                    else
-                    {
-                        sorted = _FastenerList.OrderBy(f => f.Fastener.Price)
-                                              .ToArray();
-                    }
-
-                    FastenerList.Clear();
-                    foreach (var item in sorted) AddToFastenerList(item);
-                }
+                () => SortFastenerListBy(f => f.Fastener.Price, SortMethod.Price)
             );
 
             SortByMassCommand = new RelayCommand
             (
-                () =>
-                {
-                    if (_LastSortBy == SortMethod.Mass)
-                        OrderByDescending = !OrderByDescending;
-                    else
-                        _LastSortBy = SortMethod.Mass;
-
-                    FastenerControl[] sorted;
-                    if (OrderByDescending)
-                    {
-                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.Mass)
-                                              .ToArray();
-                    }
-                    else
-                    {
-                        sorted = _FastenerList.OrderBy(f => f.Fastener.Mass)
-                                              .ToArray();
-                    }
-
-                    FastenerList.Clear();
-                    foreach (var item in sorted) AddToFastenerList(item);
-                }
+                () => SortFastenerListBy(f => f.Fastener.Mass, SortMethod.Mass)
             );
 
             SortBySizeCommand = new RelayCommand
             (
-                () =>
-                {
-                    if (_LastSortBy == SortMethod.Size)
-                        OrderByDescending = !OrderByDescending;
-                    else
-                        _LastSortBy = SortMethod.Size;
-
-                    FastenerControl[] sorted;
-                    if (OrderByDescending)
-                    {
-                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.Size)
-                                              .ToArray();
-                    }
-                    else
-                    {
-                        sorted = _FastenerList.OrderBy(f => f.Fastener.Size)
-                                              .ToArray();
-                    }
-
-                    FastenerList.Clear();
-                    foreach (var item in sorted) AddToFastenerList(item);
-                }
+                () => SortFastenerListBy(f => f.Fastener.Size, SortMethod.Size)
             );
 
             SortByLengthCommand = new RelayCommand
             (
-                () =>
-                {
-                    if (_LastSortBy == SortMethod.Length)
-                        OrderByDescending = !OrderByDescending;
-                    else
-                        _LastSortBy = SortMethod.Length;
-
-                    FastenerControl[] sorted;
-                    if (OrderByDescending)
-                    {
-                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.Length)
-                                              .ToArray();
-                    }
-                    else
-                    {
-                        sorted = _FastenerList.OrderBy(f => f.Fastener.Length)
-                                              .ToArray();
-                    }
-
-                    FastenerList.Clear();
-                    foreach (var item in sorted) AddToFastenerList(item);
-                }
+                () => SortFastenerListBy(f => f.Fastener.Length, SortMethod.Length)
             );
 
             SortByPitchCommand = new RelayCommand
             (
-                () =>
-                {
-                    if (_LastSortBy == SortMethod.Pitch)
-                        OrderByDescending = !OrderByDescending;
-                    else
-                        _LastSortBy = SortMethod.Pitch;
-
-                    FastenerControl[] sorted;
-                    if (OrderByDescending)
-                    {
-                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.Pitch)
-                                              .ToArray();
-                    }
-                    else
-                    {
-                        sorted = _FastenerList.OrderBy(f => f.Fastener.Pitch)
-                                              .ToArray();
-                    }
-
-                    FastenerList.Clear();
-                    foreach (var item in sorted) AddToFastenerList(item);
-                }
+                () => SortFastenerListBy(f => f.Fastener.Pitch, SortMethod.Pitch)
             );
 
             SortByMaterialCommand = new RelayCommand
             (
-                () =>
-                {
-                    if (_LastSortBy == SortMethod.Material)
-                        OrderByDescending = !OrderByDescending;
-                    else
-                        _LastSortBy = SortMethod.Material;
-
-                    FastenerControl[] sorted;
-                    if (OrderByDescending)
-                    {
-                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.Material)
-                                              .ToArray();
-                    }
-                    else
-                    {
-                        sorted = _FastenerList.OrderBy(f => f.Fastener.Material)
-                                              .ToArray();
-                    }
-
-                    FastenerList.Clear();
-                    foreach (var item in sorted) AddToFastenerList(item);
-                }
+                () => SortFastenerListBy(f => f.Fastener.Material, SortMethod.Material)
             );
 
             SortByFastTypeCommand = new RelayCommand
             (
-                () =>
-                {
-                    if (_LastSortBy == SortMethod.FastType)
-                        OrderByDescending = !OrderByDescending;
-                    else
-                        _LastSortBy = SortMethod.FastType;
+                () => SortFastenerListBy(f => f.Fastener.Type, SortMethod.FastType)
+            );
 
-                    FastenerControl[] sorted;
-                    if (OrderByDescending)
-                    {
-                        sorted = _FastenerList.OrderByDescending(f => f.Fastener.Type)
-                                              .ToArray();
-                    }
-                    else
-                    {
-                        sorted = _FastenerList.OrderBy(f => f.Fastener.Type)
-                                              .ToArray();
-                    }
-
-                    FastenerList.Clear();
-                    foreach (var item in sorted) AddToFastenerList(item);
-                }
+            SortByUnitCommand = new RelayCommand
+            (
+                () => SortFastenerListBy(f => f.Fastener.Unit, SortMethod.Unit)
             );
 
             #endregion
@@ -646,11 +466,20 @@ namespace Slate_EK.ViewModels
             #endregion
         }
 
-        //TODO  move drop database command from the tools menu somewhere less accessible, like the 
-        //      settings panel perhaps. -- there is no settings panel for the Inventory Viewer itself,
-        //      so that might not work. 
+        private void SortFastenerListBy(Func<FastenerControl, object> keySelector, SortMethod sortMethod)
+        {
+            OrderByDescending = (_LastSortBy == sortMethod) ? !OrderByDescending : OrderByDescending;
 
-        //TODO_ Hook up the rest of the main menu buttons
+            var sorted = OrderByDescending ? _FastenerList.OrderByDescending(keySelector).ToArray() : 
+                                             _FastenerList.OrderBy(keySelector).ToArray();
+
+            FastenerList.Clear();
+            sorted.ForEach(AddToFastenerList);
+
+            _LastSortBy = sortMethod;
+        }
+
+        //TODO Hook up the rest of the main menu buttons
 
         //THOUGHT Maybe add / remove / submit shouldn't be anonymous methods. Could split them into 
         //        full functions to make keeping track of pending changes clearer / less code duplication.

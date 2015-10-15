@@ -1,26 +1,23 @@
 ﻿using Extender;
 using Extender.WPF;
 using Slate_EK.Models;
+using Slate_EK.Models.ThreadParameters;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
 
 namespace Slate_EK.ViewModels
 {
-    //TODO  allow input to be in either inches or mm and handle all appropriate conversions in the background
-    //TODO  hook up Bom export to Inventory
-    //TODO  change saveas csv to be of print format (or maybe as a third option?)
-    //      Qty, callout, mass per * qty, price per, total price
-
-    public class BomViewModel : ViewModel
+    public sealed class BomViewModel : ViewModel
     {
-        protected Timer PropertyRefreshTimer;
+        private Timer _PropertyRefreshTimer;
 
         #region commands
         public ICommand AddToListCommand            { get; private set; }
@@ -76,21 +73,36 @@ namespace Slate_EK.ViewModels
         }
 
         // Drop-down list data sources
-        public Material[] MaterialsList     => Material.Materials;
-        public HoleType[] HoleTypesList     => HoleType.HoleTypes;
-        public string[]   SizeOptionsList   => XmlSizes.SourceList?.Select(s => s.ToString()).ToArray();
-        public string[]   PitchOptionsList  => XmlPitches.SourceList?.Select(p => p.ToString()).ToArray();
-        public string[]   FastenerTypesList => FastenerType.Types.Select(t => $"{t.Callout} ({t.Type})").ToArray();
-
-        private Models.IO.Sizes XmlSizes
+        public Units[]    UnitsList            => (Units[])Enum.GetValues(typeof(Units)); // TODO Check if this is used 
+        public Material[] MaterialsList        => Material.Materials;
+        public HoleType[] HoleTypesList        => HoleType.HoleTypes;
+        public string[]   FastenerTypesList    => FastenerType.Types.Select(t => $"{t.Callout} ({t.Type})").ToArray();
+        public string[]   SizeOptionsList
         {
-            get; set;
+            get { return _SizeOptionsList; }
+            private set
+            {
+                _SizeOptionsList = value;
+                OnPropertyChanged(nameof(SizeOptionsList));
+            }
         }
-
-        private Models.IO.Pitches XmlPitches
+        public string[]   PitchOptionsList
         {
-            get; set;
-        }
+            get { return _PitchOptionsList; }
+            private set
+            {
+                _PitchOptionsList = value;
+                OnPropertyChanged(nameof(PitchOptionsList));
+            }
+        } 
+
+        // TODO A NullReferenceException sometimes gets thrown when typing in a value to select items from the drop down. 
+        //      (Gets thrown when the dropdown loses focus)
+        //      I haven't been able to reproduce this since implementing the ImperialSizes list.
+
+        private Models.IO.Sizes          XmlSizes         { get; set; }
+        private Models.IO.Pitches        XmlPitches       { get; set; }
+        private Models.IO.ImperialSizes  XmlImperialSizes { get; set; }
 
         public Bom Bom
         {
@@ -123,17 +135,21 @@ namespace Slate_EK.ViewModels
         private Bom                _Bom;
         private UnifiedFastener    _WorkingFastener;
         private bool               _OverrideLength;
+        private string[]           _SizeOptionsList;
+        private string[]           _PitchOptionsList;
 
         private ObservableCollection<FastenerControl> _ObservableFasteners;
 
         #endregion
-        
+
         public BomViewModel() : this(string.Empty)
         { }
 
         public BomViewModel(string assemblyNumber)
         {
-            Bom                    = new Bom(assemblyNumber); // TODO fix saving when assembly # changes // Should it 'move' or just copy?
+            // TODO fix saving when assembly # changes // Should it 'move' or just copy?
+            //      I'm thinking copy, that way you can quickly duplicate a bom for similar orders.
+            Bom                    = new Bom(assemblyNumber); 
             WorkingFastener        = new UnifiedFastener();
             ObservableFasteners    = Bom.SourceList != null ? new ObservableCollection<FastenerControl>(FastenerControl.FromArray(Bom.SourceList)) :
                                                               new ObservableCollection<FastenerControl>();
@@ -141,17 +157,7 @@ namespace Slate_EK.ViewModels
             Bom.PropertyChanged += (s, e) =>
             {
                 if (Bom.SourceList != null && e.PropertyName.Equals(nameof(Bom.SourceList)))
-                {
                     RefreshBom();
-                    //ObservableFasteners = new ObservableCollection<FastenerControl>(FastenerControl.FromArray(Bom.SourceList));
-
-                    //// Hook up context menu for FastenerControls
-                    //foreach (FastenerControl control in ObservableFasteners)
-                    //{
-                    //    control.RequestingRemoval += sender => Bom.Remove((sender as FastenerControl)?.Fastener, Int32.MaxValue);
-                    //    control.RequestingQuantityChange += ChangeQuantity;
-                    //}
-                }
 
                 OnPropertyChanged(nameof(WindowTitle)); // do this regardless of which property changed
             };
@@ -163,6 +169,14 @@ namespace Slate_EK.ViewModels
                 {
                     if (!OverrideLength)
                         WorkingFastener.CalculateLength(true);
+                }
+                else if (e.PropertyName.Equals(nameof(UnifiedFastener.Unit)))
+                {
+                    SetSizesList();
+                }
+                else if (WorkingFastener.Unit == Units.Inches && e.PropertyName.Equals(nameof(WorkingFastener.SizeDisplay)))
+                {
+                    SetUstPitch();
                 }
             };
 
@@ -177,68 +191,6 @@ namespace Slate_EK.ViewModels
             };
 
             Initialize();
-        }
-
-        private void RefreshBom()
-        {
-            ObservableFasteners.Clear();
-            
-            Bom.SourceList.ForEach(f => ObservableFasteners.Add(new FastenerControl(f)));
-            ObservableFasteners.ForEach
-            (
-                c =>
-                {
-                    c.RequestingRemoval         += sender => Bom.Remove((sender as FastenerControl)?.Fastener, Int32.MaxValue);
-                    c.RequestingQuantityChange  += ChangeQuantity;
-                }
-            );
-        }
-
-        private void RemoveN(object sender)
-        {
-            if (sender is FastenerControl)
-            {
-                Views.NumberPickerDialog dialog = new Views.NumberPickerDialog();
-                dialog.Owner = FindThisWindow();
-                dialog.ShowDialog();
-
-                if (dialog.Value > 0)
-                {
-                    Bom.Remove(((FastenerControl)sender).Fastener, dialog.Value);
-                }
-            }
-        }
-
-        private void ChangeQuantity(object sender)
-        {
-            if (!(sender is FastenerControl)) return;
-
-            var dialog = new Views.NumberPickerDialog(((FastenerControl)sender).Fastener.Quantity);
-
-            dialog.Owner = FindThisWindow();
-            dialog.ShowDialog();
-
-            if (!dialog.Success) return;
-
-            if (dialog.Value > 0)
-            {
-                // Edit the value in the source list directly... need to select the fastener control from Bom.SourceList first.
-                var match = Bom.SourceList.FirstOrDefault(f => ((FastenerControl)sender).Fastener.UniqueID.Equals(f.UniqueID));
-                if (match != null && !match.Equals(default(UnifiedFastener)))
-                    match.Quantity = dialog.Value;
-
-                Bom.Save();
-            }
-            else Bom.Remove(((FastenerControl)sender).Fastener, Int32.MaxValue);
-
-            RefreshBom(); // Make sure the ObservableCollection is updated to reflect the change in Bom.SourceList.
-        }
-
-        private Window FindThisWindow()
-        {
-            // Yeah... this is bad.
-            Window mainWindow = Application.Current.MainWindow;
-            return (mainWindow as Views.MainView)?.FindBomWindow(Bom.AssemblyNumber);
         }
 
         public override void Initialize()
@@ -261,8 +213,8 @@ namespace Slate_EK.ViewModels
                 () =>
                 {
                     System.Diagnostics.Process editorProcess = new System.Diagnostics.Process();
-                    editorProcess.StartInfo.FileName         = Properties.Settings.Default.DefaultPropertiesFolder;
-                    editorProcess.StartInfo.UseShellExecute  = true;
+                    editorProcess.StartInfo.FileName = Properties.Settings.Default.DefaultPropertiesFolder;
+                    editorProcess.StartInfo.UseShellExecute = true;
                     editorProcess.Start();
                 }
             );
@@ -298,7 +250,7 @@ namespace Slate_EK.ViewModels
                     {
                         // Has something selected in the BOM list
                         StringBuilder descriptionsBuilder = new StringBuilder();
-                        ObservableFasteners.Where  (f => f.IsSelected)
+                        ObservableFasteners.Where(f => f.IsSelected)
                                            .ForEach(f => descriptionsBuilder.AppendLine(f.Fastener.Description));
 
                         Clipboard.SetText(descriptionsBuilder.ToString());
@@ -374,7 +326,7 @@ namespace Slate_EK.ViewModels
                     // Can't allow edit when multiple fasteners are selected. 
                     // Too messy -- what would we use for initial value? Set all selected to the same value,
                     // or would the user expect to increment?
-                    return (ObservableFasteners.Count(f => f.IsSelected) <= 1) ? true : false;
+                    return ObservableFasteners.Any(f => f.IsSelected);
                 }
             );
 
@@ -389,7 +341,7 @@ namespace Slate_EK.ViewModels
                 },
                 () => ObservableFasteners.Any(f => f.IsSelected)
             );
-            
+
             SaveAsCommand = new RelayCommand
             (
                 () => SaveAs()
@@ -398,37 +350,159 @@ namespace Slate_EK.ViewModels
             // Hook up context menu commands for FastenerControls
             foreach (FastenerControl control in ObservableFasteners)
             {
-                control.RequestingRemoval           += sender => Bom.Remove((sender as FastenerControl)?.Fastener, Int32.MaxValue);
-                control.RequestingQuantityChange    += ChangeQuantity;
+                control.RequestingRemoval += sender => Bom.Remove((sender as FastenerControl)?.Fastener, Int32.MaxValue);
+                control.RequestingQuantityChange += ChangeQuantity;
             }
 
             // Lists from XML
-            XmlSizes    = new Models.IO.Sizes();
-            XmlPitches  = new Models.IO.Pitches();
+            XmlSizes = new Models.IO.Sizes();
+            XmlPitches = new Models.IO.Pitches();
+            XmlImperialSizes = new Models.IO.ImperialSizes();
 
-            XmlSizes.Reload();
-            XmlPitches.Reload();
-
-            PropertyRefreshTimer           = new Timer(Properties.Settings.Default.PropertyRefreshInterval);
-            PropertyRefreshTimer.AutoReset = true;
-            PropertyRefreshTimer.Elapsed  += (s, e) =>
+            Task.Run(async () =>
             {
-                XmlSizes.Reload();
-                XmlPitches.Reload();
+                await XmlSizes.ReloadAsync();
+                if (WorkingFastener.Unit == Units.Millimeters)
+                    SetSizesList();
+            });
 
-                OnPropertyChanged(nameof(SizeOptionsList));
-                OnPropertyChanged(nameof(PitchOptionsList));
+            Task.Run(async () =>
+            {
+                await XmlImperialSizes.ReloadAsync();
+                if (WorkingFastener.Unit == Units.Inches)
+                    SetSizesList();
+            });
+
+            Task.Run(async () =>
+            {
+                await XmlPitches.ReloadAsync();
+                SetSizesList();
+            });
+
+            _PropertyRefreshTimer = new Timer(Properties.Settings.Default.PropertyRefreshInterval);
+            _PropertyRefreshTimer.AutoReset = true;
+            _PropertyRefreshTimer.Elapsed += (s, e) =>
+            {
+                #pragma warning disable CS4014 // We don't care when the task is completed.
+                XmlSizes.ReloadAsync();
+                XmlPitches.ReloadAsync();
+                XmlImperialSizes.ReloadAsync();
+                #pragma warning restore CS4014 // We don't care when the task is completed.
+
+                if (SizeOptionsList == null || PitchOptionsList == null)
+                    SetSizesList();
+                else
+                {
+                    OnPropertyChanged(nameof(SizeOptionsList));
+                    OnPropertyChanged(nameof(PitchOptionsList));
+                }
 
                 GC.Collect();
             };
 
-            PropertyRefreshTimer.Start();
+            _PropertyRefreshTimer.Start();
 
-            OnPropertyChanged(nameof(SizeOptionsList));
-            OnPropertyChanged(nameof(PitchOptionsList));
         }
 
-        protected bool SaveAs()
+        private void SetSizesList()
+        {
+            switch (WorkingFastener.Unit)
+            {
+                case Units.Millimeters:
+                    SizeOptionsList  = XmlSizes.SourceList?.Select(  s => s.ToString()).ToArray();
+                    PitchOptionsList = XmlPitches.SourceList?.Select(p => p.ToString()).ToArray();
+                    break;
+                case Units.Inches:
+                    SizeOptionsList  = XmlImperialSizes.SourceList?.Select(i => i.Designation).ToArray(); 
+                    // This value for PitchOptionsList is only used as a fall-back.
+                    // SetUstPitch() will try to generate a more specific list.
+                    PitchOptionsList = Enum.GetNames(typeof(Models.ThreadParameters.ThreadDensity));
+                    break;
+            }
+        }
+
+        private void SetUstPitch()
+        {
+            var selectedUts = XmlImperialSizes.SourceList?.FirstOrDefault(s => s.Designation.Equals(WorkingFastener.SizeDisplay));            
+            //var selectedUts = XmlImperialSizes.SourceList?.FirstOrDefault(s => s.Designation.Equals("#12")); // Debug values
+
+            if (selectedUts == null || selectedUts.Equals(default(UnifiedThreadStandard)))
+                return; // give up
+
+            var display = ((ThreadDensity[])Enum.GetValues(typeof(ThreadDensity)))
+                .Select
+                (
+                    //thread => $"{Enum.GetName(typeof(ThreadDensity), thread)?.PadRight(4)} - {selectedUts.GetThreadDensity(thread)} TPI"
+                    thread => selectedUts.GetThreadDensityDisplay(thread)
+                )
+                .ToArray();
+
+            PitchOptionsList = display;
+        }
+
+        private void RefreshBom()
+        {
+            ObservableFasteners.Clear();
+            
+            Bom.SourceList.ForEach(f => ObservableFasteners.Add(new FastenerControl(f)));
+            ObservableFasteners.ForEach
+            (
+                c =>
+                {
+                    c.RequestingRemoval         += sender => Bom.Remove((sender as FastenerControl)?.Fastener, Int32.MaxValue);
+                    c.RequestingQuantityChange  += ChangeQuantity;
+                }
+            );
+        }
+
+        private void RemoveN(object sender)
+        {
+            if (sender is FastenerControl)
+            {
+                Views.NumberPickerDialog dialog = new Views.NumberPickerDialog();
+                dialog.Owner = FindThisWindow();
+                dialog.ShowDialog();
+
+                if (dialog.Value > 0)
+                {
+                    Bom.Remove(((FastenerControl)sender).Fastener, dialog.Value);
+                }
+            }
+        }
+
+        private void ChangeQuantity(object sender)
+        {
+            if (!(sender is FastenerControl)) return;
+
+            var dialog = new Views.NumberPickerDialog(((FastenerControl)sender).Fastener.Quantity);
+
+            dialog.Owner = FindThisWindow();
+            dialog.ShowDialog();
+
+            if (!dialog.Success) return;
+
+            if (dialog.Value > 0)
+            {
+                // Edit the value in the source list directly... need to select the fastener control from Bom.SourceList first.
+                var match = Bom.SourceList.FirstOrDefault(f => ((FastenerControl)sender).Fastener.UniqueID.Equals(f.UniqueID));
+                if (match != null && !match.Equals(default(UnifiedFastener)))
+                    match.Quantity = dialog.Value;
+
+                Bom.SaveAsync();
+            }
+            else Bom.Remove(((FastenerControl)sender).Fastener, Int32.MaxValue);
+
+            RefreshBom(); // Make sure the ObservableCollection is updated to reflect the change in Bom.SourceList.
+        }
+
+        private Window FindThisWindow()
+        {
+            // Yeah... this is bad.
+            Window mainWindow = Application.Current.MainWindow;
+            return (mainWindow as Views.MainView)?.FindBomWindow(Bom.AssemblyNumber);
+        }
+
+        private bool SaveAs()
         {
             string savePath;
 
@@ -487,12 +561,10 @@ namespace Slate_EK.ViewModels
 
         private bool NullsafeHandleShortcut(ShortcutEventHandler handler)
         {
-            if (handler != null)
-            {
-                handler();
-                return true;
-            }
-            else return false;
+            if (handler == null) return false;
+
+            handler.Invoke();
+            return true;
         }
     }
 

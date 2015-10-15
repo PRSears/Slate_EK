@@ -1,8 +1,9 @@
 ﻿using Extender;
+using Extender.UnitConversion.Lengths;
 using System;
 using System.Text.RegularExpressions;
 
-namespace Slate_EK.Models
+namespace Slate_EK.Models.ThreadParameters
 {
     public class Size
     {
@@ -12,7 +13,7 @@ namespace Slate_EK.Models
         /// <summary>
         /// Outer diameter (in millimeters) of the screw being described.
         /// </summary>
-        public double OuterDiameter { get; set; }
+        public float OuterDiameter { get; set; }
 
         protected const double SIGMA = 0.0001d;
 
@@ -20,7 +21,7 @@ namespace Slate_EK.Models
         {
         }
 
-        public Size(double od)
+        public Size(float od)
         {
             OuterDiameter = od;
         }
@@ -39,21 +40,24 @@ namespace Slate_EK.Models
             OuterDiameter = TryParse(designation).OuterDiameter;
         }
 
-        public static Size TryParse(string pitch)
+        public static Size TryParse(string size)
         {
-            Regex query = new Regex("([^0-9.-])");
-            string cleaned = query.Replace(pitch, "");
+            // TODO Parsing sizes will have to be re-written for considering units
+            if (string.IsNullOrWhiteSpace(size)) return new Size();
 
-            double distance;
-            double.TryParse(cleaned, out distance);
+            Regex query    = new Regex("([^0-9.-])");
+            string cleaned = query.Replace(size, "");
 
-            return new Size(distance);
+            float od;
+            float.TryParse(cleaned, out od);
+
+            return new Size(od);
         }
 
         public override string ToString()
         {
-            // TODO_ Check on this later to make sure it's actually what we want
-            return Math.Abs(OuterDiameter % 1) < SIGMA ? $"M{Math.Round(OuterDiameter),-2}" : $"{OuterDiameter}mm";
+            // TODO Fix Size.ToString() once units are baked in
+            return Math.Abs(OuterDiameter % 1) < SIGMA ? $"M{Math.Round(OuterDiameter),-2}" : new Millimeter(OuterDiameter).ToString(Spec);
         }
 
         public override bool Equals(object obj)
@@ -79,15 +83,14 @@ namespace Slate_EK.Models
 
         public static bool operator == (Size a, Size b)
         {
-            if (ReferenceEquals(null, a))
-                return ReferenceEquals(null, b);
-
-            return a.Equals(b);
+            return ReferenceEquals(null, a) ? ReferenceEquals(null, b) : a.Equals(b);
         }
 
         public static bool operator != (Size a, Size b)
         {
             return !(a == b);
         }
+
+        private string Spec => Properties.Settings.Default.FloatFormatSpecifier;
     }
 }
