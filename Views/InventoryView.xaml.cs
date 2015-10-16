@@ -26,11 +26,13 @@ namespace Slate_EK.Views
             }
         }
 
-        public InventoryView()
+        public InventoryView() : this(Properties.Settings.Default.DefaultInventoryPath) { }
+
+        public InventoryView(string inventoryPath)
         {
             InitializeComponent();
 
-            ViewModel = new InventoryViewModel("E:\\code\\GitHub\\Slate_EK\\.example_files\\TestInventory_003.mdf"); //HACK temporary Inventory for testing
+            ViewModel = new InventoryViewModel(inventoryPath);
             ViewModel.RegisterCloseAction(Close);
 
             InventoryItemsControl.ItemsSource = ViewModel.FastenerList; 

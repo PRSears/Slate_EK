@@ -414,29 +414,56 @@ namespace Slate_EK.Models
         }
 
         /// <summary>
+        /// Compares this fastener against 'ideal' to determine if this is an acceptable
+        /// match to 'ideal'.
+        /// </summary>
+        /// <param name="ideal">The ideal fastener.</param>
+        /// <returns>
+        /// If it is determined that this fastener is close enough to the ideal, 
+        /// then the (absolute) difference in this.Length and ideal.Length is returned. 
+        /// If it is not close, a negative value is returned. 
+        /// </returns>
+        public float CloseEnough(UnifiedFastener ideal)
+        {
+            // TODO Properly take length into account...
+
+            bool close = (this.Size.Equals(ideal.Size)         &&
+                          this.Pitch.Equals(ideal.Pitch)       &&
+                          this.Type.Equals(ideal.Type)         &&
+                          this.Material.Equals(ideal.Material) &&
+                         (this.Length >= ideal.Length));
+
+            return close ? Math.Abs(this.Length - ideal.Length) : -1;
+        }
+
+        /// <summary>
         /// Attempts to create a new UnifiedFastener from a string Description.
         /// </summary>
         /// <param name="fastenerDescription"></param>
         /// <returns></returns>
         public static UnifiedFastener FromString(string fastenerDescription)
         {
-            Regex verify = new Regex(@"([Mm0-9 .]{4})-([0-9 .]{3,})x([ 0-9]{3,5})([FfCcHhSsLl]{4,6})"); //TODO this is going to need some work for accommodating imperial units
+            Regex verify = new Regex(@"([Mm0-9 .//#]{3,5})-([0-9 .]{3,})x([0-9 .]{3,8})([FfCcHhSsLl]{4,6})"); 
             var   match  = verify.Match(fastenerDescription);
 
-            if (match.Success)
+            if (!match.Success) return null;
+
+            var captures = match.Groups;
+            if (captures.Count == 5)
             {
-                var captures = match.Groups;
-                if (captures.Count == 5)
+                Units unit = (captures[1].ToString().Contains("#") || captures[1].ToString().Contains(@"/")) ?
+                                 Units.Inches : Units.Millimeters;
+
+                return new UnifiedFastener
                 {
-                    return new UnifiedFastener
-                    (
-                        (float)(new Size(captures[1].ToString()).OuterDiameter),
-                        float.Parse(captures[2].ToString()),
-                        Models.Material.Steel,
-                        FastenerType.Parse(captures[4].ToString()),
-                        new PlateInfo()
-                    ) {Length = float.Parse(captures[3].ToString())};
-                }
+                    Unit         = unit,
+                    SizeDisplay  = captures[1].ToString().Trim(),
+                    PitchDisplay = captures[2].ToString().Trim(),
+                    Material     = Models.Material.Steel.ToString(),
+                    Type         = FastenerType.Parse(captures[4].ToString()).ToString(),
+                    Length       = float.Parse(captures[3].ToString()),
+                    PlateInfo    = new PlateInfo()
+                };
             }
 
             return null;

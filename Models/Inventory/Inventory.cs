@@ -1,11 +1,10 @@
-﻿using Extender.Debugging;
+﻿using Extender;
+using Extender.Debugging;
 using System;
 using System.Data.Linq;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows;
-using Extender;
 
 namespace Slate_EK.Models.Inventory
 {
@@ -23,12 +22,12 @@ namespace Slate_EK.Models.Inventory
         /// <param name="filename">Full name and path of the inventory database being managed.</param>
         public Inventory(string filename)
         {
-            _Filename     = filename;
+            _Filename = filename;
 
             InitDataContext();
 
             if (!_Database.DatabaseExists())
-                _Database.CreateDatabase();
+                _Database.CreateDatabase(); 
         }
 
         public void DEBUG_DropDatabase()
@@ -147,7 +146,6 @@ namespace Slate_EK.Models.Inventory
                 if (disposing)
                 {
                     //  dispose managed state (managed objects).
-                    //_Database.SubmitChanges(); // THOUGHT Make sure I should actually do this
                     _Database.Dispose();
                 }
 
@@ -195,9 +193,6 @@ namespace Slate_EK.Models.Inventory
             _Action.Invoke(value);
         }
 
-        public override Encoding Encoding
-        {
-            get { return System.Text.Encoding.Default; }
-        }
+        public override Encoding Encoding => System.Text.Encoding.Default;
     }
 }

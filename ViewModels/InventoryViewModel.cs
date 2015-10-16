@@ -538,9 +538,6 @@ namespace Slate_EK.ViewModels
         {
             fastener.Fastener.PropertyChanged += (sender, args) =>
             {
-                // THOUGHT Do I need to check which property changed here?
-                //         If we're in edit mode then it will already be in the list,
-                //         so it's not doing anything unnecessary.
                 if (!_PendingFasteners.Contains(fastener.Fastener))
                 {
                     _PendingFasteners.Enqueue(fastener.Fastener);
@@ -917,3 +914,9 @@ namespace Slate_EK.ViewModels
         }
     }
 }
+
+//
+// TODOh Implement importing large numbers of fasteners from a csv / excel file
+//       This is a priority so I can do some real testing with BOM searching the inventory
+//
+// TODO  Print function(s) could export to an actual xlsx with some prettied formatting.

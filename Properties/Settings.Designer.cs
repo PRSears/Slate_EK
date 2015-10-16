@@ -316,7 +316,7 @@ namespace Slate_EK.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Inventory.mdf")]
+        [global::System.Configuration.DefaultSettingValueAttribute("E:\\code\\GitHub\\Slate_EK\\.example_files\\TestInventory_003.mdf")]
         public string DefaultInventoryPath {
             get {
                 return ((string)(this["DefaultInventoryPath"]));

@@ -1,8 +1,10 @@
 ﻿using Extender;
+using Extender.Debugging;
 using Extender.UnitConversion;
 using Extender.UnitConversion.Lengths;
 using Extender.WPF;
 using Slate_EK.Models;
+using Slate_EK.Models.Inventory;
 using Slate_EK.Models.ThreadParameters;
 using System;
 using System.Collections.Generic;
@@ -74,8 +76,8 @@ namespace Slate_EK.ViewModels
             }
         }
 
-        // Drop-down list data sources
-        public Units[]    UnitsList            => (Units[])Enum.GetValues(typeof(Units)); // TODO Check if this is used 
+        // Drop-down list data sources -- it shows no reference, but they're being bound to in the xaml
+        public Units[]    UnitsList            => (Units[])Enum.GetValues(typeof(Units));
         public Material[] MaterialsList        => Material.Materials;
         public HoleType[] HoleTypesList        => HoleType.HoleTypes;
         public string[]   FastenerTypesList    => FastenerType.Types.Select(t => $"{t.Callout} ({t.Type})").ToArray();
@@ -281,8 +283,10 @@ namespace Slate_EK.ViewModels
                         if (parsedFastener != null)
                             newFasteners.Add(parsedFastener);
                     }
-
-                    Bom.Add(newFasteners.ToArray());
+                    // THOUGHT Is it okay to directly add to the BOM here?
+                    //         If it's getting pasted, that means it was (likely) copied from the BOM, 
+                    //         so there should, in theory, have already been a check to the inventory.
+                    Bom.Add(newFasteners.ToArray()); 
                 },
                 () => !string.IsNullOrWhiteSpace(Clipboard.GetText())
             );
@@ -297,7 +301,7 @@ namespace Slate_EK.ViewModels
                 () =>
                 {
                     WorkingFastener.ForceNewUniqueID();
-                    Bom.Add(WorkingFastener.Copy());
+                    AddToBom(WorkingFastener);
                 }
             );
 
@@ -389,7 +393,7 @@ namespace Slate_EK.ViewModels
 
             _PropertyRefreshTimer = new Timer(Properties.Settings.Default.PropertyRefreshInterval);
             _PropertyRefreshTimer.AutoReset = true;
-            _PropertyRefreshTimer.Elapsed += (s, e) =>
+            _PropertyRefreshTimer.Elapsed  += (s, e) =>
             {
                 #pragma warning disable CS4014 // We don't care when the task is completed.
                 XmlSizes.ReloadAsync();
@@ -410,13 +414,48 @@ namespace Slate_EK.ViewModels
 
             _PropertyRefreshTimer.Start();
         }
-        
+
         private void AddToBom(UnifiedFastener fastener)
         {
-            // Check if a suitable fastener exists in inventory
-            //  -> add that to BOM if it does
-            //  -> ?? if it doesn't.
+            AddToBom(new[] {fastener});
         }
+        
+        private void AddToBom(IEnumerable<UnifiedFastener> fasteners)
+        {
+            using (Inventory inv = new Inventory(Properties.Settings.Default.DefaultInventoryPath))
+            {
+                foreach (var fastener in fasteners)
+                {
+                    // Check exact match
+                    if (inv.Fasteners.Any(f => f.Equals(fastener)))
+                    {
+                        Bom.Add(fastener.Copy());
+                        return;
+                    }
+
+                    // No exact match, try to find acceptable replacement
+                    var sub = inv.Fasteners.FirstOrDefault
+                    (
+                        f => f.Size.Equals(fastener.Size)         && 
+                             f.Pitch.Equals(fastener.Pitch)       && 
+                             f.Type.Equals(fastener.Type)         && 
+                             f.Material.Equals(fastener.Material) && 
+                             (f.Length >= fastener.Length)
+                    );
+
+                    if (sub == null || sub.Equals(default(UnifiedFastener)))
+                    {
+                        // TODO Decide what to do when no suitable fastener is found
+                        Debug.WriteMessage("No suitable fastener found.", "debug");
+                        sub = fastener;
+                    }
+
+                    Bom.Add(sub.Copy());
+                }
+            }
+        } 
+        // THOUGHT Do I want to remove the quantity from the db on AddToBom, or on print, or somewhere else?
+        //         I could have a separate button / function for finalizing.
 
         private void SetSizesList()
         {
@@ -446,6 +485,7 @@ namespace Slate_EK.ViewModels
             {
                 PitchOptionsList = ((ThreadDensity[])Enum.GetValues(typeof(ThreadDensity)))
                                                          .Select(thread => selectedUts.GetThreadDensityDisplay(thread))
+                                                         .Where(d => !d.EndsWith(" 0 TPI"))
                                                          .ToArray();
             }
             catch (InvalidOperationException)

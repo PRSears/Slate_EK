@@ -107,7 +107,9 @@ namespace Slate_EK.Models
         {
             List<UnifiedFastener> sorted = new List<UnifiedFastener>();
 
-            foreach (var typeGroup in SourceList.OrderBy(f => f.Length).GroupBy(f => f.Type))
+            if (SourceList.Length <= 1) return;
+
+            foreach (var typeGroup in SourceList.Where(f => f != null).OrderBy(f => f.Length).GroupBy(f => f.Type))
             {
                 sorted.AddRange(typeGroup.OrderBy(f => f.Size));
             }
