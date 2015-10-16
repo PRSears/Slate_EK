@@ -95,20 +95,27 @@ namespace Slate_EK.Models.ThreadParameters
         {
             if (string.IsNullOrWhiteSpace(threadDensity)) return 0f;
 
-            //foreach (var density in (ThreadDensity[])Enum.GetValues(typeof(ThreadDensity)))
-            //{
-            //    string cName = Enum.GetName(typeof(ThreadDensity), density);
-            //    if (!string.IsNullOrWhiteSpace(cName) && threadDensity.Contains(cName))
-            //    {
-            //        return GetThreadDensity(density);
-            //    }
-            //}
+            int tpi;
 
-            return GetThreadDensity
-            (
-                ((ThreadDensity[])Enum.GetValues(typeof(ThreadDensity)))
-                                      .First(d => threadDensity.Contains(Enum.GetName(typeof(ThreadDensity), d)))
-            );
+            // Check if the provided string designation is all numbers
+            if (!int.TryParse(threadDensity, out tpi))
+            {
+                return GetThreadDensity // it's not all numbers so we try to parse the designation (UNC / UNF / UNEF)
+                (
+                    ((ThreadDensity[])Enum.GetValues(typeof(ThreadDensity)))
+                                          .First(d => threadDensity.StartsWith(Enum.GetName(typeof(ThreadDensity), d)))
+                );
+            }
+
+            if (UncThreadsPerInch.RoughEquals(tpi, TOLERANCE) || 
+                UnfThreadsPerInch.RoughEquals(tpi, TOLERANCE) || 
+                UnefThreadsPerInch.RoughEquals(tpi, TOLERANCE))
+            {
+                return tpi; // if it's already a valid TPI
+            }
+
+            // Exception is thrown when threadDensity didn't contain text, and was not a valid TPI
+            throw new InvalidOperationException($"Thread density '{threadDensity}' could not be found.");
         }
 
         /// <summary>
@@ -134,7 +141,7 @@ namespace Slate_EK.Models.ThreadParameters
             (
                 ((ThreadDensity[])Enum.GetValues(typeof(ThreadDensity)))
                                         .First(d => GetThreadDensity(d).RoughEquals(tpi, 0.5))
-            ); // TODOh fix InvalidOperationException when user selects a new size after pitch is already picked
+            );
         }
 
         /// <summary>

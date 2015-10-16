@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="{Binding WindowTitle}" 
-        MinWidth="740" MinHeight="350"
+        MinWidth="758" MinHeight="350"
         Width="900" Height="600"
         Icon="/Slate_EK;component/Icons/icon_25.ico"
         Background="#494d4f">
@@ -138,32 +138,42 @@
                     Background="#4f626d"/>
 
             <Button Grid.Row="0" Grid.Column="0"
-                    Content="Quantity"
+                    Content="{Binding QuantityButtonText}"
                     Command="{Binding SortByQuantityCommand}"/>
             <Button Grid.Row="0" Grid.Column="1"
-                    Content="Price"
+                    Content="{Binding PriceButtonText}"
                     Command="{Binding SortByPriceCommand}"/>
             <Button Grid.Row="0" Grid.Column="2"
-                    Content="Mass"
+                    Content="{Binding MassButtonText}"
                     Command="{Binding SortByMassCommand}"/>
             <Button Grid.Row="0" Grid.Column="3"
-                    Content="Size"
+                    Content="{Binding SizeButtonText}"
                     Command="{Binding SortBySizeCommand}"/>
             <Button Grid.Row="0" Grid.Column="4"
-                    Content="Pitch"
+                    Content="{Binding PitchButtonText}"
                     Command="{Binding SortByPitchCommand}"/>
             <Button Grid.Row="0" Grid.Column="5"
-                    Content="Length"
+                    Content="{Binding LengthButtonText}"
                     Command="{Binding SortByLengthCommand}"/>
             <Button Grid.Row="0" Grid.Column="6"
-                    Content="Material"
+                    Content="{Binding MaterialButtonText}"
                     Command="{Binding SortByMaterialCommand}"/>
             <Button Grid.Row="0" Grid.Column="7"
-                    Content="Type"
+                    Content="{Binding TypeButtonText}"
                     Command="{Binding SortByFastTypeCommand}"/>
             <Button Grid.Row="0" Grid.Column="8"
-                    Content="Unit"
+                    Content="{Binding UnitButtonText}"
                     Command="{Binding SortByUnitCommand}"/>
+
+            <!--<Border Grid.Column="0" Grid.Row="1" Background="DarkGreen"/>
+            <Border Grid.Column="1" Grid.Row="1" Background="IndianRed"/>
+            <Border Grid.Column="2" Grid.Row="1" Background="DarkBlue"/>
+            <Border Grid.Column="3" Grid.Row="1" Background="DarkViolet"/>
+            <Border Grid.Column="4" Grid.Row="1" Background="GreenYellow"/>
+            <Border Grid.Column="5" Grid.Row="1" Background="Red"/>
+            <Border Grid.Column="6" Grid.Row="1" Background="Green"/>
+            <Border Grid.Column="7" Grid.Row="1" Background="Blue"/>
+            <Border Grid.Column="8" Grid.Row="1" Background="Violet"/>-->
 
             <ScrollViewer Grid.Row="1" Grid.Column="0"
                         Grid.ColumnSpan="10"
@@ -244,7 +254,18 @@
                                         </Grid.ColumnDefinitions>
                                         <Border Grid.Column="0" Grid.ColumnSpan="10"
                                                 x:Name="ItemBackground"
-                                                Background="{Binding Background}"/>
+                                                Background="{Binding Background}"
+                                                ToolTip="{Binding Fastener.Description}"/>
+
+                                        <!--<Border Grid.Column="0" Background="Green"/>
+                                        <Border Grid.Column="1" Background="Red"/>
+                                        <Border Grid.Column="2" Background="Blue"/>
+                                        <Border Grid.Column="3" Background="Violet"/>
+                                        <Border Grid.Column="4" Background="Yellow"/>
+                                        <Border Grid.Column="5" Background="IndianRed"/>
+                                        <Border Grid.Column="6" Background="DarkGreen"/>
+                                        <Border Grid.Column="7" Background="DarkBlue"/>
+                                        <Border Grid.Column="8" Background="BlueViolet"/>-->
 
                                         <TextBox Grid.Column="0"
                                                  Text="{Binding Fastener.Quantity}"
@@ -262,7 +283,9 @@
                                                  IsEnabled="{Binding IsEditable}"
                                                  GotFocus="UIElement_OnGotFocus"/>
                                         <TextBox Grid.Column="4"
-                                                 Text="{Binding Fastener.PitchDisplay}"
+                                                 Text="{Binding Fastener.ShortPitchDisplay}"
+                                                 TextWrapping="WrapWithOverflow"
+                                                 MaxWidth="66"
                                                  IsEnabled="{Binding IsEditable}"
                                                  GotFocus="UIElement_OnGotFocus"/>
                                         <TextBox Grid.Column="5"

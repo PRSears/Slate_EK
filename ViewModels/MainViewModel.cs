@@ -50,40 +50,7 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-                    while (ImperialSizesCache.Table == null)
-                    {
-                        Console.WriteLine("Creating cache...");
-                        System.Threading.Thread.Sleep(10);
-                    }
-
-                    Console.WriteLine("Cache build should be complete.\n");
-
-                    //System.Threading.Thread.Sleep(5000);
-                    //GC.Collect();
-                    //System.Threading.Thread.Sleep(2500);
-
-                    foreach (var item in ImperialSizesCache.Table)
-                    {
-                        Console.WriteLine(item.ToString());
-                    }
-
-                    //ImperialSizes tester = new ImperialSizes();
-
-                    //Console.WriteLine($"1) Source list should be empty. {tester.SourceList == null}");
-                    
-                    //Task.Run(async () =>
-                    //{
-                    //    await tester.ReloadAsync();
-                    //    Console.WriteLine($"Table loaded, found {tester.SourceList?.Length} results.");
-                    //});
-
-                    ////while (tester.SourceList == null)
-                    ////{
-                    ////    Console.WriteLine("Waiting...");
-                    ////    System.Threading.Thread.Sleep(10);
-                    ////}
-
-                    //Console.WriteLine($"2) Control should have come back to TestHarness, and the operation should be complete. Got {tester.SourceList?.Length}");
+                    WindowManager.OpenWindow(new InventoryView());
                 }
             );
 

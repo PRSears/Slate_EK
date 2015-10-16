@@ -43,6 +43,10 @@ namespace Slate_EK.Models
                 base.Reload();
                 Sort();
             }
+            else
+            {
+                
+            }
         }
 
         public override void Add(UnifiedFastener item)
@@ -52,12 +56,12 @@ namespace Slate_EK.Models
 
         public override void Add(UnifiedFastener[] fasteners)
         {
-            if (SourceList == null || fasteners == null || fasteners.Length < 1) return;
+            if (fasteners == null || fasteners.Length < 1) return;
 
             var uniques = new List<UnifiedFastener>();
             foreach (var addition in fasteners)
             {
-                if (SourceList.Contains(addition))
+                if (SourceList != null && SourceList.Contains(addition))
                 {
                     SourceList.First(sf => sf.UniqueID.Equals(addition.UniqueID))
                               .Quantity += addition.Quantity;

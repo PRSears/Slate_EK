@@ -1,4 +1,6 @@
 ﻿using Extender;
+using Extender.UnitConversion;
+using Extender.UnitConversion.Lengths;
 using Extender.WPF;
 using Slate_EK.Models;
 using Slate_EK.Models.ThreadParameters;
@@ -110,7 +112,7 @@ namespace Slate_EK.ViewModels
             {
                 return _Bom;
             }
-            set
+            private set
             {
                 _Bom = value;
                 OnPropertyChanged(nameof(Bom));
@@ -123,7 +125,7 @@ namespace Slate_EK.ViewModels
             {
                 return _ObservableFasteners;
             }
-            set
+            private set
             {
                 _ObservableFasteners = value;
                 OnPropertyChanged(nameof(ObservableFasteners));
@@ -176,6 +178,12 @@ namespace Slate_EK.ViewModels
                 }
                 else if (WorkingFastener.Unit == Units.Inches && e.PropertyName.Equals(nameof(WorkingFastener.SizeDisplay)))
                 {
+
+                    float? pitchReset = (float?)Measure.Convert<Inch, Millimeter>(
+                        UnifiedThreadStandard.FromMillimeters(WorkingFastener.Size)?.CourseThreadPitch);
+
+                    WorkingFastener.Pitch = pitchReset ?? 0f;
+
                     SetUstPitch();
                 }
             };
@@ -401,7 +409,13 @@ namespace Slate_EK.ViewModels
             };
 
             _PropertyRefreshTimer.Start();
-
+        }
+        
+        private void AddToBom(UnifiedFastener fastener)
+        {
+            // Check if a suitable fastener exists in inventory
+            //  -> add that to BOM if it does
+            //  -> ?? if it doesn't.
         }
 
         private void SetSizesList()
@@ -416,28 +430,28 @@ namespace Slate_EK.ViewModels
                     SizeOptionsList  = XmlImperialSizes.SourceList?.Select(i => i.Designation).ToArray(); 
                     // This value for PitchOptionsList is only used as a fall-back.
                     // SetUstPitch() will try to generate a more specific list.
-                    PitchOptionsList = Enum.GetNames(typeof(Models.ThreadParameters.ThreadDensity));
+                    PitchOptionsList = Enum.GetNames(typeof(ThreadDensity));
                     break;
             }
         }
 
         private void SetUstPitch()
         {
-            var selectedUts = XmlImperialSizes.SourceList?.FirstOrDefault(s => s.Designation.Equals(WorkingFastener.SizeDisplay));            
-            //var selectedUts = XmlImperialSizes.SourceList?.FirstOrDefault(s => s.Designation.Equals("#12")); // Debug values
+            var selectedUts = XmlImperialSizes.SourceList?.FirstOrDefault(s => s.Designation.Equals(WorkingFastener.SizeDisplay));    
 
             if (selectedUts == null || selectedUts.Equals(default(UnifiedThreadStandard)))
                 return; // give up
 
-            var display = ((ThreadDensity[])Enum.GetValues(typeof(ThreadDensity)))
-                .Select
-                (
-                    //thread => $"{Enum.GetName(typeof(ThreadDensity), thread)?.PadRight(4)} - {selectedUts.GetThreadDensity(thread)} TPI"
-                    thread => selectedUts.GetThreadDensityDisplay(thread)
-                )
-                .ToArray();
-
-            PitchOptionsList = display;
+            try
+            {
+                PitchOptionsList = ((ThreadDensity[])Enum.GetValues(typeof(ThreadDensity)))
+                                                         .Select(thread => selectedUts.GetThreadDensityDisplay(thread))
+                                                         .ToArray();
+            }
+            catch (InvalidOperationException)
+            {
+                PitchOptionsList = Enum.GetNames(typeof(ThreadDensity)); // Fall back on just using the labels
+            }
         }
 
         private void RefreshBom()

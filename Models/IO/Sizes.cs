@@ -6,8 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Slate_EK.Models.IO
-//TODO We might have to bake units into the size (and maybe pitch) lists / objects
-//     could store them as a separate field?
 {
     public sealed class Sizes : SerializedArray<Size>
     {

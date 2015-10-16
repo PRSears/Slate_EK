@@ -236,6 +236,9 @@ namespace Slate_EK.Models
             }
             set
             {
+                if (string.IsNullOrWhiteSpace(value))
+                    return;
+
                 float? parsed = null;
                 switch (Unit)
                 {
@@ -253,6 +256,23 @@ namespace Slate_EK.Models
 
                 Pitch = parsed ?? Pitch; // If it failed to parse, don't change the value.
                 OnPropertyChanged(nameof(PitchDisplay));
+            }
+        }
+
+        [XmlIgnore]
+        public string ShortPitchDisplay
+        {
+            get
+            {
+                if (Unit != Units.Inches) return PitchDisplay;
+
+                var tpi = UnifiedThreadStandard.FromMillimeters(Size)?.GetThreadDensity(PitchDisplay);
+                return tpi.HasValue ? ((int)Math.Round(tpi.Value)).ToString() : PitchDisplay;
+            }
+            set
+            {
+                PitchDisplay = value;
+                OnPropertyChanged(nameof(ShortPitchDisplay));
             }
         }
 
@@ -287,7 +307,7 @@ namespace Slate_EK.Models
         } 
 
         [XmlIgnore]
-        public string Description  => $"{SizeDisplay} - {PitchDisplay} x {LengthDisplay} {Type}";
+        public string Description  => $"{SizeDisplay} - {ShortPitchDisplay} x {LengthDisplay} {Type}";
 
         //
         // Constructors
@@ -320,7 +340,7 @@ namespace Slate_EK.Models
         {
             Material material = Models.Material.TryParse(Material);
 
-            float threadEngagemnt = (float)material.Multiplier * _Size; // number of threads engaging the hole
+            float threadEngagemnt = (float)material.Multiplier * _Size; // number of threads (required to?) engage the hole
 
             float result = 0;
 

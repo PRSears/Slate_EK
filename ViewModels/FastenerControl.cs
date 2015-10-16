@@ -14,6 +14,7 @@ namespace Slate_EK.ViewModels
             get;
             set;
         }
+
         public bool IsSelected
         {
             get
@@ -148,7 +149,7 @@ namespace Slate_EK.ViewModels
         protected string HoverColor    => Properties.Settings.Default.ItemHoverBackgroundColor;
         protected string NormalColor   => Properties.Settings.Default.ItemDefaultBackgroundColor;
         protected string AltColor      => Properties.Settings.Default.ItemAltnernateBackgroundColor;
-        public int BomFontSize         => Properties.Settings.Default.BomListFontSize;
+        public int       BomFontSize   => Properties.Settings.Default.BomListFontSize;
 
         #endregion
         #region INotifyPropertyChanged Members

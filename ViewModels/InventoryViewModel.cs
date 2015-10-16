@@ -70,6 +70,7 @@ namespace Slate_EK.ViewModels
         //
         // Bound properties
         private ObservableCollection<FastenerControl> _FastenerList;
+        private Func<FastenerControl, object>         _LastSearchSelector;
         
         private SortMethod             _LastSortBy;
         private bool                   _OrderByDescending;
@@ -80,6 +81,7 @@ namespace Slate_EK.ViewModels
         private List<UnifiedFastener>  _FastenersMarkedForRemoval;
         private string                 _WindowTitle = "Inventory Viewer";
         private string                 _SearchQuery;
+
 
         private bool Debug => Properties.Settings.Default.Debug;
 
@@ -141,7 +143,7 @@ namespace Slate_EK.ViewModels
                 OnPropertyChanged(nameof(SelectedSearchProperty));
             }
         }
-        public SearchType SelectedSearchType => (SearchType)Array.IndexOf(SearchByPropertyList, SelectedSearchProperty);
+        public SearchType SelectedSearchType     => (SearchType)Array.IndexOf(SearchByPropertyList, SelectedSearchProperty);
         public bool       OrderByDescending
         {
             get
@@ -154,10 +156,20 @@ namespace Slate_EK.ViewModels
                 OnPropertyChanged(nameof(OrderByDescending));
             }
         }
-        public string     SubmitImageSource  => PendingOperations ? SubmitImageSourceStrings[1]  : SubmitImageSourceStrings[0];
-        public string     DiscardImageSource => PendingOperations ? DiscardImageSourceStrings[1] : DiscardImageSourceStrings[0];
-        public Visibility EditModeVisibility => EditMode ? Visibility.Visible : Visibility.Hidden;
-        public Visibility DebugModeVisibilty => Debug ? Visibility.Visible : Visibility.Hidden;
+        public string     SubmitImageSource      => PendingOperations ? SubmitImageSourceStrings[1]  : SubmitImageSourceStrings[0];
+        public string     DiscardImageSource     => PendingOperations ? DiscardImageSourceStrings[1] : DiscardImageSourceStrings[0];
+        public Visibility EditModeVisibility     => EditMode ? Visibility.Visible : Visibility.Hidden;
+        public Visibility DebugModeVisibilty     => Debug ? Visibility.Visible : Visibility.Hidden;
+        public string     QuantityButtonText     => _LastSortBy == SortMethod.Quantity ? $"Quantity {OrderIndicator}" : "Quantity  ";
+        public string     PriceButtonText        => _LastSortBy == SortMethod.Price ? $"Price {OrderIndicator}" : "Price  ";
+        public string     MassButtonText         => _LastSortBy == SortMethod.Mass ? $"Mass {OrderIndicator}" : "Mass  ";
+        public string     SizeButtonText         => _LastSortBy == SortMethod.Size ? $"Size {OrderIndicator}" : "Size  ";
+        public string     PitchButtonText        => _LastSortBy == SortMethod.Pitch ? $"Pitch {OrderIndicator}" : "Pitch  ";
+        public string     LengthButtonText       => _LastSortBy == SortMethod.Length ? $"Length {OrderIndicator}" : "Length  ";
+        public string     MaterialButtonText     => _LastSortBy == SortMethod.Material ? $"Material {OrderIndicator}" : "Material  ";
+        public string     TypeButtonText         => _LastSortBy == SortMethod.FastType ? $"Type {OrderIndicator}" : "Type  ";
+        public string     UnitButtonText         => _LastSortBy == SortMethod.Unit ? $"Unit {OrderIndicator}" : "Unit  ";
+        private string    OrderIndicator         => OrderByDescending ? "\u2193" : "\u2191";
         public bool       PendingOperations
         {
             get
@@ -340,6 +352,7 @@ namespace Slate_EK.ViewModels
                     _Inventory.Dump().ForEach(f => AddToFastenerList(new FastenerControl(f)));
 
                     SearchQuery = "*";
+                    SortFastenerListBy(_LastSearchSelector, _LastSortBy, false); // Re-apply the last sort
                 }
             );
 
@@ -466,9 +479,16 @@ namespace Slate_EK.ViewModels
             #endregion
         }
 
-        private void SortFastenerListBy(Func<FastenerControl, object> keySelector, SortMethod sortMethod)
+        /// <param name="keySelector"></param>
+        /// <param name="sortMethod">Which column is being sorted.</param>
+        /// <param name="invertIfRepeat">Switch OrderBy/OrderByDescending if the last sort was on the same
+        /// column as the current sort.</param>
+        private void SortFastenerListBy(Func<FastenerControl, object> keySelector, SortMethod sortMethod, bool invertIfRepeat = true)
         {
-            OrderByDescending = (_LastSortBy == sortMethod) ? !OrderByDescending : OrderByDescending;
+            if (keySelector == null) return;
+
+            if (invertIfRepeat)
+                OrderByDescending = (_LastSortBy == sortMethod) ? !OrderByDescending : OrderByDescending;
 
             var sorted = OrderByDescending ? _FastenerList.OrderByDescending(keySelector).ToArray() : 
                                              _FastenerList.OrderBy(keySelector).ToArray();
@@ -476,7 +496,19 @@ namespace Slate_EK.ViewModels
             FastenerList.Clear();
             sorted.ForEach(AddToFastenerList);
 
-            _LastSortBy = sortMethod;
+            _LastSortBy         = sortMethod;
+            _LastSearchSelector = keySelector;
+
+            OnPropertyChanged(nameof(QuantityButtonText));
+            OnPropertyChanged(nameof(MassButtonText));
+            OnPropertyChanged(nameof(PriceButtonText));
+            OnPropertyChanged(nameof(SizeButtonText));
+            OnPropertyChanged(nameof(PitchButtonText));
+            OnPropertyChanged(nameof(LengthButtonText));
+            OnPropertyChanged(nameof(MaterialButtonText));
+            OnPropertyChanged(nameof(TypeButtonText));
+            OnPropertyChanged(nameof(UnitButtonText));
+            // It's easier just to update all of them, instead of checking which two need updating.
         }
 
         //TODO Hook up the rest of the main menu buttons
@@ -521,7 +553,6 @@ namespace Slate_EK.ViewModels
 
         private void ExecuteSearch()
         {
-
             if (SearchQuery.Equals("*"))
             {
                 ShowAllFastenersCommand.Execute(null);
@@ -831,6 +862,7 @@ namespace Slate_EK.ViewModels
             }
 
             queryResults.ForEach(AddToFastenerList);
+            SortFastenerListBy(_LastSearchSelector, _LastSortBy, false); // re-apply the last sort
         }
 
         private List<FastenerControl> CreateDummies()

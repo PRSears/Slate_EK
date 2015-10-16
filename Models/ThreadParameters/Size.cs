@@ -43,6 +43,8 @@ namespace Slate_EK.Models.ThreadParameters
         public static Size TryParse(string size)
         {
             // TODO Parsing sizes will have to be re-written for considering units
+            //      I could leave this, and just have whatever is calling TryParse call the 
+            //      TryParse for appropriate size (Size || UnifiedThreadStandard)
             if (string.IsNullOrWhiteSpace(size)) return new Size();
 
             Regex query    = new Regex("([^0-9.-])");
@@ -56,7 +58,6 @@ namespace Slate_EK.Models.ThreadParameters
 
         public override string ToString()
         {
-            // TODO Fix Size.ToString() once units are baked in
             return Math.Abs(OuterDiameter % 1) < SIGMA ? $"M{Math.Round(OuterDiameter),-2}" : new Millimeter(OuterDiameter).ToString(Spec);
         }
 

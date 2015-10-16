@@ -198,7 +198,7 @@
                       VerticalScrollBarVisibility="Visible"
                       Margin="20"
                       Background="#4c565b"
-                      >
+                      FocusVisualStyle="{x:Null}">
             <Grid x:Name="FastenersBox"
                   MouseLeftButtonDown="FastenersBox_MouseDown"
                   MouseLeftButtonUp="FastenersBox_MouseUp"
