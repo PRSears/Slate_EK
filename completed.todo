@@ -1,0 +1,14 @@
+- turned off hit test for column borders
+- made alternate fastenercontrol background be invisible on hover
+- removed debug functions from menus in inventory view
+- made copy command only enabled when there is a selection
+- moved fastener tool-tip to fastenercontrol 
+- added toggle for fastener tool-tip in inventory viewer
+- removed tool-tip from search button
+- fixed regex for UnifiedFastener parsing
+- added hover effect in inventory viewer
+- added copy command to inventory viewer (so it can be pasted in BOM)
+- fixed icon scaling in buttons (less blurry)
+- switched 'save as' and a couple other button labels to icons
+- added search by units to inventory viewer
+- re-worded some labels to be more clear

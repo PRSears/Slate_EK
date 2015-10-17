@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Slate_EK.Views
 {
@@ -31,6 +32,8 @@ namespace Slate_EK.Views
 
         public BomView(string assemblyNumber)
         {
+            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
+
             Activated += (sender, e) =>
             {
                 PlateThicknessTextField.Focus();

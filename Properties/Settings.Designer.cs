@@ -148,7 +148,7 @@ namespace Slate_EK.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("#606C72")]
+        [global::System.Configuration.DefaultSettingValueAttribute("#424547")]
         public string ItemHoverBackgroundColor {
             get {
                 return ((string)(this["ItemHoverBackgroundColor"]));
@@ -347,6 +347,30 @@ namespace Slate_EK.Properties {
             }
             set {
                 this["ImperialSizesFilename"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool OpenInExcelAfterExport {
+            get {
+                return ((bool)(this["OpenInExcelAfterExport"]));
+            }
+            set {
+                this["OpenInExcelAfterExport"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowInvFastenerToolTip {
+            get {
+                return ((bool)(this["ShowInvFastenerToolTip"]));
+            }
+            set {
+                this["ShowInvFastenerToolTip"] = value;
             }
         }
     }

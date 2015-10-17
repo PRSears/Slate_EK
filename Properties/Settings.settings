@@ -36,7 +36,7 @@
       <Value Profile="(Default)">#585A77</Value>
     </Setting>
     <Setting Name="ItemHoverBackgroundColor" Type="System.String" Scope="User">
-      <Value Profile="(Default)">#606C72</Value>
+      <Value Profile="(Default)">#424547</Value>
     </Setting>
     <Setting Name="ItemDefaultBackgroundColor" Type="System.String" Scope="User">
       <Value Profile="(Default)">#4c565b</Value>
@@ -85,6 +85,12 @@
     </Setting>
     <Setting Name="ImperialSizesFilename" Type="System.String" Scope="User">
       <Value Profile="(Default)">imperialSizes.xml</Value>
+    </Setting>
+    <Setting Name="OpenInExcelAfterExport" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ShowInvFastenerToolTip" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
 </SettingsFile>

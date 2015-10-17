@@ -126,6 +126,15 @@
                                            Margin="10,0,0,0"/>
                             </CheckBox>
                         </DockPanel>
+                        <DockPanel Margin="10,5,0,5">
+                            <CheckBox DockPanel.Dock="Left"
+                                      Style="{StaticResource CenteredCheckbox}"
+                                      IsChecked="{Binding ShowInventoryFastenerToolTips}">
+                                <TextBlock Style="{StaticResource CheckboxLabelStyle}"
+                                           Text="Show fastener descriptions on hover in the inventory viewer"
+                                           Margin="10,0,0,0"/>
+                            </CheckBox>
+                        </DockPanel>
                         <DockPanel Margin="0,25,0,5" LastChildFill="False">
                             <Label Style="{StaticResource LabelStyle}"
                                    DockPanel.Dock="Left"

@@ -53,7 +53,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="35"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="75"/>
+            <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="400"/>
@@ -295,17 +295,37 @@
         
         <DockPanel Grid.Row="2" Grid.Column="0"
                    Grid.ColumnSpan="2"
-                   Margin="20,0,20,0">
-            <Button Style="{StaticResource FlatActionButtonStyle}"
+                   Margin="0,0,20,0">
+            <DockPanel.Resources>
+                <Style TargetType="Image">
+                    <Setter Property="OpacityMask" Value="#BF000000"/>
+                    <Style.Triggers>
+                        <Trigger Property="Button.IsMouseOver" Value="True">
+                            <Setter Property="Image.OpacityMask" Value="#C9000000"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DockPanel.Resources>
+            <Button Style="{StaticResource FlatIconButtonStyle}"
                     Command="{Binding SaveAsCommand}"
+                    Width="35"
                     IsTabStop="False"
-                    Content="Save as..."/>
+                    ToolTip="Save As...">
+                <Image Source="/Slate_EK;component/Icons/ic_save_black_24dp_2x.png"/>
+            </Button>
+            <Button Style="{StaticResource FlatIconButtonStyle}"
+                    Command="{Binding PrintCommand}"
+                    Width="35"
+                    IsTabStop="False"
+                    ToolTip="Print...">
+                <Image Source="/Slate_EK;component/Icons/ic_print_black_24dp_2x.png"/>
+            </Button>
             <Button Style="{StaticResource FlatIconButtonStyle}"
                     DockPanel.Dock="Right"
                     Command="{Binding RemoveItemCommand}"
                     IsTabStop="False"
                     ToolTip="Remove selected item(s) from the BOM">
-                <Image Source="/Slate_EK;component/Icons/ic_remove_black_24dp_1x.png"/>
+                <Image Source="/Slate_EK;component/Icons/ic_remove_black_24dp_2x.png"/>
             </Button>
             <Button Style="{StaticResource FlatIconButtonStyle}"
                     DockPanel.Dock="Right"
@@ -313,7 +333,7 @@
                     Command="{Binding AddToListCommand}"
                     TabIndex="10"
                     ToolTip="Add working faster to the BOM">
-                <Image Source="/Slate_EK;component/Icons/ic_add_black_24dp_1x.png"/>
+                <Image Source="/Slate_EK;component/Icons/ic_add_black_24dp_2x.png"/>
             </Button>
         </DockPanel>
     </Grid>

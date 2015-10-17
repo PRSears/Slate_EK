@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 
@@ -19,11 +20,12 @@ namespace Slate_EK.ViewModels
         #region // ICommands
 
         //
-        // InventoryBoxContextMenu commands
+        // InventoryBoxContextMenu               commands
         public ICommand AddNewFastenerCommand    { get; private set; }
         public ICommand RemoveFastenerCommand    { get; private set; }
         public ICommand SelectAllCommand         { get; private set; }
         public ICommand SelectNoneCommand        { get; private set; }
+        public ICommand CopyCommand              { get; private set; }
         public ICommand TestHarnessCommand       { get; private set; }
 
         //
@@ -53,6 +55,10 @@ namespace Slate_EK.ViewModels
         public ICommand SubmitChangesCommand    { get; private set; }
         public ICommand DiscardChangesCommand   { get; private set; }
         public ICommand ExecuteSearchCommand    { get; private set; }
+
+        public ICommand ShortcutCtrlQ           { get; private set; }
+
+        public event ShortcutEventHandler ShortcutPressedCtrlQ;
 
         #endregion
 
@@ -85,7 +91,7 @@ namespace Slate_EK.ViewModels
 
         private bool Debug => Properties.Settings.Default.Debug;
 
-        public string   WindowTitle
+        public string     WindowTitle
         {
             get
             {
@@ -97,7 +103,7 @@ namespace Slate_EK.ViewModels
                 OnPropertyChanged(nameof(WindowTitle));
             }
         }
-        public string   SearchQuery
+        public string     SearchQuery
         {
             get { return _SearchQuery; }
             set
@@ -106,7 +112,7 @@ namespace Slate_EK.ViewModels
                 OnPropertyChanged(nameof(SearchQuery));
             }
         }
-        public enum     SearchType : byte
+        public enum       SearchType : byte
         {
             Quantity,
             Price,
@@ -115,20 +121,10 @@ namespace Slate_EK.ViewModels
             Length,
             Pitch,
             Material,
-            FastenerType
+            FastenerType,
+            Unit
         }
-        public string[] SearchByPropertyList => new[]
-        {
-            "Quantity",
-            "Price",
-            "Mass",
-            "Size",
-            "Length",
-            "Pitch",
-            "Material",
-            "Fastener Type",
-            "Hole Type"
-        };
+        public string[]   SearchByPropertyList   => Enum.GetNames(typeof(SearchType));
         public string     SelectedSearchProperty
         {
             get
@@ -294,6 +290,20 @@ namespace Slate_EK.ViewModels
             SelectNoneCommand = new RelayCommand
             (
                 () => FastenerList.ForEach(f => f.IsSelected = false)
+            );
+
+            CopyCommand = new RelayCommand
+            (
+                () =>
+                {
+                    var buffer = new StringBuilder();
+                    foreach (var selected in FastenerList.Where(f => f.IsSelected).Select(f => f.Fastener))
+                        buffer.AppendLine(selected.Description);
+
+                    if (buffer.Length > 0)
+                        Clipboard.SetText(buffer.ToString());
+                },
+                () => FastenerList.Any(f => f.IsSelected)
             );
 
             TestHarnessCommand = new RelayCommand
@@ -475,6 +485,8 @@ namespace Slate_EK.ViewModels
                     ExecuteSearch();
                 }
             );
+
+            ShortcutCtrlQ = new RelayCommand(() => HandleShortcut(ShortcutPressedCtrlQ));
 
             #endregion
         }
@@ -853,6 +865,18 @@ namespace Slate_EK.ViewModels
                                                             .Select(ft => new FastenerControl(ft)));
                         }
                         break;
+                    case SearchType.Unit:
+                        var lq = ((Units[])Enum.GetValues(typeof(Units)))
+                                               .FirstOrDefault
+                                               (
+                                                    unit => Enum.GetName(typeof(Units), unit)
+                                                                .ToLower()
+                                                                .Contains(SearchQuery)
+                                               );
+
+                        queryResults.AddRange(_Inventory.Fasteners.Where(f => f.Unit == lq)
+                                                        .Select(ft => new FastenerControl(ft)));
+                        break;
                 }
 
                 #endregion
@@ -860,6 +884,11 @@ namespace Slate_EK.ViewModels
 
             queryResults.ForEach(AddToFastenerList);
             SortFastenerListBy(_LastSearchSelector, _LastSortBy, false); // re-apply the last sort
+        }
+
+        private void HandleShortcut(ShortcutEventHandler handler)
+        {
+            handler?.Invoke();
         }
 
         private List<FastenerControl> CreateDummies()

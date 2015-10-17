@@ -29,6 +29,7 @@ namespace Slate_EK.ViewModels
         public ICommand ListChangeQuantityCommand   { get; private set; }
         public ICommand ListDeleteItemCommand       { get; private set; }
         public ICommand SaveAsCommand               { get; private set; }
+        public ICommand PrintCommand                { get; private set; }
         public ICommand ShortcutCtrlK               { get; private set; }
         public ICommand ShortcutCtrlS               { get; private set; }
         public ICommand ShortcutCtrlE               { get; private set; }
@@ -78,7 +79,7 @@ namespace Slate_EK.ViewModels
 
         // Drop-down list data sources -- it shows no reference, but they're being bound to in the xaml
         public Units[]    UnitsList            => (Units[])Enum.GetValues(typeof(Units));
-        public Material[] MaterialsList        => Material.Materials;
+        public Material[] MaterialsList        => Material.Materials.Where(m => !m.Equals(Material.Unspecified)).ToArray();
         public HoleType[] HoleTypesList        => HoleType.HoleTypes;
         public string[]   FastenerTypesList    => FastenerType.Types.Select(t => $"{t.Callout} ({t.Type})").ToArray();
         public string[]   SizeOptionsList
@@ -359,6 +360,11 @@ namespace Slate_EK.ViewModels
                 () => SaveAs()
             );
 
+            PrintCommand = new RelayCommand
+            (
+                () => Print()
+            );
+
             // Hook up context menu commands for FastenerControls
             foreach (FastenerControl control in ObservableFasteners)
             {
@@ -446,8 +452,8 @@ namespace Slate_EK.ViewModels
                     if (sub == null || sub.Equals(default(UnifiedFastener)))
                     {
                         // TODO Decide what to do when no suitable fastener is found
-                        Debug.WriteMessage("No suitable fastener found.", "debug");
-                        sub = fastener;
+                        Debug.WriteMessage("No suitable fastener found.");
+                        sub = fastener; // HACK until I decide how this is supposed to be handled
                     }
 
                     Bom.Add(sub.Copy());
@@ -611,6 +617,11 @@ namespace Slate_EK.ViewModels
             }
 
             return true;
+        }
+
+        public void Print()
+        {
+            
         }
 
         private bool NullsafeHandleShortcut(ShortcutEventHandler handler)

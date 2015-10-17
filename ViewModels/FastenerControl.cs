@@ -27,6 +27,7 @@ namespace Slate_EK.ViewModels
                 OnPropertyChanged(nameof(IsSelected));
                 OnPropertyChanged(nameof(Background));
                 OnPropertyChanged(nameof(AltBackground));
+                OnPropertyChanged(nameof(HoverBackground));
             }
         }
 
@@ -40,8 +41,14 @@ namespace Slate_EK.ViewModels
             {
                 _IsEditable = value;
                 OnPropertyChanged(nameof(IsEditable));
+                OnPropertyChanged(nameof(NotEditable));
             }
         }
+
+        public string ToolTip   => IsToolTipVisible ? Fastener.Description : null;
+
+        public bool NotEditable => !IsEditable;
+
         public SolidColorBrush Background
         {
             get
@@ -52,6 +59,7 @@ namespace Slate_EK.ViewModels
                     return Brushes.Transparent;
             }
         }
+
         public SolidColorBrush AltBackground
         {
             get
@@ -60,6 +68,24 @@ namespace Slate_EK.ViewModels
                     return Background;
                 else
                     return (SolidColorBrush)(new BrushConverter().ConvertFrom(AltColor));
+            }
+        }
+
+        public SolidColorBrush HoverBackground
+        {
+            get
+            {
+                if (IsSelected)
+                {
+                    var darken = (Color)ColorConverter.ConvertFromString(SelectedColor);
+                    darken.R -= 0x1f; // about 12% darker
+                    darken.G -= 0x1f;
+                    darken.B -= 0x1f;
+
+                    return new SolidColorBrush(darken);
+                }
+                else
+                    return (SolidColorBrush)(new BrushConverter().ConvertFrom(HoverColor));
             }
         }
 
@@ -145,11 +171,13 @@ namespace Slate_EK.ViewModels
         }
 
         #region Settings.Settings aliases
-        protected string SelectedColor => Properties.Settings.Default.ItemSelectedBackgroundColor;
-        protected string HoverColor    => Properties.Settings.Default.ItemHoverBackgroundColor;
-        protected string NormalColor   => Properties.Settings.Default.ItemDefaultBackgroundColor;
-        protected string AltColor      => Properties.Settings.Default.ItemAltnernateBackgroundColor;
-        public int       BomFontSize   => Properties.Settings.Default.BomListFontSize;
+
+        private bool     IsToolTipVisible => Properties.Settings.Default.ShowInvFastenerToolTip;
+        protected string SelectedColor    => Properties.Settings.Default.ItemSelectedBackgroundColor;
+        protected string HoverColor       => Properties.Settings.Default.ItemHoverBackgroundColor;
+        protected string NormalColor      => Properties.Settings.Default.ItemDefaultBackgroundColor;
+        protected string AltColor         => Properties.Settings.Default.ItemAltnernateBackgroundColor;
+        public int       BomFontSize      => Properties.Settings.Default.BomListFontSize;
 
         #endregion
         #region INotifyPropertyChanged Members

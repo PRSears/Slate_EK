@@ -138,6 +138,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <Resource Include="DejaVuSansMono.ttf" />
+    <None Include="completed.todo" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -149,6 +150,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Icons\ic_print_black_24dp_1x.png" />
+    <Resource Include="Icons\ic_print_black_24dp_2x.png" />
+    <Resource Include="Icons\ic_save_black_24dp_1x.png" />
+    <Resource Include="Icons\ic_save_black_24dp_2x.png" />
     <Content Include="Lists\imperialSizes.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

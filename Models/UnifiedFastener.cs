@@ -425,8 +425,6 @@ namespace Slate_EK.Models
         /// </returns>
         public float CloseEnough(UnifiedFastener ideal)
         {
-            // TODO Properly take length into account...
-
             bool close = (this.Size.Equals(ideal.Size)         &&
                           this.Pitch.Equals(ideal.Pitch)       &&
                           this.Type.Equals(ideal.Type)         &&

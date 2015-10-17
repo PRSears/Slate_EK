@@ -6,7 +6,7 @@
         mc:Ignorable="d"
         Title="{Binding WindowTitle}" 
         MinWidth="758" MinHeight="350"
-        Width="900" Height="600"
+        Width="900" Height="640"
         Icon="/Slate_EK;component/Icons/icon_25.ico"
         Background="#494d4f">
     <Window.Resources>
@@ -15,23 +15,30 @@
             <MenuItem Header="Clear Query Results" Command="{Binding ClearQueryResultsCommand}"/>
             <Separator/>
             <MenuItem Header="Add New Fastener" Command="{Binding AddNewFastenerCommand}"/>
-            <MenuItem Header="Remove Fastener(s)" Command="{Binding RemoveFastenerCommand}"/>
+            <MenuItem Header="Remove Fastener(s)" Command="{Binding RemoveFastenerCommand}" ToolTip="(Del)"/>
             <Separator/>
-            <MenuItem Header="Select All" Command="{Binding SelectAllCommand}"/>
-            <MenuItem Header="Deselect All" Command="{Binding SelectNoneCommand}"/>
-            <Separator Visibility="{Binding DebugModeVisibilty}"/>
-            <Separator Visibility="{Binding DebugModeVisibilty}"/>
-            <MenuItem Header="~TEST HARNESS~" Command="{Binding TestHarnessCommand}"
-                      Visibility="{Binding DebugModeVisibilty}"/>
+            <MenuItem Header="Select All" Command="{Binding SelectAllCommand}" ToolTip="(Ctrl + A)"/>
+            <MenuItem Header="Deselect All" Command="{Binding SelectNoneCommand}" ToolTip="(Ctrl + D)"/>
+            <Separator/>
+            <MenuItem Header="Copy" Command="{Binding CopyCommand}" ToolTip="(Ctrl + C)"/>
         </ContextMenu>
+        <Style x:Key="ColumnBorder" TargetType="{x:Type Border}">
+            <Setter Property="BorderThickness" Value="0,0,1,0"></Setter>
+            <Setter Property="BorderBrush" Value="#6b6b6b"></Setter>
+            <Setter Property="IsHitTestVisible" Value="False"></Setter>
+        </Style>
     </Window.Resources>
     <Window.InputBindings>
         <KeyBinding Modifiers="Control" Key="A"
                     Command="{Binding SelectAllCommand}"/>
         <KeyBinding Modifiers="Control" Key="D"
                     Command="{Binding SelectNoneCommand}"/>
+        <KeyBinding Modifiers="Control" Key="C"
+                    Command="{Binding CopyCommand}"/>
         <KeyBinding Key="Delete"
                     Command="{Binding RemoveFastenerCommand}"/>
+        <KeyBinding Modifiers="Control" Key="Q"
+                    Command="{Binding ShortcutCtrlQ}"/>
         
     </Window.InputBindings>
     <Grid>
@@ -52,22 +59,19 @@
               VerticalAlignment="Top">
             <MenuItem Header="_File">
                 <MenuItem Header="_Open A Different Inventory File..." Command="{Binding OpenCommand}"/>
-                <MenuItem Header="_Save Copy As..." Command="{Binding ExportCommand}"/>
+                <MenuItem Header="_Save Visible As..." Command="{Binding ExportCommand}"/>
                 <Separator/>
                 <MenuItem Header="E_xit" Command="{Binding CloseCommand}"/>
             </MenuItem>
             <MenuItem Header="_Tools">
-                <MenuItem Header="DEBUG Drop Database" Command="{Binding DropDatabaseCommand}"
-                          Visibility="{Binding DebugModeVisibilty}"/>
                 <Separator Visibility="{Binding DebugModeVisibilty}"/>
-                <MenuItem Header="_Open in Excel..." Command="{Binding OpenInExcelCommand}"/>
-                <MenuItem Header="_Update From .Csv..." Command="{Binding ImportCommand}"/>
+                <MenuItem Header="_Import From CSV..." Command="{Binding ImportCommand}"/>
                 <Separator/>
-                <MenuItem Header="Retrieve All Fasteners" Command="{Binding ShowAllFastenersCommand}"/>
-                <MenuItem Header="Clear Query Results" Command="{Binding ClearQueryResultsCommand}"/>
+                <MenuItem Header="_Retrieve All Fasteners" Command="{Binding ShowAllFastenersCommand}"/>
+                <MenuItem Header="_Clear Query Results" Command="{Binding ClearQueryResultsCommand}"/>
                 <Separator/>
-                <MenuItem Header="Submit Changes" Command="{Binding SubmitChangesCommand}"/>
-                <MenuItem Header="Discard Pending Operations" Command="{Binding DiscardChangesCommand}"/>
+                <MenuItem Header="_Submit Changes" Command="{Binding SubmitChangesCommand}"/>
+                <MenuItem Header="_Discard Pending Operations" Command="{Binding DiscardChangesCommand}"/>
             </MenuItem>
         </Menu>
 
@@ -223,8 +227,9 @@
                                                             </Border>
                                                             <ControlTemplate.Triggers>
                                                                 <Trigger Property="IsEnabled" Value="False">
-                                                                    <Setter Value="Transparent" Property="Background" />
-                                                                    <Setter Value="#BEDDDDDD" Property="Foreground" />
+                                                                    <Setter Property="Background" Value="Transparent"/>
+                                                                    <Setter Property="Foreground" Value="#BEDDDDDD"/>
+                                                                    <Setter Property="IsHitTestVisible" Value="False"/>
                                                                     <Setter TargetName="PART_ContentHost" Property="Background" Value="Transparent"/>
                                                                 </Trigger>
                                                             </ControlTemplate.Triggers>
@@ -252,10 +257,28 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="125"/>
                                         </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" Grid.ColumnSpan="10"
+                                        
+                                        <Border Grid.Column="0" Grid.ColumnSpan="9"
                                                 x:Name="ItemBackground"
-                                                Background="{Binding Background}"
-                                                ToolTip="{Binding Fastener.Description}"/>
+                                                Background="{Binding Background}">
+                                        </Border>
+                                        
+                                        <Border Grid.Column="0" Grid.ColumnSpan="9"
+                                                ToolTip="{Binding ToolTip}"
+                                                BorderThickness="2,0,0,0"
+                                                IsHitTestVisible="{Binding NotEditable}">
+                                            <Border.Style>
+                                                <Style>
+                                                    <Setter Property="Border.Background" Value="Transparent"/>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="Border.IsMouseOver" Value="True">
+                                                            <Setter Property="Border.Background" Value="{Binding HoverBackground}"/>
+                                                            <Setter Property="Border.BorderBrush" Value="#dddddd"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                        </Border>
 
                                         <!--<Border Grid.Column="0" Background="Green"/>
                                         <Border Grid.Column="1" Background="Red"/>
@@ -304,11 +327,10 @@
                                                  Text="{Binding Fastener.Unit}"
                                                  IsEnabled="{Binding IsEditable}"
                                                  GotFocus="UIElement_OnGotFocus"/>
-
                                     </Grid>
                                     <DataTemplate.Triggers>
                                         <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                                            <Setter Property="Background" Value="{Binding AltBackground}"  TargetName="ItemBackground"/>
+                                            <Setter Property="Background" Value="{Binding AltBackground}" TargetName="ItemBackground"/>
                                         </Trigger>
                                     </DataTemplate.Triggers>
                                 </DataTemplate>
@@ -326,34 +348,15 @@
                 </Grid>
             </ScrollViewer>
 
-
-            <Border Grid.Row="1" Grid.Column="0"
-                    BorderThickness="0,0,1,0"
-                    BorderBrush="#6b6b6b"/>
-            <Border Grid.Row="1" Grid.Column="1"
-                    BorderThickness="0,0,1,0"
-                    BorderBrush="#6b6b6b"/>
-            <Border Grid.Row="1" Grid.Column="2"
-                    BorderThickness="0,0,1,0"
-                    BorderBrush="#6b6b6b"/>
-            <Border Grid.Row="1" Grid.Column="3"
-                    BorderThickness="0,0,1,0"
-                    BorderBrush="#6b6b6b"/>
-            <Border Grid.Row="1" Grid.Column="4"
-                    BorderThickness="0,0,1,0"
-                    BorderBrush="#6b6b6b"/>
-            <Border Grid.Row="1" Grid.Column="5"
-                    BorderThickness="0,0,1,0"
-                    BorderBrush="#6b6b6b"/>
-            <Border Grid.Row="1" Grid.Column="6"
-                    BorderThickness="0,0,1,0"
-                    BorderBrush="#6b6b6b"/>
-            <Border Grid.Row="1" Grid.Column="7"
-                    BorderThickness="0,0,1,0"
-                    BorderBrush="#6b6b6b"/>
-            <Border Grid.Row="1" Grid.Column="8"
-                    BorderThickness="0,0,1,0"
-                    BorderBrush="#6b6b6b"/>
+            <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource ColumnBorder}"/>
+            <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource ColumnBorder}"/>
+            <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource ColumnBorder}"/>
+            <Border Grid.Row="1" Grid.Column="3" Style="{StaticResource ColumnBorder}"/>
+            <Border Grid.Row="1" Grid.Column="4" Style="{StaticResource ColumnBorder}"/>
+            <Border Grid.Row="1" Grid.Column="5" Style="{StaticResource ColumnBorder}"/>
+            <Border Grid.Row="1" Grid.Column="6" Style="{StaticResource ColumnBorder}"/>
+            <Border Grid.Row="1" Grid.Column="7" Style="{StaticResource ColumnBorder}"/>
+            <Border Grid.Row="1" Grid.Column="8" Style="{StaticResource ColumnBorder}"/>
 
         </Grid>
         
@@ -391,8 +394,7 @@
             </TextBox>
             <Button Style="{StaticResource FlatSearchButton}"
                     DockPanel.Dock="Left"
-                    Command="{Binding ExecuteSearchCommand}"
-                    ToolTip="Execute search">
+                    Command="{Binding ExecuteSearchCommand}">
                 <Image Source="/Slate_EK;component/Icons/search_black_24.png"/>
             </Button>
 

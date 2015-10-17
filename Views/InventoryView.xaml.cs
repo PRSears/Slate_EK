@@ -12,7 +12,7 @@ namespace Slate_EK.Views
     /// </summary>
     public partial class InventoryView
     {
-        public InventoryViewModel ViewModel
+        private InventoryViewModel ViewModel
         {
             get
             {
@@ -30,10 +30,14 @@ namespace Slate_EK.Views
 
         public InventoryView(string inventoryPath)
         {
+            //RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
+
             InitializeComponent();
 
             ViewModel = new InventoryViewModel(inventoryPath);
+
             ViewModel.RegisterCloseAction(Close);
+            ViewModel.ShortcutPressedCtrlQ += () => QueryTextField.Focus();
 
             InventoryItemsControl.ItemsSource = ViewModel.FastenerList; 
         }

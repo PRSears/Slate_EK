@@ -30,6 +30,17 @@ namespace Slate_EK.ViewModels
             }
         }
 
+        public bool ShowInventoryFastenerToolTips
+        {
+            get { return Settings.Default.ShowInvFastenerToolTip; }
+            set
+            {
+                Settings.Default.ShowInvFastenerToolTip = value;
+                Settings.Default.Save();
+                OnPropertyChanged(nameof(ShowInventoryFastenerToolTips));
+            }
+        }
+
         public int PropertyRefreshInterval
         {
             get { return Settings.Default.PropertyRefreshInterval; }
