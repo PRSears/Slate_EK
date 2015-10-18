@@ -1,8 +1,6 @@
 ﻿using Extender.WPF;
-using Slate_EK.Models.IO;
 using Slate_EK.Models.ThreadParameters;
 using Slate_EK.Views;
-using System;
 using System.IO;
 using System.Windows.Input;
 using System.Xml;
@@ -74,7 +72,11 @@ namespace Slate_EK.ViewModels
                     if (dialog.ShowDialog() == true)
                         LoadExisting(dialog.FileName);
                 }
-            );
+            ); 
+            
+            // TODO Clarify the difference between load and create buttons.
+            //      Need one button to open file picker, and another to create an empty one, or
+            //      automatically search for the assembly # typed.
 
             CreateNewBomCommand = new RelayCommand
             (

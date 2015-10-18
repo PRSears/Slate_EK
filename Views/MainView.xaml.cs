@@ -1,4 +1,5 @@
-﻿using Slate_EK.ViewModels;
+﻿using Extender.WPF;
+using Slate_EK.ViewModels;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -105,7 +106,7 @@ namespace Slate_EK.Views
 
             try
             {
-                invWindow = ViewModel.WindowManager.Children.First(w => w.Title.Contains("nventory"));
+                invWindow = ViewModel.WindowManager.Children.First(w => w.Title.Contains("nventory")); // Lazy, I know. I blame SCAR.
             }
             catch (System.InvalidOperationException)
             {
@@ -135,12 +136,14 @@ namespace Slate_EK.Views
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            ViewModel.WindowManager.CloseAll();
+            if (Properties.Settings.Default.ConfirmClose)
+            {
+                e.Cancel = !ConfirmationDialog.Show("Confirm exit", "Are you sure you want to close the application?");
+            }
 
+            if (!e.Cancel) ViewModel.WindowManager.CloseAll();
             base.OnClosing(e);
-
-            if (!e.Cancel)
-                Dispatcher.InvokeShutdown();
+            if (!e.Cancel) Dispatcher.InvokeShutdown();
         }
     }
 }

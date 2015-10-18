@@ -1,3 +1,13 @@
+- added close confirmation (when set) to exit button of MainView
+- implemented export visible from inventory to csv
+- added indicator to SettingsView to show when a restart may be necessary
+- added timer to status bar to hold description and fade after 3s
+- added a status bar with descriptions to SettingsView
+- fixed InventoryViewer title to reflect database filename
+- added ability to open new database files
+- added toggle in SettingsView to control split console output
+- added split console output (can write to both standard console out and file)
+- added switch in settings to write debug log to text file
 - turned off hit test for column borders
 - made alternate fastenercontrol background be invisible on hover
 - removed debug functions from menus in inventory view

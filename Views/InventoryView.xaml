@@ -59,19 +59,22 @@
               VerticalAlignment="Top">
             <MenuItem Header="_File">
                 <MenuItem Header="_Open A Different Inventory File..." Command="{Binding OpenCommand}"/>
-                <MenuItem Header="_Save Visible As..." Command="{Binding ExportCommand}"/>
+                <Separator/>
+                <MenuItem Header="_Import From CSV..." Command="{Binding ImportCommand}"/>
+                <MenuItem Header="_Export Visible..." Command="{Binding ExportCommand}"/>
                 <Separator/>
                 <MenuItem Header="E_xit" Command="{Binding CloseCommand}"/>
             </MenuItem>
             <MenuItem Header="_Tools">
-                <Separator Visibility="{Binding DebugModeVisibilty}"/>
-                <MenuItem Header="_Import From CSV..." Command="{Binding ImportCommand}"/>
-                <Separator/>
                 <MenuItem Header="_Retrieve All Fasteners" Command="{Binding ShowAllFastenersCommand}"/>
                 <MenuItem Header="_Clear Query Results" Command="{Binding ClearQueryResultsCommand}"/>
                 <Separator/>
                 <MenuItem Header="_Submit Changes" Command="{Binding SubmitChangesCommand}"/>
                 <MenuItem Header="_Discard Pending Operations" Command="{Binding DiscardChangesCommand}"/>
+                <Separator Visibility="{Binding DebugModeVisibilty}"/>
+                <MenuItem Header="Drop Database" Command="{Binding DropDatabaseCommand}"
+                          ToolTip="In case of emergency, break glass"
+                          Visibility="{Binding DebugModeVisibilty}"/>
             </MenuItem>
         </Menu>
 

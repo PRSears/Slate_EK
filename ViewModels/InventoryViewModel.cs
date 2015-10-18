@@ -1,11 +1,14 @@
 ﻿using Extender;
+using Extender.IO;
 using Extender.WPF;
+using Microsoft.Win32;
 using Slate_EK.Models;
 using Slate_EK.Models.Inventory;
 using Slate_EK.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -32,7 +35,6 @@ namespace Slate_EK.ViewModels
         // Main menu commands
         public ICommand OpenCommand                 { get; private set; }
         public ICommand ExportCommand               { get; private set; }
-        public ICommand OpenInExcelCommand          { get; private set; }
         public ICommand ImportCommand               { get; private set; }
         public ICommand ShowAllFastenersCommand     { get; private set; }
         public ICommand ClearQueryResultsCommand    { get; private set; }
@@ -85,24 +87,11 @@ namespace Slate_EK.ViewModels
         private Inventory              _Inventory;
         private Queue<UnifiedFastener> _PendingFasteners;
         private List<UnifiedFastener>  _FastenersMarkedForRemoval;
-        private string                 _WindowTitle = "Inventory Viewer";
         private string                 _SearchQuery;
 
 
         private bool Debug => Properties.Settings.Default.Debug;
 
-        public string     WindowTitle
-        {
-            get
-            {
-                return _WindowTitle;
-            }
-            private set
-            {
-                _WindowTitle = value;
-                OnPropertyChanged(nameof(WindowTitle));
-            }
-        }
         public string     SearchQuery
         {
             get { return _SearchQuery; }
@@ -155,7 +144,8 @@ namespace Slate_EK.ViewModels
         public string     SubmitImageSource      => PendingOperations ? SubmitImageSourceStrings[1]  : SubmitImageSourceStrings[0];
         public string     DiscardImageSource     => PendingOperations ? DiscardImageSourceStrings[1] : DiscardImageSourceStrings[0];
         public Visibility EditModeVisibility     => EditMode ? Visibility.Visible : Visibility.Hidden;
-        public Visibility DebugModeVisibilty     => Debug ? Visibility.Visible : Visibility.Hidden;
+        public Visibility DebugModeVisibilty     => Debug ? Visibility.Visible : Visibility.Collapsed;
+        public string     WindowTitle            => $"Inventory Viewer - {Path.GetFileName(_Inventory.Filename)}";
         public string     QuantityButtonText     => _LastSortBy == SortMethod.Quantity ? $"Quantity {OrderIndicator}" : "Quantity  ";
         public string     PriceButtonText        => _LastSortBy == SortMethod.Price ? $"Price {OrderIndicator}" : "Price  ";
         public string     MassButtonText         => _LastSortBy == SortMethod.Mass ? $"Mass {OrderIndicator}" : "Mass  ";
@@ -326,7 +316,28 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
+                    var dialog = new OpenFileDialog()
+                    {
+                        AddExtension = true,
+                        DefaultExt = "mdf",
+                        CheckFileExists = false,
+                        CheckPathExists = false,
+                        InitialDirectory = Path.GetDirectoryName(_Inventory.Filename)
+                    };
 
+                    var result = dialog.ShowDialog();
+
+                    if (!result.HasValue || !result.Value) return;
+
+                    _Inventory.Dispose();
+                    _Inventory = new Inventory(dialog.FileName);
+
+                    SearchQuery = string.Empty;
+                    FastenerList.Clear();
+
+                    Extender.Debugging.Debug.WriteMessage($"Window Title: {WindowTitle}");
+
+                    OnPropertyChanged(nameof(WindowTitle));
                 }
             );
 
@@ -334,23 +345,51 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
+                    var dialog = new Microsoft.Win32.SaveFileDialog()
+                    {
+                        Title = "Save Query Results",
+                        DefaultExt = ".csv",
+                        Filter = @"(*.csv)
+|*.csv|(*.txt)|*.txt|All files (*.*)|*.*",
+                        AddExtension = false,
+                        FileName = $"Inventory_{DateTime.Today.ToString("yyyy-MM-dd")}.csv"
+                    };
 
-                }
-            );
+                    var result = dialog.ShowDialog();
+                    if (!result.HasValue || !result.Value) return;
 
-            OpenInExcelCommand = new RelayCommand
-            (
-                () =>
-                {
+                    var ext = Path.GetExtension(dialog.FileName)?.ToLower();
+                    if (string.IsNullOrWhiteSpace(ext)) return;
 
-                }
+                    var serializer = new CsvSerializer<UnifiedFastener>();
+
+                    if (ext.EndsWith("csv"))
+                    {
+                        using (var stream = new FileStream(dialog.FileName, FileMode.OpenOrCreate,
+                                                                            FileAccess.ReadWrite,
+                                                                            FileShare.Read))
+                        {
+                            serializer.Serialize(stream, FastenerList.Select(fc => fc.Fastener).ToArray());
+                        }
+                    }
+                    else if (ext.EndsWith("txt"))
+                    {
+                        // TODO Decide how I want it to output inventory to txt file.
+                        //      - I could just have it output a csv with a different extension.
+                        //      - Or output the fastener descriptions
+                        
+                    }
+                },
+                () => FastenerList.Any()
             );
 
             ImportCommand = new RelayCommand
             (
                 () =>
                 {
-
+                    // TODO Use another CsvSerializer to attempt to deserialize from a file
+                    //      Use AddToFastenerList() on each deserialized item so it can be
+                    //      handled / submitted / discarded like any other fastener addition.
                 }
             );
 
@@ -378,7 +417,15 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-                    _Inventory.DEBUG_DropDatabase();
+                    if (ConfirmationDialog.Show("Are you really, really sure?", 
+                        "Dropping the database will result in complete loss of stored data, and remove it from the local server.\n" + 
+                        "This should really only be used for debugging.\n" +
+                        "\nSo you really have to do this?"
+                        ))
+                    {
+                        _Inventory.DEBUG_DropDatabase();
+                        CloseCommand.Execute(null);
+                    }
                 }
             );
 

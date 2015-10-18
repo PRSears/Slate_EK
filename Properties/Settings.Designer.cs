@@ -373,5 +373,17 @@ namespace Slate_EK.Properties {
                 this["ShowInvFastenerToolTip"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DebugRedirectConsoleOut {
+            get {
+                return ((bool)(this["DebugRedirectConsoleOut"]));
+            }
+            set {
+                this["DebugRedirectConsoleOut"] = value;
+            }
+        }
     }
 }

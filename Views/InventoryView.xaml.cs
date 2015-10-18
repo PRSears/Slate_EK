@@ -132,8 +132,6 @@ namespace Slate_EK.Views
 
             SelectionBox.Visibility = Visibility.Visible;
 
-            Extender.Debugging.Debug.WriteMessage($"_MouseDown [{MouseDownPos.X}, {MouseDownPos.Y}]", Debug, "info");
-
             if (e.OriginalSource is FrameworkElement)
             {
                 FrameworkElement origin = GetRootFastenerElement(e.OriginalSource as FrameworkElement);
@@ -170,8 +168,6 @@ namespace Slate_EK.Views
 
                 Point mouseUpPos = e.GetPosition(InventoryBox);
 
-                Extender.Debugging.Debug.WriteMessage($"_MouseUp [{mouseUpPos.X}, {mouseUpPos.Y}]", Debug, "info");
-
                 if (e.OriginalSource is FrameworkElement)
                 {
                     FrameworkElement origin = GetRootFastenerElement(e.OriginalSource as FrameworkElement);
@@ -179,8 +175,6 @@ namespace Slate_EK.Views
                     if (origin != null)
                         SelectUpIndex = InventoryItemsControl.Items.IndexOf(origin.DataContext);
                 }
-
-                Extender.Debugging.Debug.WriteMessage($"Selection started at index [{SelectDownIndex}] and ended at [{SelectUpIndex}].", Debug);
 
                 if (SelectDownIndex >= 0 &&
                     HasFastenerSelected &&

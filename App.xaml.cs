@@ -1,6 +1,8 @@
 ﻿using Extender.Debugging;
+using Extender.IO;
 using Slate_EK.Models.IO;
 using Slate_EK.Views;
+using System;
 using System.Linq;
 using System.Windows;
 
@@ -21,6 +23,26 @@ namespace Slate_EK
             System.Windows.Media.Animation.Timeline.DesiredFrameRateProperty.OverrideMetadata(
                 typeof(System.Windows.Media.Animation.Timeline),
                 new FrameworkPropertyMetadata { DefaultValue = 6 });
+
+
+            //
+            // Setup console output
+            if (RedirectConsole && !string.IsNullOrWhiteSpace(DebugLogPath))
+            {
+                var logStream = new System.IO.StreamWriter(DebugLogPath, true)           {AutoFlush = true};
+                var standard  = new System.IO.StreamWriter(Console.OpenStandardOutput()) {AutoFlush = true};
+
+                Console.SetOut(new ActionTextWriter
+                (
+                    (text) =>
+                    {
+                        standard.Write(text);
+                        logStream.Write(text);
+                    }
+                ));
+            }
+
+            Debug.WriteMessage($"Startup: Args({e.Args.Length}) = {string.Join(", ", e.Args)}");
 
             Window main;
 
@@ -45,5 +67,8 @@ namespace Slate_EK
             Debug.WriteMessage(PitchesCache.IsBuilt()       ? "Pitches cache built."        : "Building Pitches cache.", "info");
             Debug.WriteMessage(ImperialSizesCache.IsBuilt() ? "ImperialSizes cache built."  : "Building ImperialSizes cache.", "info");
         }
+
+        private bool   RedirectConsole => Slate_EK.Properties.Settings.Default.DebugRedirectConsoleOut;
+        private string DebugLogPath    => Slate_EK.Properties.Settings.Default.DebugFilename;
     }
 }

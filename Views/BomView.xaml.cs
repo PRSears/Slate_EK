@@ -139,8 +139,6 @@ namespace Slate_EK.Views
 
             SelectionBox.Visibility = Visibility.Visible;
 
-            Extender.Debugging.Debug.WriteMessage($"_MouseDown [{_MouseDownPos.X}, {_MouseDownPos.Y}]", Debug, "info");
-
             if (e.OriginalSource is FrameworkElement)
             {
                 FrameworkElement origin = GetRootFastenerElement(e.OriginalSource as FrameworkElement);
@@ -184,8 +182,6 @@ namespace Slate_EK.Views
 
                 Point mouseUpPos = e.GetPosition(FastenersBox);
 
-                Extender.Debugging.Debug.WriteMessage($"_MouseUp [{mouseUpPos.X}, {mouseUpPos.Y}]", Debug, "info");
-
                 if (e.OriginalSource is FrameworkElement)
                 {
                     FrameworkElement origin = GetRootFastenerElement(e.OriginalSource as FrameworkElement);
@@ -193,9 +189,7 @@ namespace Slate_EK.Views
                     if (origin != null)
                         _SelectUpIndex = FastenerItemsControl.Items.IndexOf(origin.DataContext); 
                 }
-
-                Extender.Debugging.Debug.WriteMessage($"Selection started at index [{_SelectDownIndex}] and ended at [{_SelectUpIndex}].", Debug);
-
+                
                 if (_SelectDownIndex >= 0 &&
                     HasFastenerSelected &&
                     (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)) &&

@@ -31,6 +31,11 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="#dddddd"/>
         </Style>
+        <Style x:Key="BlockLabelStyle" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="FontSize" Value="12"></Setter>
+            <Setter Property="Foreground" Value="#dddddd"></Setter>
+        </Style>
         
         <Style x:Key="CheckboxLabelStyle" TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Right"/>

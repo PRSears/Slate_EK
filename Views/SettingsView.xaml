@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Slate_EK.Views"
-        xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic" x:Class="Slate_EK.Views.SettingsView"
+        xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic" x:Class="Slate_EK.Views.SettingsView"
         mc:Ignorable="d"
         Title="{Binding WindowTitle}"
         Icon="/Slate_EK;component/Icons/icon_25.ico"
@@ -36,9 +36,9 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TabItem}">
-                        <Themes:ClassicBorderDecorator x:Name="ClassicBorder" BorderBrush="#00000000" BorderThickness="2" BorderStyle="HorizontalLine" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                        <themes:ClassicBorderDecorator x:Name="ClassicBorder" BorderBrush="#00000000" BorderThickness="2" BorderStyle="HorizontalLine" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
                             <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" ContentStringFormat="{TemplateBinding HeaderStringFormat}" ContentSource="Header" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
-                        </Themes:ClassicBorderDecorator>
+                        </themes:ClassicBorderDecorator>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter Property="Panel.ZIndex" Value="1"/>
@@ -98,8 +98,33 @@
         <Grid.Resources>
             <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource FlatTabItemStyle}"/>
         </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="35"></RowDefinition>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="1"
+                   x:Name="StatusBar"
+                   Text="{Binding StatusBarText}"
+                   FontSize="10"
+                   TextAlignment="Left"
+                   VerticalAlignment="Bottom"
+                   HorizontalAlignment="Left"
+                   Margin="5,0,0,4"
+                   TextWrapping="Wrap"
+                   Width="350"
+                   Style="{StaticResource BlockLabelStyle}"/>
+        <Image Grid.Row="1" 
+               x:Name="RestartIndicator"
+               Source="/Slate_EK;component/Icons/ic_autorenew_white_24dp_2x.png"
+               Visibility="{Binding RestartIndicatorVisibility}"
+               OpacityMask="#7f000000"
+               Margin="5"
+               MouseEnter="RestartIndicator_MouseEnter"
+               HorizontalAlignment="Right"></Image>
         <TabControl Background="#15FFFFFF"
-                    BorderBrush="#15FFFFFF">
+                    BorderBrush="#15FFFFFF"
+                    Grid.Row="0"
+                    MouseMove="TabControl_MouseMove">
             <TabItem Header="Switches and Values">
                 <ScrollViewer BorderBrush="Transparent"
                               Background="Transparent"
@@ -114,6 +139,17 @@
                                       IsChecked="{Binding ConfirmBeforeClosing}">
                                 <TextBlock Style="{StaticResource CheckboxLabelStyle}"
                                            Text="Confirm before closing"
+                                           x:Name="ConfirmBeforeClosingBlock"
+                                           Margin="10,0,0,0"/>
+                            </CheckBox>
+                        </DockPanel>
+                        <DockPanel Margin="10,5,0,5">
+                            <CheckBox DockPanel.Dock="Left"
+                                      Style="{StaticResource CenteredCheckbox}"
+                                      IsChecked="{Binding ShowInventoryFastenerToolTips}">
+                                <TextBlock Style="{StaticResource CheckboxLabelStyle}"
+                                           Text="Show fastener descriptions on hover in the inventory viewer"
+                                           x:Name="ShowDescBlock"
                                            Margin="10,0,0,0"/>
                             </CheckBox>
                         </DockPanel>
@@ -126,30 +162,31 @@
                                            Margin="10,0,0,0"/>
                             </CheckBox>
                         </DockPanel>
-                        <DockPanel Margin="10,5,0,5">
+                        <DockPanel Margin="10,5,0,5"
+                                   Visibility="{Binding DebugOptionsVisibilty}">
                             <CheckBox DockPanel.Dock="Left"
                                       Style="{StaticResource CenteredCheckbox}"
-                                      IsChecked="{Binding ShowInventoryFastenerToolTips}">
+                                      IsChecked="{Binding DebugRedirectConsoleOut}">
                                 <TextBlock Style="{StaticResource CheckboxLabelStyle}"
-                                           Text="Show fastener descriptions on hover in the inventory viewer"
+                                           Text="[Debug] Log output to file"
                                            Margin="10,0,0,0"/>
                             </CheckBox>
                         </DockPanel>
                         <DockPanel Margin="0,25,0,5" LastChildFill="False">
-                            <Label Style="{StaticResource LabelStyle}"
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="DropdownIntervalBlock"
                                    DockPanel.Dock="Left"
-                                   Content="Dropdown source refresh interval (ms)"
-                                   ToolTip="The time, in milliseconds, between refreshes for the size and pitch dropdown menus in BOM view."/>
+                                   Text="Dropdown source refresh interval (ms)"/>
                             <TextBox Style="{StaticResource FlatTextFieldStyle}"
                                      DockPanel.Dock="Right"
                                      Width="200" Height="22"
                                      Text="{Binding PropertyRefreshInterval}"/>
                         </DockPanel>
                         <DockPanel Margin="0,5,0,5" LastChildFill="False">
-                            <Label Style="{StaticResource LabelStyle}"
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="FormatSpecBlock"
                                    DockPanel.Dock="Left"
-                                   Content="Decimal format specifier"
-                                   ToolTip="String formatter for displaying numbers."/>
+                                   Text="Decimal format specifier"/>
                             <TextBox Style="{StaticResource FlatTextFieldStyle}"
                                      DockPanel.Dock="Right"
                                      Width="200" Height="22"
@@ -167,64 +204,79 @@
                               Margin="0,0,5,0">
                     <StackPanel Orientation="Vertical">
                         <DockPanel Margin="0,5,0,5" LastChildFill="False">
-                            <Label Style="{StaticResource LabelStyle}"
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="PitchNameBlock"
                                    DockPanel.Dock="Left"
-                                   Content="Pitch list filename"
-                                   ToolTip="Name of the file to load fastener pitch options from."/>
+                                   Text="Pitch list filename"/>
                             <TextBox Style="{StaticResource FlatTextFieldStyle}"
                                      DockPanel.Dock="Right"
                                      Width="250" Height="22"
                                      Text="{Binding PitchListFilename}"/>
                         </DockPanel>
                         <DockPanel Margin="0,5,0,5" LastChildFill="False">
-                            <Label Style="{StaticResource LabelStyle}"
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="SizeNameBlock"
                                    DockPanel.Dock="Left"
-                                   Content="Size list filename"
-                                   ToolTip="Name of the file to load fastener size options from."/>
+                                   Text="Size list filename"/>
                             <TextBox Style="{StaticResource FlatTextFieldStyle}"
                                      DockPanel.Dock="Right"
                                      Width="250" Height="22"
                                      Text="{Binding SizeListFilename}"/>
                         </DockPanel>
                         <DockPanel Margin="0,5,0,5" LastChildFill="False">
-                            <Label Style="{StaticResource LabelStyle}"
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="BomNameBlock"
                                    DockPanel.Dock="Left"
-                                   Content="BOM filename format"
-                                   ToolTip=".Net String.Format for individual BOM filename. '{0}' is replaced with the assembly number."/>
+                                   Text="BOM filename format"/>
                             <TextBox Style="{StaticResource FlatTextFieldStyle}"
                                      DockPanel.Dock="Right"
                                      Width="250" Height="22"
                                      Text="{Binding BomFilenameFormat}"/>
                         </DockPanel>
                         <DockPanel Margin="0,5,0,5" LastChildFill="False">
-                            <Label Style="{StaticResource LabelStyle}"
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="BomFolderBlock"
                                    DockPanel.Dock="Left"
-                                   Content="BOM autosave folder"
-                                   ToolTip="Path to the folder where BOMs are stored, relative to the application's root folder."/>
+                                   Text="BOM autosave folder"/>
+                            <Button Style="{StaticResource FlatSearchButton}"
+                                    DockPanel.Dock="Right"
+                                    Width="22"
+                                    Height="22"
+                                    Command="{Binding BrowseBomFolderCommand}">
+                                <Image Source="/Slate_EK;component/Icons/ic_folder_open_black_24dp_1x.png"></Image>
+                            </Button>
                             <TextBox Style="{StaticResource FlatTextFieldStyle}"
                                      DockPanel.Dock="Right"
-                                     Width="250" Height="22"
+                                     Width="228" Height="22"
                                      Text="{Binding AssemblyAutosaveFolder}"/>
                         </DockPanel>
                         <DockPanel Margin="0,5,0,5" LastChildFill="False">
-                            <Label Style="{StaticResource LabelStyle}"
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="InvPathBlock"
+                                   IsHitTestVisible="True"
                                    DockPanel.Dock="Left"
-                                   Content="Path to default inventory"
-                                   ToolTip="Full path (including filename and extension) to the inventory database that gets loaded by default."/>
+                                   Text="Path to default inventory"/>
+                            <Button Style="{StaticResource FlatSearchButton}"
+                                    DockPanel.Dock="Right"
+                                    Width="22"
+                                    Height="22"
+                                    Command="{Binding BrowseInvFileCommand}">
+                                <Image Source="/Slate_EK;component/Icons/ic_folder_open_black_24dp_1x.png"></Image>
+                            </Button>
                             <TextBox Style="{StaticResource FlatTextFieldStyle}"
                                      DockPanel.Dock="Right"
-                                     Width="250" Height="22"
+                                     Width="228" Height="22"
                                      Text="{Binding DefaultInventoryPath}"/>
                         </DockPanel>
-                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
-                            <Label Style="{StaticResource LabelStyle}"
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False"
+                                   Visibility="{Binding DebugOptionsVisibilty}">
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
                                    DockPanel.Dock="Left"
-                                   Content="Debug log filename"/>
+                                   Text="Debug log filename"/>
                             <TextBox Style="{StaticResource FlatTextFieldStyle}"
                                      DockPanel.Dock="Right"
                                      Width="250" Height="22"
-                                     Text="{Binding DebugLogFilename}"
-                                     Visibility="{Binding DebugOptionsVisibilty}"/>
+                                     Text="{Binding DebugLogFilename}"/>
                         </DockPanel>
                     </StackPanel>
                 </ScrollViewer>

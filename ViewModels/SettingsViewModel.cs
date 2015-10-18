@@ -1,12 +1,18 @@
-﻿using Extender.WPF;
+﻿using Extender.Debugging;
+using Extender.WPF;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using Slate_EK.Properties;
+using System;
+using System.IO;
 using System.Windows;
+using System.Windows.Input;
 
 namespace Slate_EK.ViewModels
 {
     public class SettingsViewModel : ViewModel
     {
-        public string WindowTitle => $"{Settings.Default.ShortTitle} - Settings";
+        public string       WindowTitle           => $"{Settings.Default.ShortTitle} - Settings";
+        public Visibility   DebugOptionsVisibilty => EnableDebug ? Visibility.Visible : Visibility.Collapsed;
 
         public bool ConfirmBeforeClosing
         {
@@ -27,6 +33,7 @@ namespace Slate_EK.ViewModels
                 Settings.Default.Debug = value;
                 Settings.Default.Save();
                 OnPropertyChanged(nameof(EnableDebug));
+                OnPropertyChanged(nameof(DebugOptionsVisibilty));
             }
         }
 
@@ -48,6 +55,7 @@ namespace Slate_EK.ViewModels
             {
                 Settings.Default.PropertyRefreshInterval = value;
                 Settings.Default.Save();
+                RestartRequired = true;
                 OnPropertyChanged(nameof(PropertyRefreshInterval));
             }
         }
@@ -59,6 +67,7 @@ namespace Slate_EK.ViewModels
             {
                 Settings.Default.PitchesFilename = value;
                 Settings.Default.Save();
+                RestartRequired = true;
                 OnPropertyChanged(nameof(PitchListFilename));
             }
         }
@@ -70,6 +79,7 @@ namespace Slate_EK.ViewModels
             {
                 Settings.Default.SizesFilename = value;
                 Settings.Default.Save();
+                RestartRequired = true;
                 OnPropertyChanged(nameof(SizeListFilename));
             }
         }
@@ -103,6 +113,7 @@ namespace Slate_EK.ViewModels
             {
                 Settings.Default.DefaultInventoryPath = value;
                 Settings.Default.Save();
+                RestartRequired = true;
                 OnPropertyChanged(nameof(DefaultInventoryPath));
             }
         }
@@ -129,6 +140,114 @@ namespace Slate_EK.ViewModels
             }
         }
 
-        public Visibility DebugOptionsVisibilty => EnableDebug ? Visibility.Visible : Visibility.Hidden;
+        public bool DebugRedirectConsoleOut
+        {
+            get { return Settings.Default.DebugRedirectConsoleOut; }
+            set
+            {
+                Settings.Default.DebugRedirectConsoleOut = value;
+                Settings.Default.Save();
+                RestartRequired = true;
+                OnPropertyChanged(nameof(DebugRedirectConsoleOut));
+            }
+        }
+
+        public string StatusBarText
+        {
+            get { return _StatusBarText; }
+            set
+            {
+                _StatusBarText = value;
+                OnPropertyChanged(nameof(StatusBarText));
+            }
+        }
+
+        public string IndicatorBarText
+        {
+            get { return _IndicatorBarText; }
+            set
+            {
+                _IndicatorBarText = value;
+                OnPropertyChanged(nameof(IndicatorBarText));
+            }
+        }
+
+        public bool RestartRequired
+        {
+            get { return _RestartRequired; }
+            set
+            {
+                _RestartRequired = value;
+                OnPropertyChanged(nameof(RestartRequired));
+                OnPropertyChanged(nameof(RestartIndicatorVisibility));
+            }
+        }
+
+        public Visibility RestartIndicatorVisibility => RestartRequired ? Visibility.Visible : Visibility.Hidden;
+
+        private string _StatusBarText;
+        private string _IndicatorBarText;
+        private bool   _RestartRequired;
+
+        public ICommand BrowseInvFileCommand   { get; private set; }
+        public ICommand BrowseBomFolderCommand { get; private set; }
+
+        public SettingsViewModel()
+        {
+            base.Initialize();
+            RestartRequired = false;
+
+            BrowseInvFileCommand = new RelayCommand
+            (
+                () =>
+                {
+                    var dialog = new Microsoft.Win32.OpenFileDialog()
+                    {
+                        AddExtension = true,
+                        DefaultExt = "mdf",
+                        CheckFileExists = false,
+                        CheckPathExists = false,
+                        InitialDirectory = Path.GetDirectoryName(DefaultInventoryPath)
+                    };
+
+                    var result = dialog.ShowDialog();
+                    if (!result.HasValue || !result.Value) return;
+
+                    DefaultInventoryPath = dialog.FileName;
+                }
+            );
+
+            BrowseBomFolderCommand = new RelayCommand
+            (
+                () =>
+                {
+                    var dialog = new Microsoft.WindowsAPICodePack.Dialogs.CommonOpenFileDialog()
+                    {
+                        IsFolderPicker   = true,
+                        Multiselect      = false,
+                        Title            = @"Select BOM autosave folder",
+                        InitialDirectory = Path.Combine(Directory.GetCurrentDirectory(), AssemblyAutosaveFolder)
+                    };
+
+                    if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                    {
+                        Uri selected = new Uri(AppendSlash(dialog.FileName));
+                        Uri cwd      = new Uri(AppendSlash(Directory.GetCurrentDirectory()));
+                        Uri rel      = cwd.MakeRelativeUri(selected);
+
+                        AssemblyAutosaveFolder = rel.ToString().Replace('/', Path.DirectorySeparatorChar);
+
+                        Debug.WriteMessage($"Selected: {selected}");
+                        Debug.WriteMessage($"Cwd     : {cwd}");
+                        Debug.WriteMessage($"Relative: {rel}");
+                    }
+                }
+            );
+        }
+
+        private string AppendSlash(string path)
+        {
+            return $"{path}\\";
+        }
     }
 }

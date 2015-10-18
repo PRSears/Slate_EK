@@ -1,19 +1,19 @@
 ﻿using Extender;
 using Extender.Debugging;
+using Extender.IO;
 using System;
 using System.Data.Linq;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Slate_EK.Models.Inventory
 {
     public sealed class Inventory : IDisposable
     {
-        private InventoryDataContext           _Database;
-        private readonly string                _Filename;
+        private InventoryDataContext _Database;
+        public readonly string        Filename;
 
-        private string InventoryConnectionString   => $"Data Source=(LocalDB)\\v11.0;AttachDbFilename={_Filename};Integrated Security=False;Pooling=false;";
+        private string InventoryConnectionString   => $"Data Source=(LocalDB)\\v11.0;AttachDbFilename={Filename};Integrated Security=False;Pooling=false;";
         public Table<UnifiedFastener> Fasteners    => _Database?.Fasteners;
 
         /// <summary>
@@ -22,7 +22,7 @@ namespace Slate_EK.Models.Inventory
         /// <param name="filename">Full name and path of the inventory database being managed.</param>
         public Inventory(string filename)
         {
-            _Filename = filename;
+            Filename = filename;
 
             InitDataContext();
 
@@ -44,7 +44,14 @@ namespace Slate_EK.Models.Inventory
         {
             _Database?.Dispose();
             _Database     = new InventoryDataContext(InventoryConnectionString);
-            _Database.Log = new ActionTextWriter(Console.WriteLine);
+            _Database.Log = new ActionTextWriter
+            (
+                (text) =>
+                {
+                    if (!string.IsNullOrWhiteSpace(text))
+                        Debug.WriteMessage($" => \n{text}", "SQL");
+                }
+            );
         }
 
         public void Add(UnifiedFastener fastener)
@@ -111,6 +118,8 @@ namespace Slate_EK.Models.Inventory
 
         public void Export(string filename)
         {
+            // TODO add support for exporting multiple file types
+            //      OR at least put a check to make sure filename ends in *.csv or something.
             UnifiedFastener[] allFasteners = Dump();
 
             Extender.IO.CsvSerializer<UnifiedFastener> csv = new Extender.IO.CsvSerializer<UnifiedFastener>();
@@ -172,27 +181,5 @@ namespace Slate_EK.Models.Inventory
         }
         #endregion
 
-    }
-
-    class ActionTextWriter : TextWriter
-    {
-        private readonly Action<string> _Action;
-
-        public ActionTextWriter(Action<string> action)
-        {
-            this._Action = action;
-        }
-
-        public override void Write(char[] buffer, int index, int count)
-        {
-            Write(new string(buffer, index, count));
-        }
-
-        public override void Write(string value)
-        {
-            _Action.Invoke(value);
-        }
-
-        public override Encoding Encoding => System.Text.Encoding.Default;
     }
 }
