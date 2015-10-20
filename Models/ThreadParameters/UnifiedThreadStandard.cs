@@ -100,11 +100,21 @@ namespace Slate_EK.Models.ThreadParameters
             // Check if the provided string designation is all numbers
             if (!int.TryParse(threadDensity, out tpi))
             {
-                return GetThreadDensity // it's not all numbers so we try to parse the designation (UNC / UNF / UNEF)
+                var densityName = DensityNames.FirstOrDefault
                 (
-                    ((ThreadDensity[])Enum.GetValues(typeof(ThreadDensity)))
-                                          .First(d => threadDensity.StartsWith(Enum.GetName(typeof(ThreadDensity), d)))
+                    dn => threadDensity.ToUpper().StartsWith(dn)
                 );
+
+                if (!string.IsNullOrWhiteSpace(densityName))
+                    return GetThreadDensity(Densities[Array.IndexOf(DensityNames, densityName)]);
+                else
+                    throw new InvalidOperationException($"Thread density '{threadDensity}' could not be found.");
+
+                //return GetThreadDensity // it's not all numbers so we try to parse the designation (UNC / UNF / UNEF)
+                //(
+                //    ((ThreadDensity[])Enum.GetValues(typeof(ThreadDensity)))
+                //                          .First(d => threadDensity.ToUpper().StartsWith(Enum.GetName(typeof(ThreadDensity), d)))
+                //);
             }
 
             if (UncThreadsPerInch.RoughEquals(tpi, TOLERANCE) || 
@@ -137,11 +147,13 @@ namespace Slate_EK.Models.ThreadParameters
             float convert = (float)Measure.Convert<Millimeter, Inch>(pitchInMillimeters);
             float tpi     = (float)Math.Round(1f / convert);
 
-            return GetThreadDensityDisplay
-            (
-                ((ThreadDensity[])Enum.GetValues(typeof(ThreadDensity)))
-                                      .First(d => GetThreadDensity(d).RoughEquals(tpi, 0.5))
-            );
+            return GetThreadDensityDisplay(Densities.First(d => GetThreadDensity(d).RoughEquals(tpi, 0.5)));
+
+            //return GetThreadDensityDisplay
+            //(
+            //    ((ThreadDensity[])Enum.GetValues(typeof(ThreadDensity)))
+            //                          .First(d => GetThreadDensity(d).RoughEquals(tpi, 0.5))
+            //);
         }
 
         /// <summary>
@@ -222,6 +234,9 @@ namespace Slate_EK.Models.ThreadParameters
 
             return match;
         }
+
+        private static readonly ThreadDensity[] Densities    = (ThreadDensity[])Enum.GetValues(typeof(ThreadDensity));
+        private static readonly string[]        DensityNames = Densities.Select(d => Enum.GetName(typeof(ThreadDensity), d)).ToArray();
 
         /// <summary>
         /// Determines whether the specified object is equal to the current object.

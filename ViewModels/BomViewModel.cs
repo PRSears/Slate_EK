@@ -450,7 +450,7 @@ namespace Slate_EK.ViewModels
                     // Check exact match
                     if (inv.Fasteners.Any(f => f.Equals(fastener)))
                     {
-                        Bom.Add(fastener.Copy());
+                        Bom.Add(inv.Fasteners.First(f => f.Equals(fastener)));
                         continue;
                     }
 
@@ -621,9 +621,9 @@ namespace Slate_EK.ViewModels
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
                 Title           = "Save a copy of the BOM as...",
-                DefaultExt      = ".xml",
-                Filter          = @"(*.xml)
-|*.xml|(*.csv)|*.csv|(*.txt)|*.txt|All files (*.*)|*.*",
+                DefaultExt      = ".txt",
+                Filter          = @"(*.txt)
+|*.txt|(*.csv)|*.csv|(*.xml)|*.xml|All files (*.*)|*.*",
                 AddExtension    = true,
                 OverwritePrompt = true,
                 FileName        = Path.GetFileName(Bom.FilePath)
@@ -663,7 +663,8 @@ namespace Slate_EK.ViewModels
                     (
                         "Encountered an exception while copying BOM:\n" + e.Message,
                         "Exception",
-                        MessageBoxButton.OK
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
                     );
                     return false;
                 }
@@ -682,6 +683,13 @@ namespace Slate_EK.ViewModels
                 }
                 catch (Exception e)
                 {
+                    MessageBox.Show
+                    (
+                        "Encountered an exception while saving as .txt:\n" + e.Message,
+                        "Exception",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
+                    );
                     ExceptionTools.WriteExceptionText(e, true);
                     return false;
                 }

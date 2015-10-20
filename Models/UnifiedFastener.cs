@@ -6,6 +6,7 @@ using Slate_EK.Models.ThreadParameters;
 using System;
 using System.ComponentModel;
 using System.Data.Linq.Mapping;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
@@ -30,7 +31,7 @@ namespace Slate_EK.Models
         private Guid      _UniqueId;
 
         private Slate_EK.Models.Units _Unit;
-
+        
         public event PropertyChangedEventHandler PropertyChanged;
 
         [Column(IsPrimaryKey = true, Storage = nameof(_UniqueId)), XmlIgnore]
@@ -157,7 +158,7 @@ namespace Slate_EK.Models
             }
         }
 
-        [Column(Storage =  nameof(_Unit), DbType = "NVarChar(15)", CanBeNull = true)]
+        [Column(Storage =  nameof(_Unit), DbType = "NVarChar(15)", CanBeNull = true), XmlIgnore]
         public Slate_EK.Models.Units Unit
         {
             get
@@ -326,7 +327,29 @@ namespace Slate_EK.Models
                 float parsed;
                 Mass = !float.TryParse(value, out parsed) ? 0f : parsed;
             }
-        } 
+        }
+
+        public string UnitDisplay
+        {
+            get { return Enum.GetName(typeof(Units), Unit); }
+            set
+            {
+                var unitOptions = (Units[])Enum.GetValues(typeof(Units));
+                var parsed = unitOptions.FirstOrDefault
+                (
+                    u => Enum.GetName(typeof(Units), u)
+                                .ToLower()
+                                .Contains(value.ToLower())
+                );
+
+                //foreach (var unit in unitOptions)
+                //{
+                //    if (Enum.GetName(typeof(Units), unit).ToLower().Contains(value.ToLower()))
+                //}
+
+                Unit = parsed;
+            }
+        }
 
         [XmlIgnore]
         public string Description  => $"{SizeDisplay} - {ShortPitchDisplay} x {LengthDisplay} {Type}";
@@ -393,7 +416,7 @@ namespace Slate_EK.Models
             blocks[4] = BitConverter.GetBytes(_Pitch);
             blocks[5] = BitConverter.GetBytes(_Length);
             blocks[6] = Encoding.Default.GetBytes(_Material);
-            blocks[7] = Encoding.Default.GetBytes(Type);
+            blocks[7] = Encoding.Default.GetBytes(_Type);
 
             return Hashing.GenerateHashCode(blocks);
         }
@@ -437,7 +460,16 @@ namespace Slate_EK.Models
             if (!(obj is UnifiedFastener))
                 return false;
 
-            return GetHashCode().Equals(((UnifiedFastener)obj).GetHashCode());
+            var b = (UnifiedFastener)obj;
+
+            return Size.Equals(b.Size)         &&
+                   Pitch.Equals(b.Pitch)       &&
+                   Quantity.Equals(b.Quantity) &&
+                   Price.Equals(b.Price)       &&
+                   Mass.Equals(b.Mass)         &&
+                   Length.Equals(b.Length)     &&
+                   Material.Equals(b.Material) &&
+                   Type.Equals(b.Type);
         }
 
         /// <summary>
@@ -492,11 +524,6 @@ namespace Slate_EK.Models
             }
 
             return null;
-        }
-
-        public void InvalidateProperties()
-        {
-            OnPropertyChanged(null);
         }
 
         private void OnPropertyChanged(string propertyName)

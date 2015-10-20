@@ -56,6 +56,8 @@ namespace Slate_EK.Models.Inventory
 
         public void Add(UnifiedFastener fastener)
         {
+            fastener.ForceNewUniqueID();
+
             var inTable = Fasteners.FirstOrDefault(f => f.UniqueID.Equals(fastener.UniqueID));
 
             if (inTable != null && !inTable.Equals(default(UnifiedFastener)))
@@ -96,24 +98,6 @@ namespace Slate_EK.Models.Inventory
             _Database.Fasteners.DeleteAllOnSubmit(matches);
 
             return matches.Count();
-        }
-
-        public void ChangeQuantity(Guid id, int newQuantity)
-        {
-            var inTable = Fasteners.FirstOrDefault(f => f.UniqueID.Equals(id));
-
-            if (inTable != null && !inTable.Equals(default(UnifiedFastener)))
-            {
-                var modifiedFastener      = inTable.Copy();
-                modifiedFastener.Quantity = newQuantity;
-
-                _Database.Fasteners.DeleteOnSubmit(inTable);
-                _Database.Fasteners.InsertOnSubmit(modifiedFastener);
-            }
-            else
-            {
-                Debug.WriteMessage($"There was no item in the database with id {id.ToString()}. Could not change quantity.", "info");
-            }
         }
 
         public void Export(string filename)

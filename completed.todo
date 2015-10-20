@@ -1,3 +1,7 @@
+- added importing from csv to inventory
+- fixed bugs in GetThreadDensity methods & case is now ignored
+- fixed bug where stale UniqueIDs were getting written to the database
+- fixed bug(s) in adding fasteners to BOM and checking inventory
 - built QuickEditView to add missing fields before inserting in Inventory
 - added save as .txt to BomView
 - cleaned up MainView's buttons

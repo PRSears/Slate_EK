@@ -328,7 +328,7 @@
                                                  IsEnabled="{Binding IsEditable}"
                                                  GotFocus="UIElement_OnGotFocus"/>
                                         <TextBox Grid.Column="8"
-                                                 Text="{Binding Fastener.Unit}"
+                                                 Text="{Binding Fastener.UnitDisplay}"
                                                  IsEnabled="{Binding IsEditable}"
                                                  GotFocus="UIElement_OnGotFocus"/>
                                     </Grid>

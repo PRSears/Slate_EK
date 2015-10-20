@@ -393,9 +393,53 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-                    // TODO Use another CsvSerializer to attempt to deserialize from a file
-                    //      Use AddToFastenerList() on each deserialized item so it can be
-                    //      handled / submitted / discarded like any other fastener addition.
+                    var dialog = new OpenFileDialog()
+                    {
+                        DefaultExt = ".csv",
+                        Filter = @"CSV files (*.csv)
+                |*.csv",
+                        CheckFileExists = true
+                    };
+
+                    if (dialog.ShowDialog() == false) return;
+
+                    FileInfo file  = new FileInfo(dialog.FileName);
+                    var serializer = new CsvSerializer<UnifiedFastener>();
+
+                    if (!file.Exists || !file.Extension.ToLower().EndsWith("csv")) return;
+
+                    using (var stream = new FileStream(
+                        file.FullName,
+                        FileMode.Open,
+                        FileAccess.Read,
+                        FileShare.ReadWrite))
+                    {
+                        try
+                        {
+                            var deserializedFasteners = serializer.Deserialize(stream);
+                            EnterEditMode(true);
+
+                            foreach (var newFastener in deserializedFasteners)
+                            {
+                                AddToFastenerList(new FastenerControl(newFastener));
+                                _PendingFasteners.Enqueue(newFastener);
+                            }
+                        }
+                        catch (Exception e) 
+                        {
+                            MessageBox.Show
+                            (
+                                "Encountered an exception while importing from file:\n" + e.Message,
+                                "Exception",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error
+                            );
+
+                            Extender.Debugging.ExceptionTools.WriteExceptionText(e, true);
+                            throw;
+                        }
+
+                    }
                 }
             );
 
@@ -999,8 +1043,4 @@ namespace Slate_EK.ViewModels
     }
 }
 
-//
-// TODOh Implement importing large numbers of fasteners from a csv / excel file
-//       This is a priority so I can do some real testing with BOM searching the inventory
-//
 // THOUGHT  Print function(s) could export to an actual xlsx with some prettied formatting.
