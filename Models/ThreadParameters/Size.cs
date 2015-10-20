@@ -55,7 +55,7 @@ namespace Slate_EK.Models.ThreadParameters
 
         public override string ToString()
         {
-            return Math.Abs(OuterDiameter % 1) < SIGMA ? $"M{Math.Round(OuterDiameter),-2}" : new Millimeter(OuterDiameter).ToString(Spec);
+            return Math.Abs(OuterDiameter % 1) < SIGMA ? $"M{Math.Round(OuterDiameter)}" : new Millimeter(OuterDiameter).ToString(Spec);
         }
 
         public override bool Equals(object obj)

@@ -16,7 +16,8 @@ using System.Windows.Input;
 
 namespace Slate_EK.ViewModels
 {
-    public enum SortMethod { None, Quantity, Price, Mass, Size, Length, Pitch, Material, FastType, Unit }
+    public enum SortMethod  { None, Quantity, Price, Mass, Size, Length, Pitch, Material, FastType, Unit }
+    public enum SearchType : byte { Quantity, Price, Mass, Size, Length, Pitch, Material, FastenerType, Unit }
 
     public sealed class InventoryViewModel : ViewModel
     {
@@ -26,6 +27,7 @@ namespace Slate_EK.ViewModels
         // InventoryBoxContextMenu               commands
         public ICommand AddNewFastenerCommand    { get; private set; }
         public ICommand RemoveFastenerCommand    { get; private set; }
+        public ICommand EditSelectedCommand      { get; private set; }
         public ICommand SelectAllCommand         { get; private set; }
         public ICommand SelectNoneCommand        { get; private set; }
         public ICommand CopyCommand              { get; private set; }
@@ -100,18 +102,6 @@ namespace Slate_EK.ViewModels
                 _SearchQuery = value;
                 OnPropertyChanged(nameof(SearchQuery));
             }
-        }
-        public enum       SearchType : byte
-        {
-            Quantity,
-            Price,
-            Mass,
-            Size,
-            Length,
-            Pitch,
-            Material,
-            FastenerType,
-            Unit
         }
         public string[]   SearchByPropertyList   => Enum.GetNames(typeof(SearchType));
         public string     SelectedSearchProperty
@@ -270,6 +260,22 @@ namespace Slate_EK.ViewModels
                     }
                 },
                 () => FastenerList.Any(f => f.IsSelected)
+            );
+
+            EditSelectedCommand = new RelayCommand
+            (
+                () =>
+                {
+                    var selected = FastenerList.Where(fc => fc.IsSelected).ToArray();
+                    FastenerList.Clear();
+                    selected.ForEach(fc => AddToFastenerList(new FastenerControl(fc.Fastener.Copy())));
+
+                    foreach (var item in selected)
+                        PendingOperations = PendingOperations | _Inventory.Remove(item.Fastener);
+
+                    EnterEditMode(false);
+                }, 
+                () => FastenerList.Any(fc => fc.IsSelected)
             );
 
             SelectAllCommand = new RelayCommand
@@ -597,6 +603,8 @@ namespace Slate_EK.ViewModels
         {
             fastener.Fastener.PropertyChanged += (sender, args) =>
             {
+                if (string.IsNullOrWhiteSpace(args.PropertyName)) return;
+
                 if (!_PendingFasteners.Contains(fastener.Fastener))
                 {
                     _PendingFasteners.Enqueue(fastener.Fastener);
@@ -950,7 +958,7 @@ namespace Slate_EK.ViewModels
                         0.25f,
                         Material.Steel,
                         FastenerType.SocketHeadFlatScrew,
-                        new PlateInfo(4, HoleType.CBore)
+                        new PlateInfo(4, HoleType.CBore, Units.Millimeters)
                     )));
                 dummies.Add(new FastenerControl(new UnifiedFastener
                     (
@@ -958,7 +966,7 @@ namespace Slate_EK.ViewModels
                         0.25f,
                         Material.Steel,
                         FastenerType.FlatCountersunkHeadCapScrew,
-                        new PlateInfo(4, HoleType.CSink)
+                        new PlateInfo(4, HoleType.CSink, Units.Millimeters)
                     )));
                 dummies.Add(new FastenerControl(new UnifiedFastener
                     (
@@ -966,7 +974,7 @@ namespace Slate_EK.ViewModels
                         0.5f,
                         Material.Steel,
                         FastenerType.LowHeadSocketHeadCapScrew,
-                        new PlateInfo(4, HoleType.Straight)
+                        new PlateInfo(4, HoleType.Straight, Units.Millimeters)
                     )));
                 dummies.Add(new FastenerControl(new UnifiedFastener
                     (
@@ -974,7 +982,7 @@ namespace Slate_EK.ViewModels
                         0.5f,
                         Material.Steel,
                         FastenerType.SocketHeadFlatScrew,
-                        new PlateInfo(4, HoleType.CBore)
+                        new PlateInfo(4, HoleType.CBore, Units.Millimeters)
                     )));
                 dummies.Add(new FastenerControl(new UnifiedFastener
                     (
@@ -982,7 +990,7 @@ namespace Slate_EK.ViewModels
                         0.75f,
                         Material.Steel,
                         FastenerType.SocketHeadFlatScrew,
-                        new PlateInfo(4, HoleType.CBore)
+                        new PlateInfo(4, HoleType.CBore, Units.Millimeters)
                     )));
             }
 
@@ -995,4 +1003,4 @@ namespace Slate_EK.ViewModels
 // TODOh Implement importing large numbers of fasteners from a csv / excel file
 //       This is a priority so I can do some real testing with BOM searching the inventory
 //
-// TODO  Print function(s) could export to an actual xlsx with some prettied formatting.
+// THOUGHT  Print function(s) could export to an actual xlsx with some prettied formatting.

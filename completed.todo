@@ -1,3 +1,7 @@
+- built QuickEditView to add missing fields before inserting in Inventory
+- added save as .txt to BomView
+- cleaned up MainView's buttons
+- fastener length now display in appropriate units
 - added close confirmation (when set) to exit button of MainView
 - implemented export visible from inventory to csv
 - added indicator to SettingsView to show when a restart may be necessary

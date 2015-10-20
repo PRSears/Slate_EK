@@ -183,7 +183,7 @@ namespace Slate_EK.Models
                 _PlateInfo = value;
                 OnPropertyChanged(nameof(PlateInfo));
             }
-        }
+        } 
 
         [XmlIgnore]
         public string SizeDisplay
@@ -281,12 +281,34 @@ namespace Slate_EK.Models
         {
             get
             {
-                return Length.ToString(Spec);
+                switch (Unit)
+                {
+                    case Units.Millimeters:
+                        return Length.ToString(Spec);
+                    case Units.Inches:
+                        return Measure.Convert<Millimeter, Inch>(Length).ToString(Spec);
+                }
+
+                return "Something fucked up.";
             }
             set
             {
-                float parsed;
-                Length = !float.TryParse(value, out parsed) ? 0f : parsed;
+                if (string.IsNullOrWhiteSpace(value))
+                    return;
+
+                float n;
+                float? parsed = float.TryParse(value, out n) ? (float?)n : null;
+
+                switch (Unit)
+                {
+                    case Units.Millimeters:
+                        Length = parsed ?? Length;
+                        break; 
+                    case Units.Inches:
+                        if (!parsed.HasValue) return;
+                        Length = (float)Measure.Convert<Inch, Millimeter>(parsed.Value);
+                        break;
+                }
 
                 OnPropertyChanged(nameof(LengthDisplay));
             }
@@ -309,14 +331,19 @@ namespace Slate_EK.Models
         [XmlIgnore]
         public string Description  => $"{SizeDisplay} - {ShortPitchDisplay} x {LengthDisplay} {Type}";
 
+        [XmlIgnore]
+        public string DescriptionForPrint => $"{Quantity}, {Description}, {Mass * Quantity}, {Price}, {Price * Quantity}";
+        // Figure out why some fasteners are loading with 0 price and 0 mass
+        //  Qty, callout, mass per * qty, price per, total price
+
         //
         // Constructors
         public UnifiedFastener()
         {
             Material  = Models.Material.Unspecified.ToString();
             Type      = Models.FastenerType.Unspecified.ToString();
-            PlateInfo = new PlateInfo();
             Unit      = Units.Millimeters;
+            PlateInfo = new PlateInfo(Unit);
         }
 
         public UnifiedFastener(
@@ -441,7 +468,7 @@ namespace Slate_EK.Models
         /// <returns></returns>
         public static UnifiedFastener FromString(string fastenerDescription)
         {
-            Regex verify = new Regex(@"([Mm0-9 .//#]{3,5})-([0-9 .]{3,})x([0-9 .]{3,8})([FfCcHhSsLl]{4,6})"); 
+            Regex verify = new Regex(@"([Mm0-9 .//#]{2,5})-([0-9 .]{3,})x([0-9 .]{3,8})([FfCcHhSsLl]{4,6})"); 
             var   match  = verify.Match(fastenerDescription);
 
             if (!match.Success) return null;
@@ -460,11 +487,16 @@ namespace Slate_EK.Models
                     Material     = Models.Material.Steel.ToString(),
                     Type         = FastenerType.Parse(captures[4].ToString()).ToString(),
                     Length       = float.Parse(captures[3].ToString()),
-                    PlateInfo    = new PlateInfo()
+                    PlateInfo    = new PlateInfo(unit)
                 };
             }
 
             return null;
+        }
+
+        public void InvalidateProperties()
+        {
+            OnPropertyChanged(null);
         }
 
         private void OnPropertyChanged(string propertyName)

@@ -1,4 +1,5 @@
 ﻿using Slate_EK.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -40,6 +41,22 @@ namespace Slate_EK.Views
             ViewModel.ShortcutPressedCtrlQ += () => QueryTextField.Focus();
 
             InventoryItemsControl.ItemsSource = ViewModel.FastenerList; 
+        }
+
+        /// <summary>
+        /// Constructs and initializes a new InventoryView with the provided initial query
+        /// </summary>
+        /// <param name="searchType"></param>
+        /// <param name="query"></param>
+        public InventoryView(SearchType searchType, string query)
+            : this(Properties.Settings.Default.DefaultInventoryPath, searchType, query) { }
+
+        public InventoryView(string inventoryPath, SearchType searchType, string query)
+            : this(inventoryPath)
+        {
+            ViewModel.SearchQuery            = query;
+            ViewModel.SelectedSearchProperty = Enum.GetName(typeof(SearchType), searchType);
+            ViewModel.ExecuteSearchCommand.Execute(null);
         }
 
         private void UIElement_OnGotFocus(object sender, RoutedEventArgs e)
@@ -389,7 +406,7 @@ namespace Slate_EK.Views
         {
             foreach (var item in InventoryItemsControl.Items)
             {
-                (item as FastenerControl)?.DeselectCommand.Execute(null);
+                (item as FastenerControl)?.DeselectCommand?.Execute(null);
             }
         }
 

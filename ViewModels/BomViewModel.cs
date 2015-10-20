@@ -6,6 +6,7 @@ using Extender.WPF;
 using Slate_EK.Models;
 using Slate_EK.Models.Inventory;
 using Slate_EK.Models.ThreadParameters;
+using Slate_EK.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -39,8 +40,8 @@ namespace Slate_EK.ViewModels
         public ICommand ShortcutCtrlC               { get; private set; }
         public ICommand ShortcutCtrlV               { get; private set; }
 
-        public event ShortcutEventHandler ShortcutPressedCtrlK;
-        public event ShortcutEventHandler ShortcutPressedCtrlS;
+        public event ShortcutEventHandler OnShortcutPressedCtrlK;
+        public event ShortcutEventHandler OnWorkingFastenerSubmitted;
         #endregion
 
         public string WindowTitle => string.Format
@@ -50,6 +51,16 @@ namespace Slate_EK.ViewModels
             Bom.AssemblyNumber,
             Bom.SourceList?.Length.ToString() ?? "0"
         );
+
+        public Visibility AdditionalParameterVisibility
+        {
+            get { return _AdditionalParameterVisibility; }
+            set
+            {
+                _AdditionalParameterVisibility = value;
+                OnPropertyChanged(nameof(AdditionalParameterVisibility));
+            }
+        }
 
         public bool OverrideLength
         {
@@ -142,6 +153,7 @@ namespace Slate_EK.ViewModels
         private bool               _OverrideLength;
         private string[]           _SizeOptionsList;
         private string[]           _PitchOptionsList;
+        private Visibility         _AdditionalParameterVisibility;
 
         private ObservableCollection<FastenerControl> _ObservableFasteners;
 
@@ -161,6 +173,8 @@ namespace Slate_EK.ViewModels
 
             Bom.PropertyChanged += (s, e) =>
             {
+                if (string.IsNullOrWhiteSpace(e.PropertyName)) return;
+
                 if (Bom.SourceList != null && e.PropertyName.Equals(nameof(Bom.SourceList)))
                     RefreshBom();
 
@@ -169,6 +183,8 @@ namespace Slate_EK.ViewModels
 
             WorkingFastener.PropertyChanged += (s, e) =>
             {
+                if (string.IsNullOrWhiteSpace(e.PropertyName)) return;
+
                 if (e.PropertyName.Equals(nameof(UnifiedFastener.Material)) ||
                     e.PropertyName.Equals(nameof(UnifiedFastener.Size)))     
                 {
@@ -193,6 +209,8 @@ namespace Slate_EK.ViewModels
 
             WorkingFastener.PlateInfo.PropertyChanged += (s, e) =>
             {
+                if (string.IsNullOrWhiteSpace(e.PropertyName)) return;
+
                 if (e.PropertyName.Equals(nameof(PlateInfo.Thickness)) ||
                     e.PropertyName.Equals(nameof(PlateInfo.HoleType)))
                 {
@@ -211,12 +229,12 @@ namespace Slate_EK.ViewModels
             // Init shortcuts
             ShortcutCtrlK = new RelayCommand
             (
-                () => NullsafeHandleShortcut(ShortcutPressedCtrlK)
+                () => NullsafeHandleShortcut(OnShortcutPressedCtrlK)
             );
 
             ShortcutCtrlS = new RelayCommand
             (
-                () => NullsafeHandleShortcut(ShortcutPressedCtrlS)
+                () => SaveAs()
             );
 
             ShortcutCtrlE = new RelayCommand
@@ -284,15 +302,11 @@ namespace Slate_EK.ViewModels
                         if (parsedFastener != null)
                             newFasteners.Add(parsedFastener);
                     }
-                    // THOUGHT Is it okay to directly add to the BOM here?
-                    //         If it's getting pasted, that means it was (likely) copied from the BOM, 
-                    //         so there should, in theory, have already been a check to the inventory.
-                    Bom.Add(newFasteners.ToArray()); 
+
+                    AddToBom(newFasteners.ToArray()); 
                 },
                 () => !string.IsNullOrWhiteSpace(Clipboard.GetText())
             );
-
-            ShortcutPressedCtrlS += () => SaveAs();
 
             //
             // ICommands
@@ -303,6 +317,7 @@ namespace Slate_EK.ViewModels
                 {
                     WorkingFastener.ForceNewUniqueID();
                     AddToBom(WorkingFastener);
+                    NullsafeHandleShortcut(OnWorkingFastenerSubmitted);
                 }
             );
 
@@ -436,11 +451,12 @@ namespace Slate_EK.ViewModels
                     if (inv.Fasteners.Any(f => f.Equals(fastener)))
                     {
                         Bom.Add(fastener.Copy());
-                        return;
+                        continue;
                     }
 
-                    // No exact match, try to find acceptable replacement
-                    var sub = inv.Fasteners.FirstOrDefault
+                    // No exact match, try to find an acceptable substitute
+                    // TODOh need more clarification from Eric on matching
+                    var substitute = inv.Fasteners.FirstOrDefault
                     (
                         f => f.Size.Equals(fastener.Size)         && 
                              f.Pitch.Equals(fastener.Pitch)       && 
@@ -449,18 +465,56 @@ namespace Slate_EK.ViewModels
                              (f.Length >= fastener.Length)
                     );
 
-                    if (sub == null || sub.Equals(default(UnifiedFastener)))
+                    if (substitute == null || substitute.Equals(default(UnifiedFastener)))
                     {
-                        // TODO Decide what to do when no suitable fastener is found
                         Debug.WriteMessage("No suitable fastener found.");
-                        sub = fastener; // HACK until I decide how this is supposed to be handled
+                        
+                        var result = MessageBox.Show
+                        (
+                            "Do you want to open the quick editor and add it to the inventory?",
+                            "No Suitable Fastener Found",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Question
+                        );
+
+                        bool warn = true;
+
+                        if (result == MessageBoxResult.Yes) 
+                        {
+                            var qedit = new Views.QuickEditDialog(fastener.Copy());
+                            qedit.Owner = FindThisWindow();
+                            qedit.ShowDialog();
+
+                            if (qedit.Result == QuickEditDialogResult.Submit)
+                            {
+                                inv.Add(qedit.Editing);
+                                warn = false;
+                            }
+                        }
+
+                        if (warn) // Either the quick editor was never shown, or it was and they discarded it
+                        {
+                            MessageBox.Show
+                            (
+                                "The fastener will be added to the BOM anyway, but nothing was added to the inventory.",
+                                "",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Information
+                            );
+                        }
+
+                        substitute = fastener;
                     }
 
-                    Bom.Add(sub.Copy());
+                    Bom.Add(substitute.Copy());
                 }
+
+                inv.SubmitChanges();
             }
+
+
         } 
-        // THOUGHT Do I want to remove the quantity from the db on AddToBom, or on print, or somewhere else?
+        // THOUGHT Should we remove the quantity from the db on AddToBom, or on print, or somewhere else?
         //         I could have a separate button / function for finalizing.
 
         private void SetSizesList()
@@ -564,47 +618,46 @@ namespace Slate_EK.ViewModels
 
         private bool SaveAs()
         {
-            string savePath;
-
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title        = "Save a copy of the BOM as...",
-                DefaultExt   = ".xml",
-                Filter       = @"(*.xml)
-|*.xml|(*.csv)|*.csv|All files (*.*)|*.*",
-                AddExtension = true,
-                FileName     = Path.GetFileName(Bom.FilePath)
+                Title           = "Save a copy of the BOM as...",
+                DefaultExt      = ".xml",
+                Filter          = @"(*.xml)
+|*.xml|(*.csv)|*.csv|(*.txt)|*.txt|All files (*.*)|*.*",
+                AddExtension    = true,
+                OverwritePrompt = true,
+                FileName        = Path.GetFileName(Bom.FilePath)
             };
 
-            bool? result = dialog.ShowDialog();
+            var result = dialog.ShowDialog();
+            if (!result.HasValue || !result.Value) return false;
 
-            if (result == true)
-                savePath = dialog.FileName;
-            else return false;
+            var ext = Path.GetExtension(dialog.FileName)?.ToLower();
+            if (string.IsNullOrWhiteSpace(ext)) return false;
 
-            if (Path.GetExtension(dialog.FileName)
-                    .ToLower()
-                    .EndsWith("csv"))
+            if (ext.EndsWith("csv"))
             {
-                Extender.IO.CsvSerializer<UnifiedFastener> csv = new Extender.IO.CsvSerializer<UnifiedFastener>();
+                var csv = new Extender.IO.CsvSerializer<UnifiedFastener>();
 
-
-                using (FileStream stream = new FileStream(dialog.FileName, FileMode.OpenOrCreate,
-                                                                           FileAccess.ReadWrite,
-                                                                           FileShare.Read))
+                using (var stream = new FileStream(dialog.FileName, FileMode.Create,
+                                                                    FileAccess.ReadWrite,
+                                                                    FileShare.Read))
                 {
                     csv.Serialize(stream, Bom.SourceList);
                 }
             }
-            else
+            else if (ext.EndsWith("xml"))
             {
                 try
                 {
-                    File.Copy(Bom.FilePath, savePath);
+                    if (File.Exists(dialog.FileName))
+                        File.Delete(dialog.FileName);
+
+                    File.Copy(Bom.FilePath, dialog.FileName);
                 }
                 catch (Exception e)
                 {
-                    Extender.Debugging.ExceptionTools.WriteExceptionText(e, false);
+                    ExceptionTools.WriteExceptionText(e, false);
 
                     MessageBox.Show
                     (
@@ -615,21 +668,44 @@ namespace Slate_EK.ViewModels
                     return false;
                 }
             }
+            else if (ext.EndsWith("txt"))
+            {
+                try
+                {
+                    if (File.Exists(dialog.FileName))
+                        File.Delete(dialog.FileName);
+
+                    using (var writer = File.CreateText(dialog.FileName))
+                    {
+                        writer.Write(FormatBomToText());
+                    }
+                }
+                catch (Exception e)
+                {
+                    ExceptionTools.WriteExceptionText(e, true);
+                    return false;
+                }
+            }
 
             return true;
         }
 
         public void Print()
         {
-            
+            MessageBox.Show("Not implemented yet.");
         }
 
-        private bool NullsafeHandleShortcut(ShortcutEventHandler handler)
+        private string FormatBomToText()
         {
-            if (handler == null) return false;
+            StringBuilder buffer       = new StringBuilder();
+            Bom.SourceList.ForEach((f) => buffer.AppendLine(f.DescriptionForPrint));
 
-            handler.Invoke();
-            return true;
+            return buffer.ToString();
+        }
+
+        private void NullsafeHandleShortcut(ShortcutEventHandler handler)
+        {
+            handler?.Invoke();
         }
     }
 

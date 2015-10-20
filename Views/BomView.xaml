@@ -191,6 +191,26 @@
                          DockPanel.Dock="Right"/>
 
             </DockPanel>
+            <!--<DockPanel Visibility="{Binding AdditionalParameterVisibility}">
+                <Label Content="Price"
+                       Style="{StaticResource LabelStyle}"
+                       DockPanel.Dock="Left"/>
+                <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                         TabIndex="10"
+                         Text="{Binding WorkingFastener.Price, Mode=TwoWay}"
+                         Width="250" Height="22"
+                         DockPanel.Dock="Right"/>
+            </DockPanel>
+            <DockPanel Visibility="{Binding AdditionalParameterVisibility}">
+                <Label Content="Mass"
+                       Style="{StaticResource LabelStyle}"
+                       DockPanel.Dock="Left"/>
+                <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                         TabIndex="11"
+                         Text="{Binding WorkingFastener.Mass, Mode=TwoWay}"
+                         Width="250" Height="22"
+                         DockPanel.Dock="Right"/>
+            </DockPanel>-->
         </StackPanel>
 
         <ScrollViewer Grid.Row="1" Grid.Column="1"
@@ -213,7 +233,6 @@
                         <Style TargetType="TextBlock"
                                BasedOn="{StaticResource CheckboxLabelStyle}">
                             <Setter Property="HorizontalAlignment" Value="Center"/>
-                            <Setter Property="VerticalAlignment" Value="Center"/>
                         </Style>
                     </DockPanel.Resources>
                     <Grid DockPanel.Dock="Top">
@@ -331,7 +350,7 @@
                     DockPanel.Dock="Right"
                     Margin="0"
                     Command="{Binding AddToListCommand}"
-                    TabIndex="10"
+                    TabIndex="12"
                     ToolTip="Add working faster to the BOM">
                 <Image Source="/Slate_EK;component/Icons/ic_add_black_24dp_2x.png"/>
             </Button>

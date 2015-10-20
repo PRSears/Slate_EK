@@ -64,8 +64,8 @@ namespace Slate_EK.ViewModels
                     var dialog = new Microsoft.Win32.OpenFileDialog
                     {
                         DefaultExt = ".xml",
-                        Filter = @"XML documents (*.txt, *.xml)
-                |*.txt;*.xml|All files (*.*)|*.*",
+                        Filter = @"XML documents (*.xml)
+                |*.xml|All files (*.*)|*.*",
                         CheckFileExists = true
                     };
 
@@ -73,10 +73,6 @@ namespace Slate_EK.ViewModels
                         LoadExisting(dialog.FileName);
                 }
             ); 
-            
-            // TODO Clarify the difference between load and create buttons.
-            //      Need one button to open file picker, and another to create an empty one, or
-            //      automatically search for the assembly # typed.
 
             CreateNewBomCommand = new RelayCommand
             (

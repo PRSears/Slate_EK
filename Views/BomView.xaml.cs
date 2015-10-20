@@ -48,15 +48,21 @@ namespace Slate_EK.Views
             {
                 if (e.PropertyName.Equals("OverrideLength"))
                 {
-                    LengthTextbox.Opacity = ViewModel.OverrideLength ? 1d : 0.35;
+                    LengthTextbox.Opacity = ViewModel.OverrideLength ? 1d : 0.6;
                 }
                 else if (e.PropertyName.Equals("ObservableFasteners"))
                 {
                     FastenerItemsControl.ItemsSource = ViewModel.ObservableFasteners;
                 }
             };
-            ViewModel.ShortcutPressedCtrlK += () => AssemblyNumberField.Focus();
-            ViewModel.OverrideLength = false;
+            ViewModel.OnShortcutPressedCtrlK     += () => AssemblyNumberField.Focus();
+            ViewModel.OnWorkingFastenerSubmitted += () =>
+            {
+                PlateThicknessTextField.Focus();
+                PlateThicknessTextField.SelectAll();
+            };
+
+            ViewModel.OverrideLength             = false;
 
             FastenerItemsControl.ItemsSource   = ViewModel.ObservableFasteners;
             MaterialsDropdown.SelectedIndex    = 0; // HACK to fix a bug where the dropdown had no SelectedValue,

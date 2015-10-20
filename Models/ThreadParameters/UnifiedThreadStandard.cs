@@ -140,7 +140,7 @@ namespace Slate_EK.Models.ThreadParameters
             return GetThreadDensityDisplay
             (
                 ((ThreadDensity[])Enum.GetValues(typeof(ThreadDensity)))
-                                        .First(d => GetThreadDensity(d).RoughEquals(tpi, 0.5))
+                                      .First(d => GetThreadDensity(d).RoughEquals(tpi, 0.5))
             );
         }
 

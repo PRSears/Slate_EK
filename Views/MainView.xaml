@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=System"
         Title="{Binding WindowTitle}" 
-        Width="365" Height="155"
+        Width="400" Height="100"
         ResizeMode="CanMinimize"
         Icon="/Slate_EK;component/Icons/icon_25.ico"
         Background="#494d4f"
@@ -21,17 +21,16 @@
     </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
-            <RowDefinition Height="35"/>
+            <RowDefinition Height="22"/>
+            <!--<RowDefinition Height="35"/>-->
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="135"/>
-            <ColumnDefinition Width="*"/>
+            <!--<ColumnDefinition Width="135"/>
+            <ColumnDefinition Width="*"/>-->
         </Grid.ColumnDefinitions>
         
-        <Menu Grid.Row="0" Grid.Column="0"
-              Grid.ColumnSpan="2"
+        <Menu Grid.Row="0"
               x:Name="MainMenu"
               Background="#dddddd"
               Padding="4,0,0,0"
@@ -56,36 +55,55 @@
                           ToolTip="Closes any open BOM windows."/>
             </MenuItem>
         </Menu>
-        
-        <Label Content="Assembly Number:"
-               Grid.Row="1" Grid.Column="0"
+
+        <StackPanel Orientation="Horizontal"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Grid.Row="1"
+                    Margin="0,3,0,3">
+            <Label Content="Assembly Number:"
                Style="{StaticResource LabelStyle}"
                FontSize="14"
-               HorizontalAlignment="Center"
-               Margin="0,5,0,0"/>
-        <TextBox x:Name="AssemblyNumField"
-                 Style="{StaticResource FlatHeaderTextboxStyle}"
-                 Grid.Row="1" Grid.Column="1"
-                 TabIndex="0"
-                 Margin="0,10,10,0"
-                 HorizontalAlignment="Left" 
-                 Width="210"
-                 Height="25"
-                 Text="{Binding AssemblyNumber, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
-            <TextBox.InputBindings>
-                <KeyBinding Key="Enter" Command="{Binding CreateNewBomCommand}"/>
-            </TextBox.InputBindings>
-        </TextBox>
-        <StackPanel Orientation="Horizontal"
+               Margin="0,0,5,0"/>
+            <TextBox x:Name="AssemblyNumField"
+                     Style="{StaticResource FlatHeaderTextboxStyle}"
+                     TabIndex="0"
+                     Margin="0,0,0,0"
+                     HorizontalAlignment="Left" 
+                     Width="175"
+                     Height="25"
+                     Text="{Binding AssemblyNumber, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding CreateNewBomCommand}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+            <Button Style="{StaticResource FlatDarkSearchButton}"
+                    BorderBrush="#4f626d"
+                    Width="25" Height="25"
+                    Command="{Binding CreateNewBomCommand}"
+                    ToolTip="Open or Create">
+                <Image Source="/Slate_EK;component/Icons/ic_launch_white_24dp_1x.png"
+                       OpacityMask="#DC000000"/>
+            </Button>
+            <Button Style="{StaticResource FlatIconButtonStyle}"
+                    Command="{Binding LoadExistingCommand}"
+                    Width="35" Height="25"
+                    ToolTip="Browse existing...">
+                <Image Source="/Slate_EK;component/Icons/ic_folder_open_black_24dp_2x.png"
+                       OpacityMask="#BF000000"/>
+            </Button>
+        </StackPanel>
+        
+        
+        <!--<StackPanel Orientation="Horizontal"
                     Grid.Row="2" Grid.Column="1"
                     HorizontalAlignment="Left"
                     Margin="0">
-            <Button Content="Load..."
+            <Button Content="Browse..."
                     Style="{StaticResource FlatActionButtonStyle}"
                     Command="{Binding LoadExistingCommand}"
-                    TabIndex="1"
-                    Margin="0,0,10,0"/>
-            <Button Content="Create..."
+                    TabIndex="1"/>
+            <Button Content="Open..."
                     Style="{StaticResource FlatActionButtonStyle}"
                     Command="{Binding CreateNewBomCommand}"
                     TabIndex="2"/>
@@ -95,6 +113,6 @@
                 Grid.Row="2" Grid.Column="0"
                 Command="{Binding TestHarnessCommand}"
                 Visibility="{Binding DebugControlsVisibility}"
-                Margin="0,0,10,0"/>
+                Margin="0,0,10,0"/>-->
     </Grid>
 </Window>

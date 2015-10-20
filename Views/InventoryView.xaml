@@ -14,6 +14,7 @@
             <MenuItem Header="Retrieve All Fasteners" Command="{Binding ShowAllFastenersCommand}"/>
             <MenuItem Header="Clear Query Results" Command="{Binding ClearQueryResultsCommand}"/>
             <Separator/>
+            <MenuItem Header="Edit Selected Fastener(s)" Command="{Binding EditSelectedCommand}"></MenuItem>
             <MenuItem Header="Add New Fastener" Command="{Binding AddNewFastenerCommand}"/>
             <MenuItem Header="Remove Fastener(s)" Command="{Binding RemoveFastenerCommand}" ToolTip="(Del)"/>
             <Separator/>
