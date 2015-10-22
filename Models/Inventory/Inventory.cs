@@ -1,9 +1,7 @@
-﻿using Extender;
-using Extender.Debugging;
+﻿using Extender.Debugging;
 using Extender.IO;
 using System;
 using System.Data.Linq;
-using System.IO;
 using System.Linq;
 
 namespace Slate_EK.Models.Inventory
@@ -98,22 +96,6 @@ namespace Slate_EK.Models.Inventory
             _Database.Fasteners.DeleteAllOnSubmit(matches);
 
             return matches.Count();
-        }
-
-        public void Export(string filename)
-        {
-            // TODO add support for exporting multiple file types
-            //      OR at least put a check to make sure filename ends in *.csv or something.
-            UnifiedFastener[] allFasteners = Dump();
-
-            Extender.IO.CsvSerializer<UnifiedFastener> csv = new Extender.IO.CsvSerializer<UnifiedFastener>();
-
-            using (FileStream stream = new FileStream(filename, FileMode.OpenOrCreate,
-                                                                FileAccess.ReadWrite,
-                                                                FileShare.Read))
-            {
-                csv.Serialize(stream, allFasteners);
-            }
         }
 
         public UnifiedFastener[] Dump()

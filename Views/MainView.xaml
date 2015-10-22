@@ -18,6 +18,9 @@
         <KeyBinding Modifiers="Control"
                     Key="I"
                     Command="{Binding OpenInventoryViewCommand}"/>
+        <KeyBinding Modifiers="Control"
+                    Key="T"
+                    Command="{Binding TestHarnessCommand}"/>
     </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>

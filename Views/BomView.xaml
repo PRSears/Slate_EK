@@ -37,7 +37,7 @@
         <KeyBinding Modifiers="Control" Key="A"
                     Command="{Binding ShortcutCtrlA}"/>
         <KeyBinding Modifiers="Control" Key="P"
-                    Command="{Binding ShortcutCtrlP}"/>
+                    Command="{Binding PrintCommand}"/>
         <KeyBinding Modifiers="Control" Key="C"
                     Command="{Binding ShortcutCtrlC}"/>
         <KeyBinding Modifiers="Control" Key="V"
@@ -279,7 +279,7 @@
                                             </Style>
                                         </Grid.Resources>
                                         <TextBlock Grid.Column="0"
-                                               Text="{Binding Fastener.Description}"
+                                               Text="{Binding Description}"
                                                Margin="10,0,0,0"/>
                                         <TextBlock Grid.Column="1"
                                                HorizontalAlignment="Center"

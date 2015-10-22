@@ -76,7 +76,7 @@ namespace Slate_EK.Models
                 base.Add(uniques.ToArray());
 
             Sort();
-            SaveAsync();
+            QueueSave();
         }
 
         public override bool Remove(UnifiedFastener item)
@@ -98,7 +98,7 @@ namespace Slate_EK.Models
                 result = (SourceList.First(i => i.UniqueID.Equals(item.UniqueID)).Quantity = newQty) > 0;
 
             Sort();
-            SaveAsync();
+            QueueSave();
 
             return result;
         }
@@ -118,9 +118,9 @@ namespace Slate_EK.Models
         }
 
         /// <summary>
-        /// Asynchronously reloads the source list. 
+        /// When overridden in a derived class, queues a SerializeTask to reload the SourceList. Should be non-blocking.
         /// </summary>
-        public override async Task ReloadAsync()
+        public override void QueueReload()
         {
             FileInfo xmlFile = new FileInfo(FilePath);
 
@@ -128,6 +128,27 @@ namespace Slate_EK.Models
             (
                 new SerializeTask<UnifiedFastener>(xmlFile, this, SerializeOperations.Load)
             );
+        }
+
+        /// <summary>
+        /// When overridden in a derived class, queues a SerializeTask to save the SourceList. Should be non-blocking.
+        /// </summary>
+        public override void QueueSave()
+        {
+            FileInfo xmlFile = new FileInfo(FilePath);
+
+            BomXmlOperationsQueue.Enqueue
+            (
+                new SerializeTask<UnifiedFastener>(xmlFile, this, SerializeOperations.Save)
+            );
+        }
+
+        /// <summary>
+        /// Asynchronously reloads the source list. 
+        /// </summary>
+        public override async Task ReloadAsync()
+        {
+            QueueReload();
 
             await Task.Run
             (
@@ -146,12 +167,7 @@ namespace Slate_EK.Models
         /// </summary>
         public override async Task SaveAsync()
         {
-            FileInfo xmlFile = new FileInfo(FilePath);
-
-            BomXmlOperationsQueue.Enqueue
-            (
-                new SerializeTask<UnifiedFastener>(xmlFile, this, SerializeOperations.Save)
-            );
+            QueueSave();
 
             await Task.Run
             (

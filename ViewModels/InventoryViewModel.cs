@@ -1,4 +1,5 @@
 ﻿using Extender;
+using Extender.Debugging;
 using Extender.IO;
 using Extender.WPF;
 using Microsoft.Win32;
@@ -353,38 +354,61 @@ namespace Slate_EK.ViewModels
                 {
                     var dialog = new Microsoft.Win32.SaveFileDialog()
                     {
-                        Title = "Save Query Results",
-                        DefaultExt = ".csv",
-                        Filter = @"(*.csv)
+                        Title           = "Save Query Results",
+                        DefaultExt      = ".csv",
+                        Filter          = @"(*.csv)
 |*.csv|(*.txt)|*.txt|All files (*.*)|*.*",
-                        AddExtension = false,
-                        FileName = $"Inventory_{DateTime.Today.ToString("yyyy-MM-dd")}.csv"
+                        AddExtension    = false,
+                        OverwritePrompt = true,
+                        FileName        = $"Inventory_{DateTime.Today.ToString("yyyy-MM-dd")}.csv"
                     };
 
                     var result = dialog.ShowDialog();
                     if (!result.HasValue || !result.Value) return;
 
+
                     var ext = Path.GetExtension(dialog.FileName)?.ToLower();
                     if (string.IsNullOrWhiteSpace(ext)) return;
 
-                    var serializer = new CsvSerializer<UnifiedFastener>();
-
-                    if (ext.EndsWith("csv"))
+                    try
                     {
-                        using (var stream = new FileStream(dialog.FileName, FileMode.OpenOrCreate,
-                                                                            FileAccess.ReadWrite,
-                                                                            FileShare.Read))
+                        if (File.Exists(dialog.FileName))
+                            File.Delete(dialog.FileName);
+
+                        if (ext.EndsWith("csv"))
                         {
-                            serializer.Serialize(stream, FastenerList.Select(fc => fc.Fastener).ToArray());
+                            var serializer = new CsvSerializer<UnifiedFastener>();
+                            using (var stream = new FileStream(dialog.FileName, FileMode.OpenOrCreate,
+                                                                                FileAccess.ReadWrite,
+                                                                                FileShare.Read))
+                            {
+                                serializer.Serialize(stream, FastenerList.Select(fc => fc.Fastener).ToArray());
+                            }
+                        }
+                        else if (ext.EndsWith("txt"))
+                        {
+                            var buffer = new StringBuilder();
+
+                            if (Properties.Settings.Default.AlignDescriptionsPrint)
+                                 FastenerList.ForEach(f => buffer.AppendLine(f.Fastener.AlignedPrintDescription));
+                            else FastenerList.ForEach(f => buffer.AppendLine(f.Fastener.DescriptionForPrint));
+
+                            using (var writer = File.CreateText(dialog.FileName))
+                                writer.Write(buffer.ToString());
                         }
                     }
-                    else if (ext.EndsWith("txt"))
+                    catch (Exception e)
                     {
-                        // TODO Decide how I want it to output inventory to txt file.
-                        //      - I could just have it output a csv with a different extension.
-                        //      - Or output the fastener descriptions
-                        
+                        MessageBox.Show
+                        (
+                            $"Encountered an exception while exporting as {ext}:\n" + e.Message,
+                            "Exception",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error
+                        );
+                        ExceptionTools.WriteExceptionText(e, true);
                     }
+                    
                 },
                 () => FastenerList.Any()
             );
@@ -619,12 +643,7 @@ namespace Slate_EK.ViewModels
             OnPropertyChanged(nameof(UnitButtonText));
             // It's easier just to update all of them, instead of checking which two need updating.
         }
-
-        //TODO Hook up the rest of the main menu buttons
-
-        //THOUGHT Maybe add / remove / submit shouldn't be anonymous methods. Could split them into 
-        //        full functions to make keeping track of pending changes clearer / less code duplication.
-
+        
         private void EnterEditMode(bool clearFirst)
         {
             if(clearFirst)
@@ -1042,5 +1061,3 @@ namespace Slate_EK.ViewModels
         }
     }
 }
-
-// THOUGHT  Print function(s) could export to an actual xlsx with some prettied formatting.

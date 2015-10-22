@@ -48,6 +48,28 @@ namespace Slate_EK.ViewModels
             }
         }
 
+        public bool AlignDescriptionsBom
+        {
+            get { return Settings.Default.AlignDescriptionsBom; }
+            set
+            {
+                Settings.Default.AlignDescriptionsBom = value;
+                Settings.Default.Save();
+                RestartRequired = true;
+                OnPropertyChanged(nameof(AlignDescriptionsBom));
+            }
+        }
+        public bool AlignDescriptionsPrint
+        {
+            get { return Settings.Default.AlignDescriptionsPrint; }
+            set
+            {
+                Settings.Default.AlignDescriptionsPrint = value;
+                Settings.Default.Save();
+                OnPropertyChanged(nameof(AlignDescriptionsPrint));
+            }
+        }
+
         public int PropertyRefreshInterval
         {
             get { return Settings.Default.PropertyRefreshInterval; }
@@ -150,6 +172,50 @@ namespace Slate_EK.ViewModels
                 RestartRequired = true;
                 OnPropertyChanged(nameof(DebugRedirectConsoleOut));
             }
+        }
+
+        public string PrintFontFamily
+        {
+            get { return Settings.Default.PrintFontFamily; }
+            set
+            {
+                Settings.Default.PrintFontFamily = value;
+                Settings.Default.Save();
+                OnPropertyChanged(nameof(PrintFontFamily));
+            }
+        }
+
+        public int PrintFontSize
+        {
+            get { return Settings.Default.PrintFontSize; }
+            set
+            {
+                Settings.Default.PrintFontSize = value;
+                Settings.Default.Save();
+                OnPropertyChanged(nameof(PrintFontSize));
+            }
+        }
+
+        public int PrintLineHeight
+        {
+            get { return Settings.Default.PrintFontLineHeight; }
+            set
+            {
+                Settings.Default.PrintFontLineHeight = value; 
+                Settings.Default.Save();
+                OnPropertyChanged(nameof(PrintLineHeight));
+            }
+        }
+
+        public int PrintPagePadding
+        {
+            get { return Settings.Default.PrintPagePadding; }
+            set
+            {
+                Settings.Default.PrintPagePadding = value;
+                Settings.Default.Save();
+                OnPropertyChanged(nameof(PrintPagePadding));
+            } 
         }
 
         public string StatusBarText

@@ -56,6 +56,14 @@ namespace Slate_EK.Views
                     ViewModel.StatusBarText = "A tool-tip will appear with the short description of the fastener under the mouse.";
                     FadeTimer.Stop();
                     break;
+                case "AlignBomBlock":
+                    ViewModel.StatusBarText = "Each property of the fastener will take up a fixed width, effectively aligning them by column in a BOM.";
+                    FadeTimer.Stop();
+                    break;
+                case "AlignPrintBlock":
+                    ViewModel.StatusBarText = "Each property of the fastener will take up a fixed width, effectively aligning them by column when printing.";
+                    FadeTimer.Stop();
+                    break;
                 case "DropdownIntervalBlock":
                     ViewModel.StatusBarText = "The time - in milliseconds - between refreshes from xml for the size and pitch drop downs.";
                     FadeTimer.Stop();
@@ -82,6 +90,22 @@ namespace Slate_EK.Views
                     break;
                 case "InvPathBlock":
                     ViewModel.StatusBarText = "Full path (including file name and extension) to the inventory database that gets loaded by default.";
+                    FadeTimer.Stop();
+                    break;
+                case "FontFamilyBlock":
+                    ViewModel.StatusBarText = "The name of the font to use for printing.";
+                    FadeTimer.Stop();
+                    break;
+                case "FontSizeBlock":
+                    ViewModel.StatusBarText = "The size of the font to use for printing.";
+                    FadeTimer.Stop();
+                    break;
+                case "FontLineHeightBlock":
+                    ViewModel.StatusBarText = "The height of each line used for printing. Higher values put more whitespace between the lines of text.";
+                    FadeTimer.Stop();
+                    break;
+                case "PrintPaddingBlock":
+                    ViewModel.StatusBarText = "Border padding (in pixels) for printing.";
                     FadeTimer.Stop();
                     break;
                 default:

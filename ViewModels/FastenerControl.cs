@@ -47,6 +47,8 @@ namespace Slate_EK.ViewModels
 
         public string ToolTip   => IsToolTipVisible ? Fastener.Description : null;
 
+        public string Description => AlignDescription ? Fastener.AlignedDescription : Fastener.Description;
+
         public bool NotEditable => !IsEditable;
 
         public SolidColorBrush Background
@@ -178,6 +180,7 @@ namespace Slate_EK.ViewModels
         protected string NormalColor      => Properties.Settings.Default.ItemDefaultBackgroundColor;
         protected string AltColor         => Properties.Settings.Default.ItemAltnernateBackgroundColor;
         public int       BomFontSize      => Properties.Settings.Default.BomListFontSize;
+        public bool      AlignDescription => Properties.Settings.Default.AlignDescriptionsBom;
 
         #endregion
         #region INotifyPropertyChanged Members

@@ -1,10 +1,13 @@
-﻿using Extender.WPF;
+﻿using System;
+using Extender.WPF;
 using Slate_EK.Models.ThreadParameters;
 using Slate_EK.Views;
 using System.IO;
 using System.Windows.Input;
 using System.Xml;
 using System.Xml.Linq;
+using Slate_EK.Models;
+using Slate_EK.Models.Inventory;
 
 namespace Slate_EK.ViewModels
 {
@@ -48,7 +51,12 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-                    WindowManager.OpenWindow(new InventoryView());
+                    var inv = new Inventory(Properties.Settings.Default.DefaultInventoryPath);
+
+                    foreach (var item in inv.Dump())
+                    {
+                        Console.WriteLine(item.AlignedPrintDescription);
+                    }
                 }
             );
 

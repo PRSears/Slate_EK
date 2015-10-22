@@ -156,6 +156,26 @@
                         <DockPanel Margin="10,5,0,5">
                             <CheckBox DockPanel.Dock="Left"
                                       Style="{StaticResource CenteredCheckbox}"
+                                      IsChecked="{Binding AlignDescriptionsBom}">
+                                <TextBlock Style="{StaticResource CheckboxLabelStyle}"
+                                           Text="Align columns of fastener descriptions in BOMs"
+                                           x:Name="AlignBomBlock"
+                                           Margin="10,0,0,0"/>
+                            </CheckBox>
+                        </DockPanel>
+                        <DockPanel Margin="10,5,0,5">
+                            <CheckBox DockPanel.Dock="Left"
+                                      Style="{StaticResource CenteredCheckbox}"
+                                      IsChecked="{Binding AlignDescriptionsPrint}">
+                                <TextBlock Style="{StaticResource CheckboxLabelStyle}"
+                                           Text="Align columns of fastener descriptions for print"
+                                           x:Name="AlignPrintBlock"
+                                           Margin="10,0,0,0"/>
+                            </CheckBox>
+                        </DockPanel>
+                        <DockPanel Margin="10,5,0,5">
+                            <CheckBox DockPanel.Dock="Left"
+                                      Style="{StaticResource CenteredCheckbox}"
                                       IsChecked="{Binding EnableDebug}">
                                 <TextBlock Style="{StaticResource CheckboxLabelStyle}"
                                            Text="Enable debug mode"
@@ -277,6 +297,57 @@
                                      DockPanel.Dock="Right"
                                      Width="250" Height="22"
                                      Text="{Binding DebugLogFilename}"/>
+                        </DockPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Printing">
+                <ScrollViewer BorderBrush="Transparent"
+                              Background="Transparent"
+                              VerticalAlignment="Top"
+                              HorizontalAlignment="Stretch"
+                              VerticalScrollBarVisibility="Auto"
+                              Margin="0,0,5,0">
+                    <StackPanel Orientation="Vertical">
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="FontFamilyBlock"
+                                   DockPanel.Dock="Left"
+                                   Text="Print font family"/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="150" Height="22"
+                                     Text="{Binding PrintFontFamily}"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="FontSizeBlock"
+                                   DockPanel.Dock="Left"
+                                   Text="Print font size"/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="150" Height="22"
+                                     Text="{Binding PrintFontSize}"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="FontLineHeightBlock"
+                                   DockPanel.Dock="Left"
+                                   Text="Print line height"/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="150" Height="22"
+                                     Text="{Binding PrintLineHeight}"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="PrintPaddingBlock"
+                                   DockPanel.Dock="Left"
+                                   Text="Print page padding"/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="150" Height="22"
+                                     Text="{Binding PrintPagePadding}"/>
                         </DockPanel>
                     </StackPanel>
                 </ScrollViewer>

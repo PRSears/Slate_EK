@@ -352,12 +352,16 @@ namespace Slate_EK.Models
         }
 
         [XmlIgnore]
-        public string Description  => $"{SizeDisplay} - {ShortPitchDisplay} x {LengthDisplay} {Type}";
+        public string Description               => $"{SizeDisplay} - {ShortPitchDisplay} x {LengthDisplay} {Type}";
 
         [XmlIgnore]
-        public string DescriptionForPrint => $"{Quantity}, {Description}, {Mass * Quantity}, {Price}, {Price * Quantity}";
-        // Figure out why some fasteners are loading with 0 price and 0 mass
-        //  Qty, callout, mass per * qty, price per, total price
+        public string AlignedDescription        => $"{SizeDisplay,5} - {ShortPitchDisplay,4} x {LengthDisplay,4} {Type,6}";
+
+        [XmlIgnore]
+        public string DescriptionForPrint       => $"{Quantity}, {Description}, {Mass * Quantity}, {Price}, {Price * Quantity}";
+
+        [XmlIgnore]
+        public string AlignedPrintDescription   => $"{Quantity,3}, {AlignedDescription}, {Mass * Quantity,5}, {Price,6}, {Price * Quantity,6}";
 
         //
         // Constructors

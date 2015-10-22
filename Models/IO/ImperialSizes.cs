@@ -19,7 +19,7 @@ namespace Slate_EK.Models.IO
             SourceList = sourceList;
         }
 
-        public override async Task ReloadAsync()
+        public override void QueueReload()
         {
             FileInfo xmlFile = new FileInfo(FilePath);
 
@@ -27,6 +27,21 @@ namespace Slate_EK.Models.IO
             (
                 new SerializeTask<UnifiedThreadStandard>(xmlFile, this, SerializeOperations.Load)
             );
+        }
+
+        public override void QueueSave()
+        {
+            FileInfo xmlFile = new FileInfo(FilePath);
+
+            ImperialSizesXmlOperationsQueue.Enqueue
+            (
+                new SerializeTask<UnifiedThreadStandard>(xmlFile, this, SerializeOperations.Save)
+            );
+        }
+
+        public override async Task ReloadAsync()
+        {
+            QueueReload();
 
             await Task.Run
             (
@@ -42,12 +57,7 @@ namespace Slate_EK.Models.IO
 
         public override async Task SaveAsync()
         {
-            FileInfo xmlFile = new FileInfo(FilePath);
-
-            ImperialSizesXmlOperationsQueue.Enqueue
-            (
-                new SerializeTask<UnifiedThreadStandard>(xmlFile, this, SerializeOperations.Save)
-            );
+            QueueSave();
 
             await Task.Run
             (

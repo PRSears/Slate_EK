@@ -385,5 +385,77 @@ namespace Slate_EK.Properties {
                 this["DebugRedirectConsoleOut"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AlignDescriptionsBom {
+            get {
+                return ((bool)(this["AlignDescriptionsBom"]));
+            }
+            set {
+                this["AlignDescriptionsBom"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AlignDescriptionsPrint {
+            get {
+                return ((bool)(this["AlignDescriptionsPrint"]));
+            }
+            set {
+                this["AlignDescriptionsPrint"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Consolas")]
+        public string PrintFontFamily {
+            get {
+                return ((string)(this["PrintFontFamily"]));
+            }
+            set {
+                this["PrintFontFamily"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("12")]
+        public int PrintFontSize {
+            get {
+                return ((int)(this["PrintFontSize"]));
+            }
+            set {
+                this["PrintFontSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("22")]
+        public int PrintFontLineHeight {
+            get {
+                return ((int)(this["PrintFontLineHeight"]));
+            }
+            set {
+                this["PrintFontLineHeight"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("75")]
+        public int PrintPagePadding {
+            get {
+                return ((int)(this["PrintPagePadding"]));
+            }
+            set {
+                this["PrintPagePadding"] = value;
+            }
+        }
     }
 }

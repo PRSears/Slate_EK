@@ -16,7 +16,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Slate_EK.ViewModels
 {
@@ -36,7 +39,6 @@ namespace Slate_EK.ViewModels
         public ICommand ShortcutCtrlE               { get; private set; }
         public ICommand ShortcutCtrlD               { get; private set; }
         public ICommand ShortcutCtrlA               { get; private set; }
-        public ICommand ShortcutCtrlP               { get; private set; }
         public ICommand ShortcutCtrlC               { get; private set; }
         public ICommand ShortcutCtrlV               { get; private set; }
 
@@ -112,10 +114,6 @@ namespace Slate_EK.ViewModels
             }
         } 
 
-        // TODO A NullReferenceException sometimes gets thrown when typing in a value to select items from the drop down. 
-        //      (Gets thrown when the dropdown loses focus)
-        //      I haven't been able to reproduce this since implementing the ImperialSizes list.
-
         private Models.IO.Sizes          XmlSizes         { get; set; }
         private Models.IO.Pitches        XmlPitches       { get; set; }
         private Models.IO.ImperialSizes  XmlImperialSizes { get; set; }
@@ -164,8 +162,6 @@ namespace Slate_EK.ViewModels
 
         public BomViewModel(string assemblyNumber)
         {
-            // TODO fix saving when assembly # changes // Should it 'move' or just copy?
-            //      I'm thinking copy, that way you can quickly duplicate a bom for similar orders.
             Bom                    = new Bom(assemblyNumber); 
             WorkingFastener        = new UnifiedFastener();
             ObservableFasteners    = Bom.SourceList != null ? new ObservableCollection<FastenerControl>(FastenerControl.FromArray(Bom.SourceList)) :
@@ -177,6 +173,14 @@ namespace Slate_EK.ViewModels
 
                 if (Bom.SourceList != null && e.PropertyName.Equals(nameof(Bom.SourceList)))
                     RefreshBom();
+                else if (e.PropertyName.Equals(nameof(Bom.AssemblyNumber)))
+                {
+                    Task.Run(async () =>
+                    {
+                        await Bom.SaveAsync();
+                        Debug.WriteMessage($"Bom copied to {Bom.AssemblyNumber}", "info");
+                    });
+                }
 
                 OnPropertyChanged(nameof(WindowTitle)); // do this regardless of which property changed
             };
@@ -242,8 +246,8 @@ namespace Slate_EK.ViewModels
                 () =>
                 {
                     System.Diagnostics.Process editorProcess = new System.Diagnostics.Process();
-                    editorProcess.StartInfo.FileName = Properties.Settings.Default.DefaultPropertiesFolder;
-                    editorProcess.StartInfo.UseShellExecute = true;
+                    editorProcess.StartInfo.FileName         = Properties.Settings.Default.DefaultPropertiesFolder;
+                    editorProcess.StartInfo.UseShellExecute  = true;
                     editorProcess.Start();
                 }
             );
@@ -257,15 +261,7 @@ namespace Slate_EK.ViewModels
             (
                 () => ObservableFasteners.ForEach(item => item.IsSelected = true)
             );
-
-            ShortcutCtrlP = new RelayCommand
-            (
-                () =>
-                {
-                    MessageBox.Show("Print not yet implemented.");
-                }
-            );
-
+            
             ShortcutCtrlC = new RelayCommand
             (
                 () =>
@@ -377,7 +373,27 @@ namespace Slate_EK.ViewModels
 
             PrintCommand = new RelayCommand
             (
-                () => Print()
+                () =>
+                {
+                    // if this fucking works...
+                    var doc = new FlowDocument(new Paragraph(new Run(FormatBomToText())))
+                    {
+                        PagePadding  = new Thickness(PrintPagePadding),
+                        FontFamily   = new FontFamily(PrintFontFamily),
+                        FontSize     = PrintFontSize,
+                        LineHeight   = PrintLineHeight,
+                        ColumnWidth  = 800
+                    }; 
+
+                    var dialog = new PrintDialog();
+
+                    if (dialog.ShowDialog() == true)
+                    {
+                        dialog.PrintDocument((doc as IDocumentPaginatorSource).DocumentPaginator, WindowTitle);
+                    }
+
+                    // >.>
+                }
             );
 
             // Hook up context menu commands for FastenerControls
@@ -388,8 +404,8 @@ namespace Slate_EK.ViewModels
             }
 
             // Lists from XML
-            XmlSizes = new Models.IO.Sizes();
-            XmlPitches = new Models.IO.Pitches();
+            XmlSizes         = new Models.IO.Sizes();
+            XmlPitches       = new Models.IO.Pitches();
             XmlImperialSizes = new Models.IO.ImperialSizes();
 
             Task.Run(async () =>
@@ -416,11 +432,9 @@ namespace Slate_EK.ViewModels
             _PropertyRefreshTimer.AutoReset = true;
             _PropertyRefreshTimer.Elapsed  += (s, e) =>
             {
-                #pragma warning disable CS4014 // We don't care when the task is completed.
-                XmlSizes.ReloadAsync();
-                XmlPitches.ReloadAsync();
-                XmlImperialSizes.ReloadAsync();
-                #pragma warning restore CS4014 // We don't care when the task is completed.
+                XmlSizes.QueueReload();
+                XmlPitches.QueueReload();
+                XmlImperialSizes.QueueReload();
 
                 if (SizeOptionsList == null || PitchOptionsList == null)
                     SetSizesList();
@@ -602,7 +616,7 @@ namespace Slate_EK.ViewModels
                 if (match != null && !match.Equals(default(UnifiedFastener)))
                     match.Quantity = dialog.Value;
 
-                Bom.SaveAsync();
+                Bom.QueueSave();
             }
             else Bom.Remove(((FastenerControl)sender).Fastener, Int32.MaxValue);
 
@@ -698,15 +712,14 @@ namespace Slate_EK.ViewModels
             return true;
         }
 
-        public void Print()
-        {
-            MessageBox.Show("Not implemented yet.");
-        }
-
         private string FormatBomToText()
         {
-            StringBuilder buffer       = new StringBuilder();
-            Bom.SourceList.ForEach((f) => buffer.AppendLine(f.DescriptionForPrint));
+            StringBuilder buffer = new StringBuilder();
+
+            if (Properties.Settings.Default.AlignDescriptionsPrint)
+                Bom.SourceList.ForEach(f => buffer.AppendLine(f.AlignedPrintDescription));
+            else
+                Bom.SourceList.ForEach(f => buffer.AppendLine(f.DescriptionForPrint));
 
             return buffer.ToString();
         }
@@ -715,6 +728,11 @@ namespace Slate_EK.ViewModels
         {
             handler?.Invoke();
         }
+
+        private string PrintFontFamily  => Properties.Settings.Default.PrintFontFamily;
+        private int    PrintFontSize    => Properties.Settings.Default.PrintFontSize;
+        private int    PrintLineHeight  => Properties.Settings.Default.PrintFontLineHeight;
+        private int    PrintPagePadding => Properties.Settings.Default.PrintPagePadding;
     }
 
     public delegate void ShortcutEventHandler();

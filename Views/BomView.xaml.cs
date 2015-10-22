@@ -65,8 +65,7 @@ namespace Slate_EK.Views
             ViewModel.OverrideLength             = false;
 
             FastenerItemsControl.ItemsSource   = ViewModel.ObservableFasteners;
-            MaterialsDropdown.SelectedIndex    = 0; // HACK to fix a bug where the dropdown had no SelectedValue,
-                                                    // despite array being initialized, etc.
+            MaterialsDropdown.SelectedIndex    = 0; 
         }
 
         #region // Click / drag / selection handling

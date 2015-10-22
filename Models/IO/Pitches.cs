@@ -18,7 +18,10 @@ namespace Slate_EK.Models.IO
             SourceList = sourceList;
         }
 
-        public override async Task ReloadAsync()
+        /// <summary>
+        /// When overridden in a derived class, queues a SerializeTask to reload the SourceList. Should be non-blocking.
+        /// </summary>
+        public override void QueueReload()
         {
             FileInfo xmlFile = new FileInfo(FilePath);
 
@@ -26,6 +29,24 @@ namespace Slate_EK.Models.IO
             (
                 new SerializeTask<Pitch>(xmlFile, this, SerializeOperations.Load)
             );
+        }
+
+        /// <summary>
+        /// When overridden in a derived class, queues a SerializeTask to save the SourceList. Should be non-blocking.
+        /// </summary>
+        public override void QueueSave()
+        {
+            FileInfo xmlFile = new FileInfo(FilePath);
+
+            PitchesXmlOperationsQueue.Enqueue
+            (
+                new SerializeTask<Pitch>(xmlFile, this, SerializeOperations.Save)
+            );
+        }
+
+        public override async Task ReloadAsync()
+        {
+            QueueReload();
 
             await Task.Run
             (
@@ -41,12 +62,7 @@ namespace Slate_EK.Models.IO
 
         public override async Task SaveAsync()
         {
-            FileInfo xmlFile = new FileInfo(FilePath);
-
-            PitchesXmlOperationsQueue.Enqueue
-            (
-                new SerializeTask<Pitch>(xmlFile, this, SerializeOperations.Save)
-            );
+            QueueSave();
 
             await Task.Run
             (

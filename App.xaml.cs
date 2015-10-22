@@ -68,7 +68,7 @@ namespace Slate_EK
             Debug.WriteMessage(ImperialSizesCache.IsBuilt() ? "ImperialSizes cache built."  : "Building ImperialSizes cache.", "info");
         }
 
-        private bool   RedirectConsole => Slate_EK.Properties.Settings.Default.DebugRedirectConsoleOut;
-        private string DebugLogPath    => Slate_EK.Properties.Settings.Default.DebugFilename;
+        private static bool   RedirectConsole => Slate_EK.Properties.Settings.Default.DebugRedirectConsoleOut;
+        private static string DebugLogPath    => Slate_EK.Properties.Settings.Default.DebugFilename;
     }
 }
