@@ -1,3 +1,8 @@
+- Editing quantities of multiple items in the BOM now changes all quantities
+- Added column headers when printing (toggleable)
+- Default (& parse fail) material is now Steel instead of Unspecified
+- Fixed bug(s) when inputting invalid pitches in new imperial inventory items
+- Page width & height & DPI can now be specified for print
 - Bom now autosaves a copy as soon as the assembly number changes
 - added inventory export to txt file
 - added printing

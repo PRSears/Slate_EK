@@ -301,7 +301,7 @@ namespace Slate_EK.ViewModels
 
                     AddToBom(newFasteners.ToArray()); 
                 },
-                () => !string.IsNullOrWhiteSpace(Clipboard.GetText())
+                () => !string.IsNullOrWhiteSpace(Clipboard.GetText()) 
             );
 
             //
@@ -343,13 +343,10 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-                    ChangeQuantity(ObservableFasteners.First(f => f.IsSelected));
+                    ChangeQuantity(ObservableFasteners.First(f => f.IsSelected)); 
                 },
                 () =>
                 {
-                    // Can't allow edit when multiple fasteners are selected. 
-                    // Too messy -- what would we use for initial value? Set all selected to the same value,
-                    // or would the user expect to increment?
                     return ObservableFasteners.Any(f => f.IsSelected);
                 }
             );
@@ -382,8 +379,10 @@ namespace Slate_EK.ViewModels
                         FontFamily   = new FontFamily(PrintFontFamily),
                         FontSize     = PrintFontSize,
                         LineHeight   = PrintLineHeight,
+                        PageWidth    = (int)Math.Ceiling(PrintPageWidth * PrintDpi),
+                        PageHeight   = (int)Math.Ceiling(PrintPageHeight * PrintDpi),
                         ColumnWidth  = 800
-                    }; 
+                    };
 
                     var dialog = new PrintDialog();
 
@@ -469,13 +468,12 @@ namespace Slate_EK.ViewModels
                     }
 
                     // No exact match, try to find an acceptable substitute
-                    // TODOh need more clarification from Eric on matching
+                    // TODOh Change as indicated in notes from call with Eric
                     var substitute = inv.Fasteners.FirstOrDefault
                     (
                         f => f.Size.Equals(fastener.Size)         && 
                              f.Pitch.Equals(fastener.Pitch)       && 
                              f.Type.Equals(fastener.Type)         && 
-                             f.Material.Equals(fastener.Material) && 
                              (f.Length >= fastener.Length)
                     );
 
@@ -528,8 +526,13 @@ namespace Slate_EK.ViewModels
 
 
         } 
-        // THOUGHT Should we remove the quantity from the db on AddToBom, or on print, or somewhere else?
-        //         I could have a separate button / function for finalizing.
+
+        //
+        // TODOh add button to finalize BOM + remove quantities from inventory
+        //       - should freeze the bom not allowing other edits / additions
+        //       - change button to undo finalize once clicked & handled
+        //
+        // This is probably going to require an IsFinalized field in the XML file (& therefor the BOM).
 
         private void SetSizesList()
         {
@@ -611,10 +614,25 @@ namespace Slate_EK.ViewModels
 
             if (dialog.Value > 0)
             {
-                // Edit the value in the source list directly... need to select the fastener control from Bom.SourceList first.
-                var match = Bom.SourceList.FirstOrDefault(f => ((FastenerControl)sender).Fastener.UniqueID.Equals(f.UniqueID));
-                if (match != null && !match.Equals(default(UnifiedFastener)))
-                    match.Quantity = dialog.Value;
+                //// Edit the value in the source list directly... need to select the fastener control from Bom.SourceList first.
+
+                if (!ObservableFasteners.Any(f => f.IsSelected))
+                {
+                    // No items selected... we edit whatever element the user clicked on
+                    var match = Bom.SourceList.FirstOrDefault(f => ((FastenerControl)sender).Fastener.UniqueID.Equals(f.UniqueID));
+                    if (match != null && !match.Equals(default(UnifiedFastener)))
+                        match.Quantity = dialog.Value;
+                }
+                else
+                {
+                    // Has one (or more) items selected... edit them all
+                    foreach (var selected in ObservableFasteners.Where(fc => fc.IsSelected))
+                    {
+                        var match = Bom.SourceList.FirstOrDefault(f => f.UniqueID.Equals(selected.Fastener.UniqueID));
+                        if (match != null && !match.Equals(default(UnifiedFastener)))
+                            match.Quantity = dialog.Value;
+                    }
+                }
 
                 Bom.QueueSave();
             }
@@ -632,6 +650,7 @@ namespace Slate_EK.ViewModels
 
         private bool SaveAs()
         {
+            // TODOh crashes when saving as txt file. !! - can't reproduce...
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
                 Title           = "Save a copy of the BOM as...",
@@ -714,12 +733,21 @@ namespace Slate_EK.ViewModels
 
         private string FormatBomToText()
         {
+            if (Bom.SourceList.Length <= 0)
+                return string.Empty;
+
             StringBuilder buffer = new StringBuilder();
 
             if (Properties.Settings.Default.AlignDescriptionsPrint)
+            {
+                if (IncludePrintHeaders) buffer.AppendLine(Bom.SourceList[0].AlignedPrintheaders);
                 Bom.SourceList.ForEach(f => buffer.AppendLine(f.AlignedPrintDescription));
+            }
             else
+            {
+                if (IncludePrintHeaders) buffer.AppendLine(Bom.SourceList[0].PrintHeaders);
                 Bom.SourceList.ForEach(f => buffer.AppendLine(f.DescriptionForPrint));
+            }
 
             return buffer.ToString();
         }
@@ -729,10 +757,14 @@ namespace Slate_EK.ViewModels
             handler?.Invoke();
         }
 
-        private string PrintFontFamily  => Properties.Settings.Default.PrintFontFamily;
-        private int    PrintFontSize    => Properties.Settings.Default.PrintFontSize;
-        private int    PrintLineHeight  => Properties.Settings.Default.PrintFontLineHeight;
-        private int    PrintPagePadding => Properties.Settings.Default.PrintPagePadding;
+        private string PrintFontFamily     => Properties.Settings.Default.PrintFontFamily;
+        private int    PrintFontSize       => Properties.Settings.Default.PrintFontSize;
+        private int    PrintLineHeight     => Properties.Settings.Default.PrintFontLineHeight;
+        private int    PrintPagePadding    => Properties.Settings.Default.PrintPagePadding;
+        private int    PrintDpi            => Properties.Settings.Default.PrintDpi;
+        private float  PrintPageWidth      => Properties.Settings.Default.PrintPageWidth;
+        private float  PrintPageHeight     => Properties.Settings.Default.PrintPageHeight;
+        private bool   IncludePrintHeaders => Properties.Settings.Default.IncludePrintHeaders;
     }
 
     public delegate void ShortcutEventHandler();

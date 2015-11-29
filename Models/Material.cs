@@ -56,7 +56,7 @@ namespace Slate_EK.Models
                     $@"Could not parse material ""{material}""\n{e.Message}",
                     "error"
                 );
-                return Unspecified;
+                return Steel;
             }
         }
 

@@ -249,9 +249,9 @@ namespace Slate_EK.Models
                         break;
                     case Units.Inches:
                         parsed = (float?)Measure.Convert<Inch, Millimeter>
-                        (
-                            1f / (UnifiedThreadStandard.FromMillimeters(Size)?.GetThreadDensity(value))
-                        );
+                                 (
+                                     1f / (UnifiedThreadStandard.FromMillimeters(Size)?.GetThreadDensity(value))
+                                 );
                         break;
                 }
 
@@ -358,10 +358,16 @@ namespace Slate_EK.Models
         public string AlignedDescription        => $"{SizeDisplay,5} - {ShortPitchDisplay,4} x {LengthDisplay,4} {Type,6}";
 
         [XmlIgnore]
+        public string PrintHeaders              => "Qty, Callout, Total Mass, Unit Price, Sub Total";
+
+        [XmlIgnore]
+        public string AlignedPrintheaders       => "Qty,                    Callout, Total Mass, Unit Price, Sub Total ";
+
+        [XmlIgnore]
         public string DescriptionForPrint       => $"{Quantity}, {Description}, {Mass * Quantity}, {Price}, {Price * Quantity}";
 
         [XmlIgnore]
-        public string AlignedPrintDescription   => $"{Quantity,3}, {AlignedDescription}, {Mass * Quantity,5}, {Price,6}, {Price * Quantity,6}";
+        public string AlignedPrintDescription   => $"{Quantity,3}, {AlignedDescription}, {Mass * Quantity,10}, {Price,10}, {Price * Quantity,9}";
 
         //
         // Constructors

@@ -176,6 +176,16 @@
                         <DockPanel Margin="10,5,0,5">
                             <CheckBox DockPanel.Dock="Left"
                                       Style="{StaticResource CenteredCheckbox}"
+                                      IsChecked="{Binding IncludePrintHeaders}">
+                                <TextBlock Style="{StaticResource CheckboxLabelStyle}"
+                                           Text="Include column headers when printing."
+                                           x:Name="IncludePrintHeadersBlock"
+                                           Margin="10,0,0,0"/>
+                            </CheckBox>
+                        </DockPanel>
+                        <DockPanel Margin="10,5,0,5">
+                            <CheckBox DockPanel.Dock="Left"
+                                      Style="{StaticResource CenteredCheckbox}"
                                       IsChecked="{Binding EnableDebug}">
                                 <TextBlock Style="{StaticResource CheckboxLabelStyle}"
                                            Text="Enable debug mode"
@@ -348,6 +358,47 @@
                                      DockPanel.Dock="Right"
                                      Width="150" Height="22"
                                      Text="{Binding PrintPagePadding}"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False"
+                                   Visibility="Collapsed">
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="PrintNumColumnsBlock"
+                                   DockPanel.Dock="Left"
+                                   Text="Print number of columns"/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="150" Height="22"
+                                     Text="{Binding PrintNumColumns}"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="PrintPageHeightBlock"
+                                   DockPanel.Dock="Left"
+                                   Text="Print page height"/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="150" Height="22"
+                                     Text="{Binding PrintPageHeight}"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="PrintPageWidthBlock"
+                                   DockPanel.Dock="Left"
+                                   Text="Print page width"/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="150" Height="22"
+                                     Text="{Binding PrintPageWidth}"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="PrintDpiBlock"
+                                   DockPanel.Dock="Left"
+                                   Text="Print DPI"/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="150" Height="22"
+                                     Text="{Binding PrintDpi}"/>
                         </DockPanel>
                     </StackPanel>
                 </ScrollViewer>

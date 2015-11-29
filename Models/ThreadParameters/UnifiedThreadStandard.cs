@@ -97,7 +97,7 @@ namespace Slate_EK.Models.ThreadParameters
 
             int tpi;
 
-            // Check if the provided string designation is all numbers
+            // Check if the provided string designation contains text
             if (!int.TryParse(threadDensity, out tpi))
             {
                 var densityName = DensityNames.FirstOrDefault
@@ -105,16 +105,24 @@ namespace Slate_EK.Models.ThreadParameters
                     dn => threadDensity.ToUpper().StartsWith(dn)
                 );
 
-                if (!string.IsNullOrWhiteSpace(densityName))
+                if (!string.IsNullOrWhiteSpace(densityName)) // Look for matching initialism
                     return GetThreadDensity(Densities[Array.IndexOf(DensityNames, densityName)]);
-                else
-                    throw new InvalidOperationException($"Thread density '{threadDensity}' could not be found.");
-
-                //return GetThreadDensity // it's not all numbers so we try to parse the designation (UNC / UNF / UNEF)
-                //(
-                //    ((ThreadDensity[])Enum.GetValues(typeof(ThreadDensity)))
-                //                          .First(d => threadDensity.ToUpper().StartsWith(Enum.GetName(typeof(ThreadDensity), d)))
-                //);
+                else // Look for whole word
+                {
+                    string cleaned = threadDensity.Trim().ToLower();
+                    switch (cleaned)
+                    {
+                        case "course":
+                            return UncThreadsPerInch;
+                        case "fine":
+                            return UnfThreadsPerInch;
+                        case "extra fine":
+                            return UnefThreadsPerInch;
+                        default:
+                            Debug.WriteMessage($"The thread density '{threadDensity}' is not valid. Selecting UNC instead.", "error");
+                            return UnfThreadsPerInch;
+                    }
+                }
             }
 
             if (UncThreadsPerInch.RoughEquals(tpi, TOLERANCE) || 
@@ -124,8 +132,9 @@ namespace Slate_EK.Models.ThreadParameters
                 return tpi; // if it's already a valid TPI
             }
 
-            // Exception is thrown when threadDensity didn't contain text, and was not a valid TPI
-            throw new InvalidOperationException($"Thread density '{threadDensity}' could not be found.");
+            //threadDensity didn't contain valid text, and was not a valid TPI value
+            Debug.WriteMessage($"The thread density '{threadDensity}' is not valid. Selecting UNC instead.", "error");
+            return UncThreadsPerInch;
         }
 
         /// <summary>
@@ -148,12 +157,6 @@ namespace Slate_EK.Models.ThreadParameters
             float tpi     = (float)Math.Round(1f / convert);
 
             return GetThreadDensityDisplay(Densities.First(d => GetThreadDensity(d).RoughEquals(tpi, 0.5)));
-
-            //return GetThreadDensityDisplay
-            //(
-            //    ((ThreadDensity[])Enum.GetValues(typeof(ThreadDensity)))
-            //                          .First(d => GetThreadDensity(d).RoughEquals(tpi, 0.5))
-            //);
         }
 
         /// <summary>

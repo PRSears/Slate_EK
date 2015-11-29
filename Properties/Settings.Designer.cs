@@ -457,5 +457,65 @@ namespace Slate_EK.Properties {
                 this["PrintPagePadding"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IncludePrintHeaders {
+            get {
+                return ((bool)(this["IncludePrintHeaders"]));
+            }
+            set {
+                this["IncludePrintHeaders"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("11")]
+        public float PrintPageHeight {
+            get {
+                return ((float)(this["PrintPageHeight"]));
+            }
+            set {
+                this["PrintPageHeight"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("96")]
+        public int PrintDpi {
+            get {
+                return ((int)(this["PrintDpi"]));
+            }
+            set {
+                this["PrintDpi"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("8.5")]
+        public float PrintPageWidth {
+            get {
+                return ((float)(this["PrintPageWidth"]));
+            }
+            set {
+                this["PrintPageWidth"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int PrintNumColumns {
+            get {
+                return ((int)(this["PrintNumColumns"]));
+            }
+            set {
+                this["PrintNumColumns"] = value;
+            }
+        }
     }
 }

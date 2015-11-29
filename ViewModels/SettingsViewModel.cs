@@ -59,6 +59,7 @@ namespace Slate_EK.ViewModels
                 OnPropertyChanged(nameof(AlignDescriptionsBom));
             }
         }
+
         public bool AlignDescriptionsPrint
         {
             get { return Settings.Default.AlignDescriptionsPrint; }
@@ -67,6 +68,17 @@ namespace Slate_EK.ViewModels
                 Settings.Default.AlignDescriptionsPrint = value;
                 Settings.Default.Save();
                 OnPropertyChanged(nameof(AlignDescriptionsPrint));
+            }
+        }
+
+        public bool IncludePrintHeaders
+        {
+            get { return Settings.Default.IncludePrintHeaders; }
+            set
+            {
+                Settings.Default.IncludePrintHeaders = value;
+                Settings.Default.Save();
+                OnPropertyChanged(nameof(IncludePrintHeaders));
             }
         }
 
@@ -215,7 +227,49 @@ namespace Slate_EK.ViewModels
                 Settings.Default.PrintPagePadding = value;
                 Settings.Default.Save();
                 OnPropertyChanged(nameof(PrintPagePadding));
-            } 
+            }
+        }
+        public int PrintNumColumns
+        {
+            get { return Settings.Default.PrintNumColumns; }
+            set
+            {
+                Settings.Default.PrintNumColumns = value;
+                Settings.Default.Save();
+                OnPropertyChanged(nameof(PrintNumColumns));
+            }
+        }
+
+        public float PrintPageHeight
+        {
+            get { return Settings.Default.PrintPageHeight; }
+            set
+            {
+                Settings.Default.PrintPageHeight = value;
+                Settings.Default.Save();
+                OnPropertyChanged(nameof(PrintPageHeight));
+            }
+        }
+        public float PrintPageWidth
+        {
+            get { return Settings.Default.PrintPageWidth; }
+            set
+            {
+                Settings.Default.PrintPageWidth = value;
+                Settings.Default.Save();
+                OnPropertyChanged(nameof(PrintPageWidth));
+            }
+        }
+
+        public int PrintDpi
+        {
+            get { return Settings.Default.PrintDpi; }
+            set
+            {
+                Settings.Default.PrintDpi = value;
+                Settings.Default.Save();
+                OnPropertyChanged(nameof(PrintDpi));
+            }
         }
 
         public string StatusBarText
