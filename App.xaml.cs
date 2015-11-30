@@ -63,9 +63,9 @@ namespace Slate_EK
 
         private void BuildCaches()
         {
-            Debug.WriteMessage(SizesCache.IsBuilt()         ? "Sizes cache built."          : "Building Sizes cache.", "info");
-            Debug.WriteMessage(PitchesCache.IsBuilt()       ? "Pitches cache built."        : "Building Pitches cache.", "info");
-            Debug.WriteMessage(ImperialSizesCache.IsBuilt() ? "ImperialSizes cache built."  : "Building ImperialSizes cache.", "info");
+            Debug.WriteMessage(SizesCache.IsBuilt()         ? "Sizes cache built."          : "Building Sizes cache...", "info");
+            Debug.WriteMessage(PitchesCache.IsBuilt()       ? "Pitches cache built."        : "Building Pitches cache...", "info");
+            Debug.WriteMessage(ImperialSizesCache.IsBuilt() ? "ImperialSizes cache built."  : "Building ImperialSizes cache...", "info");
         }
 
         private static bool   RedirectConsole => Slate_EK.Properties.Settings.Default.DebugRedirectConsoleOut;

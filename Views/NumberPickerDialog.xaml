@@ -65,10 +65,11 @@
         <StackPanel Orientation="Vertical"
                     Margin="10,10,15,15">
             <TextBox x:Name="ValueField"
+                     GotKeyboardFocus="ValueField_OnGotKeyboardFocus"
                      Style="{StaticResource FlatTextFieldStyle}"
                      Background="Transparent"
+                     SelectionBrush="#ececec"
                      Text="{Binding Value}"
-                     
                      Width="90" Height="25"
                      HorizontalAlignment="Right"
                      HorizontalContentAlignment="Right">

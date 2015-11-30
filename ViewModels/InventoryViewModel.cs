@@ -925,6 +925,63 @@ namespace Slate_EK.ViewModels
                 }
                 #endregion
             }
+            else if (SearchQuery.Contains(":"))
+            {
+                #region // Range search
+                string[] preStrings = SearchQuery.Split(':');
+                string queryA = preStrings[0].Trim(), queryB = preStrings[1].Trim();
+
+                double parsedA = 0, parsedB = 0;
+                bool parseFailed = false;
+
+                parseFailed = parseFailed || !double.TryParse(queryA, out parsedA);
+                parseFailed = parseFailed || !double.TryParse(queryB, out parsedB);
+
+                if (parseFailed)
+                    Extender.Debugging.Debug.WriteMessage("Could not parse query. Are you trying to do a range search on strings?", "warn");
+
+                switch (SelectedSearchType)
+                {
+                    case SearchType.Length:
+                        queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Length >= parsedA && ft.Length <= parsedB)
+                                                                  .Select(ft => new FastenerControl(ft)));
+                        break;
+                    case SearchType.Mass:
+                        queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Mass >= parsedA && ft.Mass <= parsedB)
+                                                                  .Select(ft => new FastenerControl(ft)));
+                        break;
+                    case SearchType.Pitch:
+                        queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Pitch >= parsedA && ft.Pitch <= parsedB)
+                                                                  .Select(ft => new FastenerControl(ft)));
+                        break;
+                    case SearchType.Price:
+                        queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Price >= parsedA && ft.Price <= parsedB)
+                                                                  .Select(ft => new FastenerControl(ft)));
+                        break;
+                    case SearchType.Size:
+                        queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Size >= parsedA && ft.Size <= parsedB)
+                                                                  .Select(ft => new FastenerControl(ft)));
+                        break;
+                    case SearchType.Quantity:
+                        queryResults.AddRange(_Inventory.Fasteners.Where(ft => ft.Quantity >= parsedA && ft.Quantity <= parsedB)
+                                                                  .Select(ft => new FastenerControl(ft)));
+                        break;
+                    default:
+                        string warn = @"Operator "":"" cannot be applied to string searches.";
+                        Extender.Debugging.Debug.WriteMessage(warn, "warn");
+                        MessageBox.Show
+                        (
+                            warn,
+                            "",
+                            MessageBoxButton.OK
+                        );
+                        //SearchQuery = query;
+                        //ExecuteSearch();
+                        return;
+                }
+                #endregion
+
+            }
             else
             {
                 #region // Regular search

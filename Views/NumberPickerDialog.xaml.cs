@@ -65,5 +65,10 @@ namespace Slate_EK.Views
 
             Value = initialValue;
         }
+
+        private void ValueField_OnGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            ValueField.SelectAll();
+        }
     }
 }

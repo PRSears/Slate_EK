@@ -1,4 +1,5 @@
-﻿using Extender.IO;
+﻿using Extender.Debugging;
+using Extender.IO;
 using Slate_EK.Models.ThreadParameters;
 using System.Collections.Concurrent;
 using System.IO;
@@ -90,6 +91,7 @@ namespace Slate_EK.Models.IO
             {
                 await table.ReloadAsync();
                 Table = table.SourceList.ToArray();
+                Debug.WriteMessage(IsBuilt() ? "Sizes cache built." : "Building Sizes cache.", "info");
             });
         }
     }
