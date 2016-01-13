@@ -1,4 +1,4 @@
-﻿<Window x:Class="Slate_EK.Views.QuickEditDialog"
+﻿<Window x:Class="Slate_EK.Views.SubstituteView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,11 +6,12 @@
         xmlns:local="clr-namespace:Slate_EK.Views"
         mc:Ignorable="d"
         Title="{Binding WindowTitle}" 
-        Width="300" Height="280"
+        Width="270" Height="350"
+        MaxWidth="270"
+        MinWidth="270" MinHeight="300"
         WindowStyle="ToolWindow"
         Icon="/Slate_EK;component/Icons/icon_25.ico"
         Background="#494d4f"
-        ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="True">
     <Window.Resources>
@@ -38,65 +39,47 @@
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="50"></RowDefinition>
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0"
-                    Margin="0,0,0,0"
-                    Orientation="Vertical">
-            <TextBlock x:Name="DescriptionBlock"
-                       Text="{Binding ShortDescription}"
-                       FontSize="16"
-                       Margin="10"></TextBlock>
-            <DockPanel>
-                <Label Content="Length"
-                       DockPanel.Dock="Left"/>
-                <TextBox TabIndex="1"
-                         x:Name="LengthBox"
-                         Text="{Binding WorkingFastener.LengthDisplay}"
-                         Width="210" Height="22"
-                         DockPanel.Dock="Right"/>
-            </DockPanel>
-            <DockPanel>
-                <Label Content="Qty"
-                       DockPanel.Dock="Left"/>
-                <TextBox TabIndex="1"
-                         x:Name="QtyBox"
-                         Text="{Binding WorkingFastener.Quantity}"
-                         Width="210" Height="22"
-                         DockPanel.Dock="Right"/>
-            </DockPanel>
-            <DockPanel>
-                <Label Content="Price"
-                       DockPanel.Dock="Left"/>
-                <TextBox TabIndex="2"
-                         x:Name="PriceBox"
-                         Text="{Binding WorkingFastener.Price}"
-                         Width="210" Height="22"
-                         DockPanel.Dock="Right"/>
-            </DockPanel>
-            <DockPanel>
-                <Label Content="Mass"
-                       DockPanel.Dock="Left"/>
-                <TextBox TabIndex="3"
-                         Text="{Binding WorkingFastener.Mass}"
-                         Width="210" Height="22"
-                         DockPanel.Dock="Right"/>
-            </DockPanel>
-        </StackPanel>
-
-
+        
+        <ScrollViewer HorizontalScrollBarVisibility="Hidden"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel Orientation="Vertical"
+                        Margin="10"
+                        HorizontalAlignment="Center">
+                <ItemsControl x:Name="CandidatesItemsControl">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,0,0,10">
+                                <StackPanel.Resources>
+                                    <Style TargetType="TextBlock"
+                                           BasedOn="{StaticResource BlockLabelStyle}">
+                                        <Setter Property="FontFamily" Value="/Slate_EK;component/#DejaVu Sans Mono"></Setter>
+                                    </Style>
+                                </StackPanel.Resources>
+                                <RadioButton IsChecked="{Binding IsSelected}"
+                                             GroupName="Candidates">
+                                <TextBlock Text="{Binding Fastener.AlignedDescription}"></TextBlock></RadioButton>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+        
         <Border Grid.Row="1"
-                Background="#505753"/>
+                Background="#505753"></Border>
         <DockPanel Grid.Row="1"
-                   Margin="10,0,10,0">
+                   Margin="0">
             <Button Style="{StaticResource FlatActionButtonStyle}"
                     TabIndex="5"
                     Margin="5,0,10,0"
-                    Content="Discard"
+                    Content="Cancel"
                     DockPanel.Dock="Right"
                     Command="{Binding DiscardCommand}"></Button>
             <Button Style="{StaticResource FlatActionButtonStyle}"
                     TabIndex="4"
                     Margin="5,0,5,0"
-                    Content="Submit"
+                    Content="Select"
                     DockPanel.Dock="Right"
                     Command="{Binding SubmitCommand}"></Button>
         </DockPanel>

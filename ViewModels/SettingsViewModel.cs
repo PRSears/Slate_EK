@@ -330,6 +330,9 @@ namespace Slate_EK.ViewModels
                         InitialDirectory = Path.GetDirectoryName(DefaultInventoryPath)
                     };
 
+                    if (!Extender.IO.Paths.DriveExists(DefaultInventoryPath))
+                        dialog.InitialDirectory = Directory.GetCurrentDirectory();
+
                     var result = dialog.ShowDialog();
                     if (!result.HasValue || !result.Value) return;
 
@@ -348,6 +351,9 @@ namespace Slate_EK.ViewModels
                         Title            = @"Select BOM autosave folder",
                         InitialDirectory = Path.Combine(Directory.GetCurrentDirectory(), AssemblyAutosaveFolder)
                     };
+
+                    if (!Extender.IO.Paths.DriveExists(DefaultInventoryPath))
+                        dialog.InitialDirectory = Directory.GetCurrentDirectory();
 
                     if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
                     {
@@ -369,5 +375,8 @@ namespace Slate_EK.ViewModels
         {
             return $"{path}\\";
         }
+
+        private string DriveDoesNotExistMessage => "The drive specified in the path to the inventory database does not exist. " + 
+                                                   "\n\nMake sure the path is correct in the settings then try again.";
     }
 }

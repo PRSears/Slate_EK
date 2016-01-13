@@ -14,6 +14,10 @@
             <Setter Property="LastChildFill" Value="False"/>
         </Style>
         <ContextMenu x:Key="FastenerListContextMenu">
+            <MenuItem Header="Copy to working"
+                      Command="{Binding EditCommand}"
+                      Visibility="Collapsed"/>
+            <Separator Visibility="Collapsed"/>
             <MenuItem Header="Copy"
                       Command="{Binding ShortcutCtrlC}"/>
             <MenuItem Header="Paste"
@@ -82,7 +86,8 @@
         
         <StackPanel Grid.Row="1" Grid.Column="0"
                     Margin="0,10,0,0"
-                    Orientation="Vertical">
+                    Orientation="Vertical"
+                    IsEnabled="{Binding IsEditable}">
             <DockPanel>
                 <Label Content="Unit"
                        Style="{StaticResource LabelStyle}"
@@ -325,6 +330,22 @@
                     </Style.Triggers>
                 </Style>
             </DockPanel.Resources>
+            <Button Style="{StaticResource FlatIconButtonStyle}"
+                    Command="{Binding FinalizeCommand}"
+                    Visibility="{Binding FinalizeButtonVisibility}"
+                    Width="35"
+                    IsTabStop="False"
+                    ToolTip="Finalize">
+                <Image Source="/Slate_EK;component/Icons/ic_done_black_24dp_2x.png"/>
+            </Button>
+            <Button Style="{StaticResource FlatIconButtonStyle}"
+                    Command="{Binding UndoFinalizeCommand}"
+                    Visibility="{Binding UndoButtonVisibility}"
+                    Width="35"
+                    IsTabStop="False"
+                    ToolTip="Undo finalize">
+                <Image Source="/Slate_EK;component/Icons/ic_undo_black_24dp_2x.png"/>
+            </Button>
             <Button Style="{StaticResource FlatIconButtonStyle}"
                     Command="{Binding SaveAsCommand}"
                     Width="35"

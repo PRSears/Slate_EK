@@ -24,7 +24,18 @@ namespace Slate_EK.Models
             }
         }
 
+        public bool IsFinalized
+        {
+            get { return _IsFinalized; }
+            set
+            {
+                _IsFinalized = value;
+                OnPropertyChanged(nameof(IsFinalized));
+            }
+        }
+
         private string _AssemblyNumber;
+        private bool   _IsFinalized;
 
         public override string FilePath => Path.Combine(FolderPath, Filename);
 

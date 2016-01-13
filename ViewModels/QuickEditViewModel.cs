@@ -35,6 +35,8 @@ namespace Slate_EK.ViewModels
             }
         }
 
+        public string ShortDescription => WorkingFastener.Description;
+
         public bool OverrideLength
         {
             get { return _OverrideLength; }
@@ -53,6 +55,14 @@ namespace Slate_EK.ViewModels
             base.Initialize();
 
             WorkingFastener = fastener;
+            WorkingFastener.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName.Equals(nameof(UnifiedFastener.Length)))
+                {
+                    OnPropertyChanged(nameof(WindowTitle));
+                    OnPropertyChanged(nameof(ShortDescription));
+                }
+            };
         }
     }
 }

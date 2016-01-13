@@ -23,8 +23,7 @@ namespace Slate_EK
             System.Windows.Media.Animation.Timeline.DesiredFrameRateProperty.OverrideMetadata(
                 typeof(System.Windows.Media.Animation.Timeline),
                 new FrameworkPropertyMetadata { DefaultValue = 6 });
-
-
+            
             //
             // Setup console output
             if (RedirectConsole && !string.IsNullOrWhiteSpace(DebugLogPath))

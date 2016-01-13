@@ -483,27 +483,6 @@ namespace Slate_EK.Models
         }
 
         /// <summary>
-        /// Compares this fastener against 'ideal' to determine if this is an acceptable
-        /// match to 'ideal'.
-        /// </summary>
-        /// <param name="ideal">The ideal fastener.</param>
-        /// <returns>
-        /// If it is determined that this fastener is close enough to the ideal, 
-        /// then the (absolute) difference in this.Length and ideal.Length is returned. 
-        /// If it is not close, a negative value is returned. 
-        /// </returns>
-        public float CloseEnough(UnifiedFastener ideal)
-        {
-            bool close = (this.Size.Equals(ideal.Size)         &&
-                          this.Pitch.Equals(ideal.Pitch)       &&
-                          this.Type.Equals(ideal.Type)         &&
-                          this.Material.Equals(ideal.Material) &&
-                         (this.Length >= ideal.Length));
-
-            return close ? Math.Abs(this.Length - ideal.Length) : -1;
-        }
-
-        /// <summary>
         /// Attempts to create a new UnifiedFastener from a string Description.
         /// </summary>
         /// <param name="fastenerDescription"></param>
@@ -539,6 +518,14 @@ namespace Slate_EK.Models
         private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+            //if (propertyName.Equals(nameof(Size))   ||
+            //    propertyName.Equals(nameof(Pitch))  ||
+            //    propertyName.Equals(nameof(Length)) ||
+            //    propertyName.Equals(nameof(Type)))
+            //{
+            //    OnPropertyChanged(nameof(Desc));
+            //}
         }
 
         #region //Aliases

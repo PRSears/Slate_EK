@@ -1,3 +1,6 @@
+- Changed quick add to allow changing Length
+- Hooked up Finalize / Undo finalize buttons
+- Fixed bugs to do with non-existent drives
 - ValueField in number picker dialog now starts selected
 - Made ValueField selected text is easier to read (changed selected bg color)
 - Added range searches to the inventory viewer

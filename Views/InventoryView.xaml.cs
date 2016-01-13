@@ -8,6 +8,8 @@ using System.Windows.Input;
 
 namespace Slate_EK.Views
 {
+    //TODO Hide fastener material column from inventory display
+
     /// <summary>
     /// Interaction logic for InventoryView.xaml
     /// </summary>
@@ -32,6 +34,17 @@ namespace Slate_EK.Views
         public InventoryView(string inventoryPath)
         {
             //RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
+
+            if (!Extender.IO.Paths.PromptDriveExists
+                     (
+                         inventoryPath,
+                         $"The drive specified in the path '{inventoryPath}' was not found in the system.\n" +
+                         "Verify the path in the application settings and try again."
+                     ))
+            {
+                Close();
+                return;
+            }
 
             InitializeComponent();
 

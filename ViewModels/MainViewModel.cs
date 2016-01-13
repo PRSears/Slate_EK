@@ -1,13 +1,14 @@
-﻿using System;
-using Extender.WPF;
+﻿using Extender.WPF;
+using Slate_EK.Models.Inventory;
 using Slate_EK.Models.ThreadParameters;
 using Slate_EK.Views;
 using System.IO;
+using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 using System.Xml;
 using System.Xml.Linq;
-using Slate_EK.Models;
-using Slate_EK.Models.Inventory;
+using Size = Slate_EK.Models.ThreadParameters.Size;
 
 namespace Slate_EK.ViewModels
 {
@@ -53,10 +54,25 @@ namespace Slate_EK.ViewModels
                 {
                     var inv = new Inventory(Properties.Settings.Default.DefaultInventoryPath);
 
-                    foreach (var item in inv.Dump())
-                    {
-                        Console.WriteLine(item.AlignedPrintDescription);
-                    }
+                    var candidates = inv.Fasteners.Where(f => f.Quantity > 5);
+                    var testView = new SubstituteView(candidates);
+
+                    testView.ShowDialog();
+
+                    MessageBox.Show
+                    (
+                        testView.SelectedFastener.Description,
+                        "Selected fastener: ",
+                        MessageBoxButton.OK
+                    );
+                }
+            );
+
+            TestHarnessCommand = new RelayCommand
+            (
+                () =>
+                {
+
                 }
             );
 

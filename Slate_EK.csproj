@@ -120,6 +120,7 @@
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\QuickEditViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
+    <Compile Include="ViewModels\SubstituteViewModel.cs" />
     <Compile Include="Views\InventoryView.xaml.cs">
       <DependentUpon>InventoryView.xaml</DependentUpon>
     </Compile>
@@ -134,6 +135,9 @@
     </Compile>
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SubstituteView.xaml.cs">
+      <DependentUpon>SubstituteView.xaml</DependentUpon>
     </Compile>
     <Page Include="Views\BomView.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -165,6 +169,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\SettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SubstituteView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -217,6 +225,10 @@
     <Resource Include="Icons\ic_launch_black_24dp_2x.png" />
     <Resource Include="Icons\ic_launch_white_24dp_1x.png" />
     <Resource Include="Icons\ic_launch_white_24dp_2x.png" />
+    <Resource Include="Icons\ic_done_black_24dp_1x.png" />
+    <Resource Include="Icons\ic_done_black_24dp_2x.png" />
+    <Resource Include="Icons\ic_undo_black_24dp_1x.png" />
+    <Resource Include="Icons\ic_undo_black_24dp_2x.png" />
     <Content Include="Lists\imperialSizes.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

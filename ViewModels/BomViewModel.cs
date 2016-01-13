@@ -27,13 +27,16 @@ namespace Slate_EK.ViewModels
     {
         private Timer _PropertyRefreshTimer;
 
-        #region commands
+        #region         commands
         public ICommand AddToListCommand            { get; private set; }
         public ICommand RemoveItemCommand           { get; private set; }
+        public ICommand EditCommand                 { get; private set; }
         public ICommand ListChangeQuantityCommand   { get; private set; }
         public ICommand ListDeleteItemCommand       { get; private set; }
         public ICommand SaveAsCommand               { get; private set; }
         public ICommand PrintCommand                { get; private set; }
+        public ICommand FinalizeCommand             { get; private set; }
+        public ICommand UndoFinalizeCommand         { get; private set; }
         public ICommand ShortcutCtrlK               { get; private set; }
         public ICommand ShortcutCtrlS               { get; private set; }
         public ICommand ShortcutCtrlE               { get; private set; }
@@ -63,6 +66,9 @@ namespace Slate_EK.ViewModels
                 OnPropertyChanged(nameof(AdditionalParameterVisibility));
             }
         }
+
+        public Visibility FinalizeButtonVisibility =>  IsEditable ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility UndoButtonVisibility     => !IsEditable ? Visibility.Visible : Visibility.Collapsed;
 
         public bool OverrideLength
         {
@@ -131,6 +137,8 @@ namespace Slate_EK.ViewModels
             }
         }
 
+        public bool IsEditable => !Bom.IsFinalized;
+
         public ObservableCollection<FastenerControl> ObservableFasteners
         {
             get
@@ -180,6 +188,12 @@ namespace Slate_EK.ViewModels
                         await Bom.SaveAsync();
                         Debug.WriteMessage($"Bom copied to {Bom.AssemblyNumber}", "info");
                     });
+                }
+                else if (e.PropertyName.Equals(nameof(Bom.IsFinalized)))
+                {
+                    OnPropertyChanged(nameof(FinalizeButtonVisibility));
+                    OnPropertyChanged(nameof(UndoButtonVisibility));
+                    OnPropertyChanged(nameof(IsEditable));
                 }
 
                 OnPropertyChanged(nameof(WindowTitle)); // do this regardless of which property changed
@@ -339,6 +353,17 @@ namespace Slate_EK.ViewModels
                 () => ObservableFasteners.Any(f => f.IsSelected)
             );
 
+            EditCommand = new RelayCommand
+            (
+                () =>
+                {
+                    // TODO_ Find a way to make Editing existing fasteners in BOM work
+                    //       The problem is that drop down menus don't update when their selected targets update...
+                    WorkingFastener.UpdateFrom(ObservableFasteners.FirstOrDefault(f => f.IsSelected)?.Fastener);
+                },
+                () => ObservableFasteners.Count(f => f.IsSelected) == 1 // only allow when exactly one is selected
+            );
+
             ListChangeQuantityCommand = new RelayCommand
             (
                 () =>
@@ -393,6 +418,38 @@ namespace Slate_EK.ViewModels
 
                     // >.>
                 }
+            );
+
+            FinalizeCommand = new RelayCommand
+            (
+                () =>
+                {
+                    if (ConfirmationDialog.Show("Edit inventory?", "Do you want to remove the fastener quantities from the inventory?\n\n " +
+                                                                   "Selecting no will just make this BOM uneditable without changing the inventory."))
+                    {
+                        // TODOh Remove quantities from the inventory
+                    }
+
+                    Bom.IsFinalized = true;
+                    Bom.QueueSave();
+                },
+                () => Bom.SourceList.Any()
+            );
+
+            UndoFinalizeCommand = new RelayCommand
+            (
+                () =>
+                {
+                    if (ConfirmationDialog.Show("Edit inventory?", "Do you want to add the fastener quantities back to the inventory?\n\n" + 
+                                                    "Selecting no will just make this BOM editable again and leave the inventory untouched."))
+                    {
+                        // TODOh add the fastener quantities back to the inventory
+                    }
+
+                    Bom.IsFinalized = false;
+                    Bom.QueueSave();
+                },
+                () => Bom.IsFinalized
             );
 
             // Hook up context menu commands for FastenerControls
@@ -453,6 +510,7 @@ namespace Slate_EK.ViewModels
         {
             AddToBom(new[] {fastener});
         }
+
         
         private void AddToBom(IEnumerable<UnifiedFastener> fasteners)
         {
@@ -460,6 +518,7 @@ namespace Slate_EK.ViewModels
             {
                 foreach (var fastener in fasteners)
                 {
+                    //
                     // Check exact match
                     if (inv.Fasteners.Any(f => f.Equals(fastener)))
                     {
@@ -467,65 +526,79 @@ namespace Slate_EK.ViewModels
                         continue;
                     }
 
-                    // No exact match, try to find an acceptable substitute
-                    // TODOh Change as indicated in notes from call with Eric
-                    var substitute = inv.Fasteners.FirstOrDefault
+                    //
+                    // Look for possible substitutes
+                    var canditates = inv.Fasteners.Where
                     (
-                        f => f.Size.Equals(fastener.Size)         && 
-                             f.Pitch.Equals(fastener.Pitch)       && 
-                             f.Type.Equals(fastener.Type)         && 
-                             (f.Length >= fastener.Length)
+                        f => f.Size.Equals(fastener.Size)   &&
+                             f.Pitch.Equals(fastener.Pitch) &&
+                             f.Type.Equals(fastener.Type)   &&
+                             f.Length <= fastener.Length
                     );
 
-                    if (substitute == null || substitute.Equals(default(UnifiedFastener)))
+                    if (canditates.Any())
                     {
-                        Debug.WriteMessage("No suitable fastener found.");
-                        
-                        var result = MessageBox.Show
-                        (
-                            "Do you want to open the quick editor and add it to the inventory?",
-                            "No Suitable Fastener Found",
-                            MessageBoxButton.YesNo,
-                            MessageBoxImage.Question
-                        );
+                        var substituteView = new SubstituteView(canditates);
+                        substituteView.Owner = FindThisWindow();
+                        substituteView.ShowDialog();
 
-                        bool warn = true;
-
-                        if (result == MessageBoxResult.Yes) 
+                        if (substituteView.SelectedFastener != null)
                         {
-                            var qedit = new Views.QuickEditDialog(fastener.Copy());
-                            qedit.Owner = FindThisWindow();
-                            qedit.ShowDialog();
-
-                            if (qedit.Result == QuickEditDialogResult.Submit)
-                            {
-                                inv.Add(qedit.Editing);
-                                warn = false;
-                            }
+                            // 
+                            // A substitute was selected and can be added to the BOM
+                            substituteView.SelectedFastener.Quantity = fastener.Quantity; 
+                            Bom.Add(substituteView.SelectedFastener.Copy());
+                            continue;
                         }
-
-                        if (warn) // Either the quick editor was never shown, or it was and they discarded it
-                        {
-                            MessageBox.Show
-                            (
-                                "The fastener will be added to the BOM anyway, but nothing was added to the inventory.",
-                                "",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Information
-                            );
-                        }
-
-                        substitute = fastener;
                     }
 
-                    Bom.Add(substitute.Copy());
+                    // 
+                    // Either there was no substitute or none was selected
+                    PromptQuickAdd(fastener, inv); 
                 }
 
                 inv.SubmitChanges();
             }
 
 
-        } 
+        }
+
+        private void PromptQuickAdd(UnifiedFastener fastener, Inventory inventory)
+        {
+            var promptResult = MessageBox.Show
+            (
+                "Do you want to open the quick editor and add a new item to the inventory?",
+                "No Suitable Fastener(s) Found",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question
+            );
+
+            bool requireWarn = true;
+
+            if (promptResult == MessageBoxResult.Yes)
+            {
+                var quickEditor = new QuickEditDialog(fastener.Copy());
+                quickEditor.Owner = FindThisWindow();
+                quickEditor.ShowDialog();
+
+                if (quickEditor.Result == QuickEditDialogResult.Submit)
+                {
+                    inventory.Add(quickEditor.Editing);
+                    requireWarn = false;
+                }
+            }
+
+            if (requireWarn) // Either the quick editor was never shown, or it was and they discarded it.
+                MessageBox.Show
+                (
+                    "The fastener will be added to the BOM anyway, but nothing was added to the inventory.",
+                    "Note:",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
+
+            Bom.Add(fastener.Copy());
+        }
 
         //
         // TODOh add button to finalize BOM + remove quantities from inventory
