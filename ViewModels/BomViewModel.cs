@@ -427,13 +427,15 @@ namespace Slate_EK.ViewModels
                     if (ConfirmationDialog.Show("Edit inventory?", "Do you want to remove the fastener quantities from the inventory?\n\n " +
                                                                    "Selecting no will just make this BOM uneditable without changing the inventory."))
                     {
-                        // TODOh Remove quantities from the inventory
+                        SubtractFromInventory();
                     }
 
                     Bom.IsFinalized = true;
                     Bom.QueueSave();
+
+                    CheckStock();
                 },
-                () => Bom.SourceList.Any()
+                () => Bom.SourceList != null && Bom.SourceList.Any() 
             );
 
             UndoFinalizeCommand = new RelayCommand
@@ -443,7 +445,7 @@ namespace Slate_EK.ViewModels
                     if (ConfirmationDialog.Show("Edit inventory?", "Do you want to add the fastener quantities back to the inventory?\n\n" + 
                                                     "Selecting no will just make this BOM editable again and leave the inventory untouched."))
                     {
-                        // TODOh add the fastener quantities back to the inventory
+                        ReplaceInventory();
                     }
 
                     Bom.IsFinalized = false;
@@ -559,8 +561,64 @@ namespace Slate_EK.ViewModels
 
                 inv.SubmitChanges();
             }
+        }
 
+        private void SubtractFromInventory()
+        {
+            List<UnifiedFastener> missingList = new List<UnifiedFastener>();
 
+            using (Inventory inv = new Inventory(Properties.Settings.Default.DefaultInventoryPath))
+            {
+                foreach (UnifiedFastener item in Bom.SourceList)
+                {
+                    var match = inv.Fasteners.FirstOrDefault(f => f.UniqueID.Equals(item.UniqueID));
+                    if (match != null && !match.Equals(default(UnifiedFastener)))
+                    {
+                        match.Quantity -= item.Quantity;
+                    }
+                    else
+                    {
+                        missingList.Add(item);
+                    }
+                }
+                inv.SubmitChanges();
+            }
+        }
+
+        private void ReplaceInventory()
+        {
+            List<UnifiedFastener> missingList = new List<UnifiedFastener>(); // TODO trace this... try to remember what I was doing here
+
+            using (Inventory inv = new Inventory(Properties.Settings.Default.DefaultInventoryPath))
+            {
+                foreach (UnifiedFastener item in Bom.SourceList)
+                {
+                    var match = inv.Fasteners.FirstOrDefault(f => f.UniqueID.Equals(item.UniqueID));
+                    if (match != null && !match.Equals(default(UnifiedFastener)))
+                    {
+                        match.Quantity += item.Quantity;
+                    }
+                    else
+                    {
+                        missingList.Add(item);
+                    }
+                }
+                inv.SubmitChanges();
+            }
+        }
+
+        private void CheckStock()
+        {
+            using (Inventory inv = new Inventory(Properties.Settings.Default.DefaultInventoryPath))
+            {
+                var query = inv.Fasteners.Where(f => f.Quantity <= Properties.Settings.Default.LowStockThreshold);
+
+                if (query.Any())
+                {
+                    var alertDialog = new SubstituteView(query, SubstituteViewModel.Modes.LowStockList);
+                    alertDialog.ShowDialog();
+                }
+            }
         }
 
         private void PromptQuickAdd(UnifiedFastener fastener, Inventory inventory)
@@ -599,13 +657,6 @@ namespace Slate_EK.ViewModels
 
             Bom.Add(fastener.Copy());
         }
-
-        //
-        // TODOh add button to finalize BOM + remove quantities from inventory
-        //       - should freeze the bom not allowing other edits / additions
-        //       - change button to undo finalize once clicked & handled
-        //
-        // This is probably going to require an IsFinalized field in the XML file (& therefor the BOM).
 
         private void SetSizesList()
         {
@@ -716,14 +767,14 @@ namespace Slate_EK.ViewModels
 
         private Window FindThisWindow()
         {
-            // Yeah... this is bad.
+            // HACK Yeah... this is bad.
             Window mainWindow = Application.Current.MainWindow;
             return (mainWindow as Views.MainView)?.FindBomWindow(Bom.AssemblyNumber);
         }
 
         private bool SaveAs()
         {
-            // TODOh crashes when saving as txt file. !! - can't reproduce...
+            // TODO_ crashes when saving as txt file. !! - can't reproduce...
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
                 Title           = "Save a copy of the BOM as...",
@@ -732,7 +783,7 @@ namespace Slate_EK.ViewModels
 |*.txt|(*.csv)|*.csv|(*.xml)|*.xml|All files (*.*)|*.*",
                 AddExtension    = true,
                 OverwritePrompt = true,
-                FileName        = Path.GetFileName(Bom.FilePath)
+                FileName        = Path.GetFileNameWithoutExtension(Bom.FilePath)
             };
 
             var result = dialog.ShowDialog();
@@ -741,64 +792,37 @@ namespace Slate_EK.ViewModels
             var ext = Path.GetExtension(dialog.FileName)?.ToLower();
             if (string.IsNullOrWhiteSpace(ext)) return false;
 
-            if (ext.EndsWith("csv"))
+            try
             {
-                var csv = new Extender.IO.CsvSerializer<UnifiedFastener>();
+                if (File.Exists(dialog.FileName))
+                    File.Delete(dialog.FileName);
 
-                using (var stream = new FileStream(dialog.FileName, FileMode.Create,
-                                                                    FileAccess.ReadWrite,
-                                                                    FileShare.Read))
+                if (ext.EndsWith("csv"))
                 {
-                    csv.Serialize(stream, Bom.SourceList);
-                }
-            }
-            else if (ext.EndsWith("xml"))
-            {
-                try
-                {
-                    if (File.Exists(dialog.FileName))
-                        File.Delete(dialog.FileName);
-
-                    File.Copy(Bom.FilePath, dialog.FileName);
-                }
-                catch (Exception e)
-                {
-                    ExceptionTools.WriteExceptionText(e, false);
-
-                    MessageBox.Show
-                    (
-                        "Encountered an exception while copying BOM:\n" + e.Message,
-                        "Exception",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error
-                    );
-                    return false;
-                }
-            }
-            else if (ext.EndsWith("txt"))
-            {
-                try
-                {
-                    if (File.Exists(dialog.FileName))
-                        File.Delete(dialog.FileName);
-
                     using (var writer = File.CreateText(dialog.FileName))
-                    {
-                        writer.Write(FormatBomToText());
-                    }
+                        writer.Write(FormatBomToCsv());
                 }
-                catch (Exception e)
+                else if (ext.EndsWith("txt"))
                 {
-                    MessageBox.Show
-                    (
-                        "Encountered an exception while saving as .txt:\n" + e.Message,
-                        "Exception",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error
-                    );
-                    ExceptionTools.WriteExceptionText(e, true);
-                    return false;
+                    using (var writer = File.CreateText(dialog.FileName))
+                        writer.Write(FormatBomToText());
                 }
+                else if (ext.EndsWith("xml"))
+                {
+                    File.Copy(Bom.FilePath, dialog.FileName);
+                } // TODO Add exporting to actual excel file so formatting doesn't get fucked by excel
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show
+                (
+                    $"Encountered an exception while saving as {ext}:\n{e.Message}",
+                    "Exception",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+                ExceptionTools.WriteExceptionText(e, true);
+                return false;
             }
 
             return true;
@@ -811,9 +835,9 @@ namespace Slate_EK.ViewModels
 
             StringBuilder buffer = new StringBuilder();
 
-            if (Properties.Settings.Default.AlignDescriptionsPrint)
+            if (Properties.Settings.Default.AlignDescriptionsTxtExport)
             {
-                if (IncludePrintHeaders) buffer.AppendLine(Bom.SourceList[0].AlignedPrintheaders);
+                if (IncludePrintHeaders) buffer.AppendLine(Bom.SourceList[0].AlignedPrintHeaders);
                 Bom.SourceList.ForEach(f => buffer.AppendLine(f.AlignedPrintDescription));
             }
             else
@@ -825,19 +849,38 @@ namespace Slate_EK.ViewModels
             return buffer.ToString();
         }
 
+        private string FormatBomToCsv()
+        {
+            if (Bom.SourceList.Length <= 0)
+                return string.Empty;
+
+            StringBuilder buffer = new StringBuilder();
+
+            buffer.AppendLine("quantity,size,pitch,length,type,total mass,unit price,sub total");
+            foreach (var item in Bom.SourceList)
+            {
+                string len = ExportLengthFractions ? item.LengthFraction : item.LengthDisplay;
+
+                buffer.AppendLine($"{item.Quantity},{item.SizeDisplay},{item.ShortPitchDisplay},{len},{item.Type},{item.Mass * item.Quantity},{item.Price},{item.Price * item.Quantity}");
+            }
+
+            return buffer.ToString();
+        }
+
         private void NullsafeHandleShortcut(ShortcutEventHandler handler)
         {
             handler?.Invoke();
         }
 
-        private string PrintFontFamily     => Properties.Settings.Default.PrintFontFamily;
-        private int    PrintFontSize       => Properties.Settings.Default.PrintFontSize;
-        private int    PrintLineHeight     => Properties.Settings.Default.PrintFontLineHeight;
-        private int    PrintPagePadding    => Properties.Settings.Default.PrintPagePadding;
-        private int    PrintDpi            => Properties.Settings.Default.PrintDpi;
-        private float  PrintPageWidth      => Properties.Settings.Default.PrintPageWidth;
-        private float  PrintPageHeight     => Properties.Settings.Default.PrintPageHeight;
-        private bool   IncludePrintHeaders => Properties.Settings.Default.IncludePrintHeaders;
+        private string PrintFontFamily       => Properties.Settings.Default.PrintFontFamily;
+        private int    PrintFontSize         => Properties.Settings.Default.PrintFontSize;
+        private int    PrintLineHeight       => Properties.Settings.Default.PrintFontLineHeight;
+        private int    PrintPagePadding      => Properties.Settings.Default.PrintPagePadding;
+        private int    PrintDpi              => Properties.Settings.Default.PrintDpi;
+        private float  PrintPageWidth        => Properties.Settings.Default.PrintPageWidth;
+        private float  PrintPageHeight       => Properties.Settings.Default.PrintPageHeight;
+        private bool   IncludePrintHeaders   => Properties.Settings.Default.IncludePrintHeaders;
+        private bool   ExportLengthFractions => Properties.Settings.Default.ExportLengthFractions;
     }
 
     public delegate void ShortcutEventHandler();

@@ -68,6 +68,7 @@
             </MenuItem>
             <MenuItem Header="_Tools">
                 <MenuItem Header="_Retrieve All Fasteners" Command="{Binding ShowAllFastenersCommand}"/>
+                <MenuItem Header="Display _Low Stock" Command="{Binding DisplayLowStockCommand}"></MenuItem>
                 <MenuItem Header="_Clear Query Results" Command="{Binding ClearQueryResultsCommand}"/>
                 <Separator/>
                 <MenuItem Header="_Submit Changes" Command="{Binding SubmitChangesCommand}"/>
@@ -91,7 +92,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="100"/>
+                <!--<ColumnDefinition Width="100"/>-->
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="125"/>
                 <ColumnDefinition Width="16"/>
@@ -163,13 +164,13 @@
             <Button Grid.Row="0" Grid.Column="5"
                     Content="{Binding LengthButtonText}"
                     Command="{Binding SortByLengthCommand}"/>
-            <Button Grid.Row="0" Grid.Column="6"
+            <!--<Button Grid.Row="0" Grid.Column="6"
                     Content="{Binding MaterialButtonText}"
-                    Command="{Binding SortByMaterialCommand}"/>
-            <Button Grid.Row="0" Grid.Column="7"
+                    Command="{Binding SortByMaterialCommand}"/>-->
+            <Button Grid.Row="0" Grid.Column="6"
                     Content="{Binding TypeButtonText}"
                     Command="{Binding SortByFastTypeCommand}"/>
-            <Button Grid.Row="0" Grid.Column="8"
+            <Button Grid.Row="0" Grid.Column="7"
                     Content="{Binding UnitButtonText}"
                     Command="{Binding SortByUnitCommand}"/>
 
@@ -257,7 +258,7 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="100"/>
+                                            <!--<ColumnDefinition Width="100"/>-->
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="125"/>
                                         </Grid.ColumnDefinitions>
@@ -319,15 +320,15 @@
                                                  Text="{Binding Fastener.LengthDisplay}"
                                                  IsEnabled="{Binding IsEditable}"
                                                  GotFocus="UIElement_OnGotFocus"/>
-                                        <TextBox Grid.Column="6"
+                                        <!--<TextBox Grid.Column="6"
                                                  Text="{Binding Fastener.Material}"
                                                  IsEnabled="{Binding IsEditable}"
-                                                 GotFocus="UIElement_OnGotFocus"/>
-                                        <TextBox Grid.Column="7"
+                                                 GotFocus="UIElement_OnGotFocus"/>-->
+                                        <TextBox Grid.Column="6"
                                                  Text="{Binding Fastener.Type}"
                                                  IsEnabled="{Binding IsEditable}"
                                                  GotFocus="UIElement_OnGotFocus"/>
-                                        <TextBox Grid.Column="8"
+                                        <TextBox Grid.Column="7"
                                                  Text="{Binding Fastener.UnitDisplay}"
                                                  IsEnabled="{Binding IsEditable}"
                                                  GotFocus="UIElement_OnGotFocus"/>
@@ -358,9 +359,9 @@
             <Border Grid.Row="1" Grid.Column="3" Style="{StaticResource ColumnBorder}"/>
             <Border Grid.Row="1" Grid.Column="4" Style="{StaticResource ColumnBorder}"/>
             <Border Grid.Row="1" Grid.Column="5" Style="{StaticResource ColumnBorder}"/>
+            <!--<Border Grid.Row="1" Grid.Column="6" Style="{StaticResource ColumnBorder}"/>-->
             <Border Grid.Row="1" Grid.Column="6" Style="{StaticResource ColumnBorder}"/>
             <Border Grid.Row="1" Grid.Column="7" Style="{StaticResource ColumnBorder}"/>
-            <Border Grid.Row="1" Grid.Column="8" Style="{StaticResource ColumnBorder}"/>
 
         </Grid>
         
@@ -370,7 +371,6 @@
                    Margin="10, 0, 10, 0"
                    LastChildFill="False">
             <Label Style="{StaticResource LabelStyle}"
-                   FontSize="12"
                    DockPanel.Dock="Left"
                    VerticalContentAlignment="Center"
                    VerticalAlignment="Stretch"

@@ -58,7 +58,7 @@
                                 </StackPanel.Resources>
                                 <RadioButton IsChecked="{Binding IsSelected}"
                                              GroupName="Candidates">
-                                <TextBlock Text="{Binding Fastener.AlignedDescription}"></TextBlock></RadioButton>
+                                <TextBlock Text="{Binding Fastener.AlignedDescriptionWithQty}"></TextBlock></RadioButton>
                             </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -75,13 +75,30 @@
                     Margin="5,0,10,0"
                     Content="Cancel"
                     DockPanel.Dock="Right"
+                    Visibility="{Binding SelectCancelButtonVisibility}"
                     Command="{Binding DiscardCommand}"></Button>
             <Button Style="{StaticResource FlatActionButtonStyle}"
                     TabIndex="4"
                     Margin="5,0,5,0"
                     Content="Select"
                     DockPanel.Dock="Right"
+                    Visibility="{Binding SelectCancelButtonVisibility}"
                     Command="{Binding SubmitCommand}"></Button>
+            <Button Style="{StaticResource FlatActionButtonStyle}"
+                    TabIndex="4"
+                    Margin="5,0,5,0"
+                    Content="Done"
+                    DockPanel.Dock="Right"
+                    Visibility="{Binding DoneButtonVisibility}"
+                    Command="{Binding DiscardCommand}"></Button>
+            <Button Style="{StaticResource FlatActionButtonStyle}"
+                    TabIndex="4"
+                    Margin="5,0,5,0"
+                    Content="Inventory..."
+                    DockPanel.Dock="Right"
+                    Visibility="Collapsed"
+                    ToolTip="Open the inventory viewer."
+                    Command="{Binding OpenInventoryCommand}"></Button>
         </DockPanel>
     </Grid>
 </Window>

@@ -64,6 +64,14 @@ namespace Slate_EK.Views
                     ViewModel.StatusBarText = "Each property of the fastener will take up a fixed width, effectively aligning them by column when printing.";
                     FadeTimer.Stop();
                     break;
+                case nameof(AlignExportBlock):
+                    ViewModel.StatusBarText = "Each property of the fastener will take up a fixed width, effectively aligning them by column when exporting a BOM to a file.";
+                    FadeTimer.Stop();
+                    break;
+                case nameof(ExportLengthFractionsBlock):
+                    ViewModel.StatusBarText = "Converts imperial lengths to fractions when exporting or printing a BOM.";
+                    FadeTimer.Stop();
+                    break;
                 case nameof(IncludePrintHeadersBlock):
                     ViewModel.StatusBarText = "Header labels will be included at the top of the first page when printing BOMs.";
                     FadeTimer.Stop();
@@ -126,6 +134,10 @@ namespace Slate_EK.Views
                     break;
                 case nameof(PrintDpiBlock):
                     ViewModel.StatusBarText = "The print resolution used by your printer.";
+                    FadeTimer.Stop();
+                    break;
+                case nameof(LowStockThreshBlock):
+                    ViewModel.StatusBarText = "The stock quantity threshold at or below which an alert should be generated to notify of low stock.";
                     FadeTimer.Stop();
                     break;
                 default:

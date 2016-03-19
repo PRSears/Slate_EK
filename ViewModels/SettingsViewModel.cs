@@ -71,6 +71,28 @@ namespace Slate_EK.ViewModels
             }
         }
 
+        public bool AlignDescriptionsExport
+        {
+            get { return Settings.Default.AlignDescriptionsTxtExport; }
+            set
+            {
+                Settings.Default.AlignDescriptionsTxtExport = value;
+                Settings.Default.Save();
+                OnPropertyChanged(nameof(AlignDescriptionsExport));
+            }
+        }
+
+        public bool ExportLengthFractions
+        {
+            get { return Settings.Default.ExportLengthFractions; }
+            set
+            {
+                Settings.Default.ExportLengthFractions = value;
+                Settings.Default.Save();
+                OnPropertyChanged(nameof(ExportLengthFractions));
+            }
+        }
+
         public bool IncludePrintHeaders
         {
             get { return Settings.Default.IncludePrintHeaders; }
@@ -171,6 +193,17 @@ namespace Slate_EK.ViewModels
                 Settings.Default.FloatFormatSpecifier = value;
                 Settings.Default.Save();
                 OnPropertyChanged(nameof(FloatFormatSpecifier));
+            }
+        }
+
+        public int LowStockThreshold
+        {
+            get { return Settings.Default.LowStockThreshold; }
+            set
+            {
+                Settings.Default.LowStockThreshold = value;
+                Settings.Default.Save();
+                OnPropertyChanged(nameof(LowStockThreshold));
             }
         }
 

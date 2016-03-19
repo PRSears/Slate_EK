@@ -1,4 +1,5 @@
-﻿using Extender.Databases;
+﻿using Extender;
+using Extender.Databases;
 using Extender.ObjectUtils;
 using Extender.UnitConversion;
 using Extender.UnitConversion.Lengths;
@@ -287,10 +288,11 @@ namespace Slate_EK.Models
                     case Units.Millimeters:
                         return Length.ToString(Spec);
                     case Units.Inches:
-                        return Measure.Convert<Millimeter, Inch>(Length).ToString(Spec);
-                }
-
-                return "Something fucked up.";
+                        //TODO_ Think about adding back fractions here if length conversions are fixed
+                        return Measure.Convert<Millimeter, Inch>(Length).ToString(Spec); 
+                    default:
+                        throw new InvalidEnumArgumentException(@"Unknown units.");
+                } 
             }
             set
             {
@@ -313,7 +315,24 @@ namespace Slate_EK.Models
 
                 OnPropertyChanged(nameof(LengthDisplay));
             }
-        } 
+        }
+
+        [XmlIgnore]
+        public string LengthFraction
+        {
+            get
+            {
+                switch (Unit)
+                {
+                    case Units.Millimeters:
+                        return LengthDisplay;
+                    case Units.Inches:
+                        return Maths.RealToFraction(Measure.Convert<Millimeter, Inch>(Length), 0.001).ToString();
+                    default:
+                        throw new InvalidEnumArgumentException(@"Unknown units.");
+                }
+            }
+        }
 
         [XmlIgnore]
         public string MassDisplay
@@ -338,8 +357,8 @@ namespace Slate_EK.Models
                 var parsed = unitOptions.FirstOrDefault
                 (
                     u => Enum.GetName(typeof(Units), u)
-                                .ToLower()
-                                .Contains(value.ToLower())
+                             .ToLower()
+                             .Contains(value.ToLower())
                 );
 
                 //foreach (var unit in unitOptions)
@@ -353,22 +372,35 @@ namespace Slate_EK.Models
 
         [XmlIgnore]
         public string Description               => $"{SizeDisplay} - {ShortPitchDisplay} x {LengthDisplay} {Type}";
+        // THOUGHT If I use fractions in the description then copying / pasting (using the FromString() method) becomes a nightmare
 
         [XmlIgnore]
-        public string AlignedDescription        => $"{SizeDisplay,5} - {ShortPitchDisplay,4} x {LengthDisplay,4} {Type,6}";
+        public string DescriptionWithFrac       => $"{SizeDisplay} - {ShortPitchDisplay} x {LengthFraction} {Type}";
+
+        [XmlIgnore]
+        public string DescriptionWithQty        => $"{Description} ({Quantity})";
+        
+        [XmlIgnore]
+        public string AlignedDescription        => $"{SizeDisplay,5} - {ShortPitchDisplay,4} x {LengthDisplay,6} {Type,6}";
+
+        [XmlIgnore]
+        public string AlignedDescriptionFrac    => $"{SizeDisplay,5} - {ShortPitchDisplay,4} x {LengthFraction,6} {Type,6}";
+
+        [XmlIgnore]
+        public string AlignedDescriptionWithQty => $"{AlignedDescription} ({Quantity})";
 
         [XmlIgnore]
         public string PrintHeaders              => "Qty, Callout, Total Mass, Unit Price, Sub Total";
 
         [XmlIgnore]
-        public string AlignedPrintheaders       => "Qty,                    Callout, Total Mass, Unit Price, Sub Total ";
+        public string AlignedPrintHeaders       => "Qty,                      Callout, Total Mass, Unit Price, Sub Total ";
 
         [XmlIgnore]
-        public string DescriptionForPrint       => $"{Quantity}, {Description}, {Mass * Quantity}, {Price}, {Price * Quantity}";
+        public string DescriptionForPrint       => $"{Quantity}, {(UseFrac ? DescriptionWithFrac : Description)}, {Mass * Quantity}, {Price}, {Price * Quantity}";
 
         [XmlIgnore]
-        public string AlignedPrintDescription   => $"{Quantity,3}, {AlignedDescription}, {Mass * Quantity,10}, {Price,10}, {Price * Quantity,9}";
-
+        public string AlignedPrintDescription   => $"{Quantity,3}, {(UseFrac ? AlignedDescriptionFrac : AlignedDescription)}, {Mass * Quantity,10}, {Price,10}, {Price * Quantity,9}";
+        
         //
         // Constructors
         public UnifiedFastener()
@@ -409,8 +441,14 @@ namespace Slate_EK.Models
             else if (PlateInfo.HoleType.Equals(HoleType.CBore))
                 result = threadEngagemnt + PlateInfo.Thickness - _Size;
 
+            if (Unit == Units.Inches) // Make sure to handle units 
+                result = (float)Measure.Convert<Inch, Millimeter>(result);
+
             if (overwrite)
-                Length = result;
+            {
+                Length = result; 
+                OnPropertyChanged(nameof(LengthDisplay));
+            }
 
             return result;
         }
@@ -530,7 +568,8 @@ namespace Slate_EK.Models
 
         #region //Aliases
 
-        private string Spec => Properties.Settings.Default.FloatFormatSpecifier;
+        private string Spec         => Properties.Settings.Default.FloatFormatSpecifier;
+        private bool   UseFrac      => Properties.Settings.Default.ExportLengthFractions;
 
         #endregion
     }

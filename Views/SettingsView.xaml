@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="{Binding WindowTitle}"
         Icon="/Slate_EK;component/Icons/icon_25.ico"
-        Width="450" Height="400"
+        Width="450" Height="455"
         WindowStyle="ToolWindow"
         Background="#494d4f"
         ResizeMode="CanMinimize">
@@ -176,6 +176,26 @@
                         <DockPanel Margin="10,5,0,5">
                             <CheckBox DockPanel.Dock="Left"
                                       Style="{StaticResource CenteredCheckbox}"
+                                      IsChecked="{Binding AlignDescriptionsExport}">
+                                <TextBlock Style="{StaticResource CheckboxLabelStyle}"
+                                           Text="Align columns of fastener descriptions for export"
+                                           x:Name="AlignExportBlock"
+                                           Margin="10,0,0,0"/>
+                            </CheckBox>
+                        </DockPanel>
+                        <DockPanel Margin="10,5,0,5">
+                            <CheckBox DockPanel.Dock="Left"
+                                      Style="{StaticResource CenteredCheckbox}"
+                                      IsChecked="{Binding ExportLengthFractions}">
+                                <TextBlock Style="{StaticResource CheckboxLabelStyle}"
+                                           Text="Use fractional lengths when exporting or printing BOMs"
+                                           x:Name="ExportLengthFractionsBlock"
+                                           Margin="10,0,0,0"/>
+                            </CheckBox>
+                        </DockPanel>
+                        <DockPanel Margin="10,5,0,5">
+                            <CheckBox DockPanel.Dock="Left"
+                                      Style="{StaticResource CenteredCheckbox}"
                                       IsChecked="{Binding IncludePrintHeaders}">
                                 <TextBlock Style="{StaticResource CheckboxLabelStyle}"
                                            Text="Include column headers when printing."
@@ -221,6 +241,16 @@
                                      DockPanel.Dock="Right"
                                      Width="200" Height="22"
                                      Text="{Binding FloatFormatSpecifier}"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                            <TextBlock Style="{StaticResource BlockLabelStyle}"
+                                   x:Name="LowStockThreshBlock"
+                                   DockPanel.Dock="Left"
+                                   Text="Low stock threshold"/>
+                            <TextBox Style="{StaticResource FlatTextFieldStyle}"
+                                     DockPanel.Dock="Right"
+                                     Width="200" Height="22"
+                                     Text="{Binding LowStockThreshold}"/>
                         </DockPanel>
                     </StackPanel>
                 </ScrollViewer>

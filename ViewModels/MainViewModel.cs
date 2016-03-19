@@ -72,7 +72,7 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-
+                    
                 }
             );
 
@@ -89,7 +89,7 @@ namespace Slate_EK.ViewModels
                     {
                         DefaultExt = ".xml",
                         Filter = @"XML documents (*.xml)
-                |*.xml|All files (*.*)|*.*",
+                |*.xml",
                         CheckFileExists = true
                     };
 

@@ -8,8 +8,6 @@ using System.Windows.Input;
 
 namespace Slate_EK.Views
 {
-    //TODO Hide fastener material column from inventory display
-
     /// <summary>
     /// Interaction logic for InventoryView.xaml
     /// </summary>

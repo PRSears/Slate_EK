@@ -40,6 +40,7 @@ namespace Slate_EK.ViewModels
         public ICommand ExportCommand               { get; private set; }
         public ICommand ImportCommand               { get; private set; }
         public ICommand ShowAllFastenersCommand     { get; private set; }
+        public ICommand DisplayLowStockCommand      { get; private set; }
         public ICommand ClearQueryResultsCommand    { get; private set; }
         public ICommand DropDatabaseCommand         { get; private set; }
 
@@ -475,6 +476,19 @@ namespace Slate_EK.ViewModels
                     _Inventory.Dump().ForEach(f => AddToFastenerList(new FastenerControl(f)));
 
                     SearchQuery = "*";
+                }
+            );
+
+            DisplayLowStockCommand = new RelayCommand
+            (
+                () =>
+                {
+                    FastenerList.Clear();
+                    SelectedSearchProperty = Enum.GetName(typeof(SearchType), SearchType.Quantity);
+                    SearchQuery = $"<={Properties.Settings.Default.LowStockThreshold}";
+
+                    ExecuteSearch();
+
                     SortFastenerListBy(_LastSearchSelector, _LastSortBy, false); // Re-apply the last sort
                 }
             );

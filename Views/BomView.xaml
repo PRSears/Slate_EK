@@ -189,7 +189,7 @@
                        Style="{StaticResource LabelStyle}"/>
                 <TextBox x:Name="LengthTextbox"
                          Style="{StaticResource FlatTextFieldStyle}"
-                         Text="{Binding WorkingFastener.Length, Mode=TwoWay}"
+                         Text="{Binding WorkingFastener.LengthDisplay, Mode=TwoWay}"
                          IsEnabled="{Binding OverrideLength}"
                          Width="250" Height="22"
                          TabIndex="9"

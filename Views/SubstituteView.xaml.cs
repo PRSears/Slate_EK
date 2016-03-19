@@ -21,11 +21,11 @@ namespace Slate_EK.Views
 
         public UnifiedFastener SelectedFastener => ViewModel.SelectedFastener;
 
-        public SubstituteView(IQueryable<UnifiedFastener> candidates)
+        public SubstituteView(IQueryable<UnifiedFastener> candidates, SubstituteViewModel.Modes mode = SubstituteViewModel.Modes.Substitutes)
         {
             InitializeComponent();
 
-            ViewModel = new SubstituteViewModel(candidates);
+            ViewModel = new SubstituteViewModel(candidates, mode);
             CandidatesItemsControl.ItemsSource = ViewModel.Candidates;
             ViewModel.RegisterCloseAction(Close);
         }

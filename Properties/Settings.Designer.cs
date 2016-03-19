@@ -517,5 +517,53 @@ namespace Slate_EK.Properties {
                 this["PrintNumColumns"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public int LowStockThreshold {
+            get {
+                return ((int)(this["LowStockThreshold"]));
+            }
+            set {
+                this["LowStockThreshold"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool LengthDisplayFractions {
+            get {
+                return ((bool)(this["LengthDisplayFractions"]));
+            }
+            set {
+                this["LengthDisplayFractions"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ExportLengthFractions {
+            get {
+                return ((bool)(this["ExportLengthFractions"]));
+            }
+            set {
+                this["ExportLengthFractions"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AlignDescriptionsTxtExport {
+            get {
+                return ((bool)(this["AlignDescriptionsTxtExport"]));
+            }
+            set {
+                this["AlignDescriptionsTxtExport"] = value;
+            }
+        }
     }
 }

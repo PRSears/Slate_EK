@@ -1,3 +1,14 @@
+- improved handling fractional lengths
+- Added option in Settings panel for converting fastener lengths to fractions
+- Added option in Settings panel for aligning exported fastener descriptions
+- Fixed CalculateLength not handling units properly
+- Fixed ArgumentNullException when non-existing assembly# is entered in MainView
+- Added function to convert to fractional lengths when exporting or printing BOMs
+- Changed BOM export to csv to export more relevant info only
+- Added command to display all fasteners with low stock in InventoryView
+- Removed material column from Inventory view
+- Modified SubstituteView to show low stock items as well
+- Added stock alert threshold to settings
 - Changed quick add to allow changing Length
 - Hooked up Finalize / Undo finalize buttons
 - Fixed bugs to do with non-existent drives
