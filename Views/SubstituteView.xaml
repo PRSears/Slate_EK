@@ -57,8 +57,12 @@
                                     </Style>
                                 </StackPanel.Resources>
                                 <RadioButton IsChecked="{Binding IsSelected}"
-                                             GroupName="Candidates">
-                                <TextBlock Text="{Binding Fastener.AlignedDescriptionWithQty}"></TextBlock></RadioButton>
+                                             GroupName="Candidates"
+                                             Visibility="{Binding CheckboxVisibility}">
+                                    <TextBlock Text="{Binding Fastener.AlignedDescriptionWithQty}"></TextBlock>
+                                </RadioButton>
+                                <TextBlock Text="{Binding Fastener.AlignedDescriptionWithQty}"
+                                           Visibility="{Binding InverseCheckboxVisibility}"></TextBlock>
                             </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -91,6 +95,14 @@
                     DockPanel.Dock="Right"
                     Visibility="{Binding DoneButtonVisibility}"
                     Command="{Binding DiscardCommand}"></Button>
+            <Button Style="{StaticResource FlatActionButtonStyle}"
+                    TabIndex="4"
+                    Margin="5,0,5,0"
+                    Content="Copy"
+                    ToolTip="Copy list to clipboard"
+                    DockPanel.Dock="Right"
+                    Visibility="{Binding DoneButtonVisibility}"
+                    Command="{Binding CopyListCommand}"></Button>
             <Button Style="{StaticResource FlatActionButtonStyle}"
                     TabIndex="4"
                     Margin="5,0,5,0"

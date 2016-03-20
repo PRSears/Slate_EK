@@ -102,6 +102,8 @@ namespace Slate_EK.Models.Inventory
         {
             UnifiedFastener[] dumped = new UnifiedFastener[Fasteners.Count()];
 
+            _Database.Refresh(RefreshMode.OverwriteCurrentValues, Fasteners);
+
             int i = 0;
             foreach (UnifiedFastener f in Fasteners)
             {

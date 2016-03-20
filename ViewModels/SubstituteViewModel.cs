@@ -1,8 +1,10 @@
-﻿using Extender.WPF;
+﻿using Extender;
+using Extender.WPF;
 using Slate_EK.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 
@@ -12,6 +14,7 @@ namespace Slate_EK.ViewModels
     {
         public ICommand SubmitCommand        { get; private set; }
         public ICommand DiscardCommand       { get; private set; }
+        public ICommand CopyListCommand      { get; private set; }
         public ICommand OpenInventoryCommand { get; private set; }
 
         public ObservableCollection<FastenerControl> Candidates { get; }
@@ -35,6 +38,7 @@ namespace Slate_EK.ViewModels
                     break;
                 case Modes.LowStockList:
                     WindowTitle = "The following have low stock:";
+                    Candidates.ForEach(fc => fc.IsSelectable = false);
                     break;
             }
 
@@ -64,6 +68,17 @@ namespace Slate_EK.ViewModels
                 {
                     SelectedFastener = null;
                     CloseCommand.Execute(null);
+                }
+            );
+
+            CopyListCommand = new RelayCommand
+            (
+                () =>
+                {
+                    var buffer = new StringBuilder();
+                    Candidates.ForEach(fc => buffer.AppendLine(fc.Fastener.Description));
+
+                    Clipboard.SetText(buffer.ToString());
                 }
             );
         }

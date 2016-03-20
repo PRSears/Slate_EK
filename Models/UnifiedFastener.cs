@@ -455,16 +455,18 @@ namespace Slate_EK.Models
 
         public byte[] GetHashData()
         {
-            byte[][] blocks = new byte[8][];
+            byte[][] blocks = new byte[7][];
 
-            blocks[0] = BitConverter.GetBytes(_Quantity);
-            blocks[1] = BitConverter.GetBytes(_Price);
-            blocks[2] = BitConverter.GetBytes(_Mass);
-            blocks[3] = BitConverter.GetBytes(_Size);
-            blocks[4] = BitConverter.GetBytes(_Pitch);
-            blocks[5] = BitConverter.GetBytes(_Length);
-            blocks[6] = Encoding.Default.GetBytes(_Material);
-            blocks[7] = Encoding.Default.GetBytes(_Type);
+            //blocks[0] = BitConverter.GetBytes(_Quantity); 
+            // TODOh make sure nothing was relying on UIDs matching on quantity
+            //       and figure out why the fuck I did this in the first place...
+            blocks[0] = BitConverter.GetBytes(_Price);
+            blocks[1] = BitConverter.GetBytes(_Mass);
+            blocks[2] = BitConverter.GetBytes(_Size);
+            blocks[3] = BitConverter.GetBytes(_Pitch);
+            blocks[4] = BitConverter.GetBytes(_Length);
+            blocks[5] = Encoding.Default.GetBytes(_Material);
+            blocks[6] = Encoding.Default.GetBytes(_Type);
 
             return Hashing.GenerateHashCode(blocks);
         }

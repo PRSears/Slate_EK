@@ -78,7 +78,7 @@
       <Value Profile="(Default)">4</Value>
     </Setting>
     <Setting Name="DefaultInventoryPath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">G:\User\Code\GitHub\Slate_EK\.example_files\TestInventory_003.mdf</Value>
+      <Value Profile="(Default)">G:\User\Code\GitHub\Slate_EK\.example_files\TestInventory_004.mdf</Value>
     </Setting>
     <Setting Name="FloatFormatSpecifier" Type="System.String" Scope="User">
       <Value Profile="(Default)">0.###</Value>
@@ -99,7 +99,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="AlignDescriptionsPrint" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="PrintFontFamily" Type="System.String" Scope="User">
       <Value Profile="(Default)">Consolas</Value>
@@ -138,7 +138,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="AlignDescriptionsTxtExport" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>

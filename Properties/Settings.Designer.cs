@@ -316,7 +316,7 @@ namespace Slate_EK.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("G:\\User\\Code\\GitHub\\Slate_EK\\.example_files\\TestInventory_003.mdf")]
+        [global::System.Configuration.DefaultSettingValueAttribute("G:\\User\\Code\\GitHub\\Slate_EK\\.example_files\\TestInventory_004.mdf")]
         public string DefaultInventoryPath {
             get {
                 return ((string)(this["DefaultInventoryPath"]));
@@ -400,7 +400,7 @@ namespace Slate_EK.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool AlignDescriptionsPrint {
             get {
                 return ((bool)(this["AlignDescriptionsPrint"]));
@@ -556,7 +556,7 @@ namespace Slate_EK.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool AlignDescriptionsTxtExport {
             get {
                 return ((bool)(this["AlignDescriptionsTxtExport"]));

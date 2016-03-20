@@ -328,7 +328,8 @@ namespace Slate_EK.ViewModels
                     WorkingFastener.ForceNewUniqueID();
                     AddToBom(WorkingFastener);
                     NullsafeHandleShortcut(OnWorkingFastenerSubmitted);
-                }
+                },
+                () => !Bom.IsFinalized
             );
 
             RemoveItemCommand = new RelayCommand
@@ -350,7 +351,7 @@ namespace Slate_EK.ViewModels
                         if (match != null) match.IsSelected = true;
                     }
                 },
-                () => ObservableFasteners.Any(f => f.IsSelected)
+                () => !Bom.IsFinalized && ObservableFasteners.Any(f => f.IsSelected)
             );
 
             EditCommand = new RelayCommand
@@ -555,7 +556,7 @@ namespace Slate_EK.ViewModels
                     }
 
                     // 
-                    // Either there was no substitute or none was selected
+                    // Either there was no substitute or none were selected
                     PromptQuickAdd(fastener, inv); 
                 }
 
@@ -565,44 +566,61 @@ namespace Slate_EK.ViewModels
 
         private void SubtractFromInventory()
         {
+            // Keep a list of the fasteners that weren't in the inventory in case we want 
+            // to do something with it later.
             List<UnifiedFastener> missingList = new List<UnifiedFastener>();
 
             using (Inventory inv = new Inventory(Properties.Settings.Default.DefaultInventoryPath))
             {
                 foreach (UnifiedFastener item in Bom.SourceList)
                 {
-                    var match = inv.Fasteners.FirstOrDefault(f => f.UniqueID.Equals(item.UniqueID));
-                    if (match != null && !match.Equals(default(UnifiedFastener)))
-                    {
-                        match.Quantity -= item.Quantity;
-                    }
+                    // Can't do a UID check because price and mass might not be set in BOM
+                    var matches = inv.Fasteners.Where
+                    (
+                        f => f.Size.Equals(item.Size)   &&
+                             f.Pitch.Equals(item.Pitch) &&
+                             f.Type.Equals(item.Type)   &&
+                             f.Length.Equals(item.Length)
+                    );
+                    
+                    if (matches.Any())
+                        matches.First().Quantity -= item.Quantity;
                     else
-                    {
                         missingList.Add(item);
-                    }
                 }
+
                 inv.SubmitChanges();
             }
+
+            missingList.ForEach(f => Debug.WriteMessage($"Could not subtract from inventory because it was missing. {f.Description}", WarnLevel.Warn));
+
+            // THOUGHT Do we want to display a list of fasteners that aren't in the inventory?
+            //         In most cases (that I can think of...) the user should already have been 
+            //         prompted about adding them to the inventory.
         }
 
         private void ReplaceInventory()
         {
-            List<UnifiedFastener> missingList = new List<UnifiedFastener>(); // TODO trace this... try to remember what I was doing here
-
+            // TODOh double check that replacing quantities in inventory is functioning correctly
             using (Inventory inv = new Inventory(Properties.Settings.Default.DefaultInventoryPath))
             {
                 foreach (UnifiedFastener item in Bom.SourceList)
                 {
-                    var match = inv.Fasteners.FirstOrDefault(f => f.UniqueID.Equals(item.UniqueID));
-                    if (match != null && !match.Equals(default(UnifiedFastener)))
-                    {
-                        match.Quantity += item.Quantity;
-                    }
+                    // Can't do a UID check because price and mass might not be set in BOM
+                    var matches = inv.Fasteners.Where
+                    (
+                        f => f.Size.Equals(item.Size)   &&
+                             f.Pitch.Equals(item.Pitch) &&
+                             f.Type.Equals(item.Type)   &&
+                             f.Length.Equals(item.Length)
+                    );
+
+                    if (matches.Any())
+                        matches.First().Quantity += item.Quantity;
                     else
-                    {
-                        missingList.Add(item);
-                    }
+                        Debug.WriteMessage($"Could not replace fastener in inventory because it was missing. {item.Description}", WarnLevel.Warn);
                 }
+
                 inv.SubmitChanges();
             }
         }
@@ -810,7 +828,9 @@ namespace Slate_EK.ViewModels
                 else if (ext.EndsWith("xml"))
                 {
                     File.Copy(Bom.FilePath, dialog.FileName);
-                } // TODO Add exporting to actual excel file so formatting doesn't get fucked by excel
+                } 
+                // TODO_ Add exporting to actual excel file so formatting doesn't get fucked by excel
+                //       Don't bother until everything else is working
             }
             catch (Exception e)
             {

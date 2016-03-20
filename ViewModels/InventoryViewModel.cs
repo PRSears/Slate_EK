@@ -206,7 +206,7 @@ namespace Slate_EK.ViewModels
             _PendingFasteners          = new Queue<UnifiedFastener>();
             _FastenersMarkedForRemoval = new List<UnifiedFastener>();
             _Inventory                 = new Inventory(filename);
-            _LastSortBy                = SortMethod.None;
+            _LastSortBy                = SortMethod.None; 
         }
 
         public override void Initialize()
@@ -476,6 +476,8 @@ namespace Slate_EK.ViewModels
                     _Inventory.Dump().ForEach(f => AddToFastenerList(new FastenerControl(f)));
 
                     SearchQuery = "*";
+
+                    SortFastenerListBy(_LastSearchSelector, _LastSortBy, false); // re-apply the last sort
                 }
             );
 

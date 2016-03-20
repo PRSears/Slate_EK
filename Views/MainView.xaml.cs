@@ -127,8 +127,6 @@ namespace Slate_EK.Views
                 foreach (string filename in filenames)
                     ViewModel.FileDroppedCommand.Execute(filename);
             }
-
-            // TODOh Double check what happens when you try to open other filetypes (csv, txt, etc)
         }
 
         private void Window_DragEnter(object sender, DragEventArgs e)

@@ -1,3 +1,10 @@
+- fixed SortBy not getting re-applied on ShowAllFastenersCommand
+- fixed editing fastener quantities in the inventory viewer
+- fixed (probably...) subtracting from Inventory on BOM finalize
+- fixed (?) quantity incorrectly being used to determine fastener UID
+- fixed 'ShowAllFastenersCommand' in InventoryViewModel (refreshes the collection first)
+- added 'Copy' button in SubstituteView when displaying low stock
+- removed radio buttons in SubstituteView when displaying low stock
 - improved handling fractional lengths
 - Added option in Settings panel for converting fastener lengths to fractions
 - Added option in Settings panel for aligning exported fastener descriptions
