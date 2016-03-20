@@ -106,7 +106,7 @@ namespace Slate_EK.ViewModels
         #region boxed properties
         private bool _IsSelected;
         private bool _IsEditable;
-        private bool _IsSelectable;
+        private bool _IsSelectable = true;
         #endregion
 
         public ICommand SelectCommand         { get; private set; }

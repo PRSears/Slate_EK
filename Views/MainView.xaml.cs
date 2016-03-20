@@ -40,7 +40,7 @@ namespace Slate_EK.Views
             {
                 MenuItem newWindowMenuItem = new MenuItem();
                 newWindowMenuItem.Header   = w.Title;
-                newWindowMenuItem.Command  = new Extender.WPF.RelayCommand
+                newWindowMenuItem.Command  = new RelayCommand
                 (
                     () => w.Focus()
                 );

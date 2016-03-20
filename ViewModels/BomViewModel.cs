@@ -425,7 +425,7 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-                    if (ConfirmationDialog.Show("Edit inventory?", "Do you want to remove the fastener quantities from the inventory?\n\n " +
+                    if (ConfirmationDialog.Show("Edit inventory?", "Do you want to remove the fastener quantities from the inventory?\n\n" +
                                                                    "Selecting no will just make this BOM uneditable without changing the inventory."))
                     {
                         SubtractFromInventory();

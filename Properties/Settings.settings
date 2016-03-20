@@ -78,7 +78,7 @@
       <Value Profile="(Default)">4</Value>
     </Setting>
     <Setting Name="DefaultInventoryPath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">G:\User\Code\GitHub\Slate_EK\.example_files\TestInventory_004.mdf</Value>
+      <Value Profile="(Default)">choose a path (including filename)</Value>
     </Setting>
     <Setting Name="FloatFormatSpecifier" Type="System.String" Scope="User">
       <Value Profile="(Default)">0.###</Value>
