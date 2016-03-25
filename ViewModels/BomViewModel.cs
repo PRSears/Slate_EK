@@ -5,6 +5,7 @@ using Extender.UnitConversion.Lengths;
 using Extender.WPF;
 using Slate_EK.Models;
 using Slate_EK.Models.Inventory;
+using Slate_EK.Models.IO;
 using Slate_EK.Models.ThreadParameters;
 using Slate_EK.Views;
 using System;
@@ -315,7 +316,10 @@ namespace Slate_EK.ViewModels
 
                     AddToBom(newFasteners.ToArray()); 
                 },
-                () => !string.IsNullOrWhiteSpace(Clipboard.GetText()) 
+                () => !string.IsNullOrWhiteSpace(Clipboard.GetText())
+            // TODO_ An exception is thrown if the Clipboard is already being accessed by another process...
+            //       See here: https://stackoverflow.com/questions/68666/clipbrd-e-cant-open-error-when-setting-the-clipboard-from-net
+            //       Exception thrown: 'System.Runtime.InteropServices.COMException' in PresentationCore.dll
             );
 
             //
@@ -756,8 +760,7 @@ namespace Slate_EK.ViewModels
 
             if (dialog.Value > 0)
             {
-                //// Edit the value in the source list directly... need to select the fastener control from Bom.SourceList first.
-
+                // Edit the value in the source list directly... need to select the fastener control from Bom.SourceList first.
                 if (!ObservableFasteners.Any(f => f.IsSelected))
                 {
                     // No items selected... we edit whatever element the user clicked on
@@ -798,7 +801,7 @@ namespace Slate_EK.ViewModels
                 Title           = "Save a copy of the BOM as...",
                 DefaultExt      = ".txt",
                 Filter          = @"(*.txt)
-|*.txt|(*.csv)|*.csv|(*.xml)|*.xml|All files (*.*)|*.*",
+|*.txt|(*.csv)|*.csv|(*.xlsx)|*.xlsx|(*.xml)|*.xml|All files (*.*)|*.*",
                 AddExtension    = true,
                 OverwritePrompt = true,
                 FileName        = Path.GetFileNameWithoutExtension(Bom.FilePath)
@@ -829,8 +832,10 @@ namespace Slate_EK.ViewModels
                 {
                     File.Copy(Bom.FilePath, dialog.FileName);
                 } 
-                // TODO_ Add exporting to actual excel file so formatting doesn't get fucked by excel
-                //       Don't bother until everything else is working
+                else if (ext.EndsWith("xlsx"))
+                {
+                    ExportToExcel(dialog.FileName, false);
+                }
             }
             catch (Exception e)
             {
@@ -885,6 +890,17 @@ namespace Slate_EK.ViewModels
             }
 
             return buffer.ToString();
+        }
+
+        private void ExportToExcel(string filename, bool append)
+        {
+            if (!append && File.Exists(filename))
+                File.Delete(filename);
+
+            ExcelExporter ex = new ExcelExporter(filename);
+
+            ex.Append(Bom.SourceList);
+            ex.Save();
         }
 
         private void NullsafeHandleShortcut(ShortcutEventHandler handler)

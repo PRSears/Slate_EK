@@ -140,5 +140,11 @@
     <Setting Name="AlignDescriptionsTxtExport" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="NewWorksheetName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">bom</Value>
+    </Setting>
+    <Setting Name="WorksheetHeaderColor" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">DimGray</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

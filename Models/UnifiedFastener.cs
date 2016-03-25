@@ -542,16 +542,17 @@ namespace Slate_EK.Models
 
                 return new UnifiedFastener
                 {
-                    Unit         = unit,
-                    SizeDisplay  = captures[1].ToString().Trim(),
-                    PitchDisplay = captures[2].ToString().Trim(),
-                    Material     = Models.Material.Steel.ToString(),
-                    Type         = FastenerType.Parse(captures[4].ToString()).ToString(),
-                    Length       = float.Parse(captures[3].ToString()),
-                    PlateInfo    = new PlateInfo(unit)
+                    Unit          = unit,
+                    SizeDisplay   = captures[1].ToString().Trim(),
+                    PitchDisplay  = captures[2].ToString().Trim(),
+                    Material      = Models.Material.Steel.ToString(),
+                    Type          = FastenerType.Parse(captures[4].ToString()).ToString(),
+                    LengthDisplay = captures[3].ToString().Trim(),
+                    PlateInfo     = new PlateInfo(unit)
                 };
             }
-
+            // TODOh Fix copy / pasting imperial fastener from Inventory to BOM not handling length units correctly 
+            //       (it seems to be treating inches as mm then converting to inches).
             return null;
         }
 

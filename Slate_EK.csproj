@@ -67,6 +67,10 @@
     <ApplicationIcon>Icons\icon_25.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EPPlus, Version=4.0.5.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>packages\EPPlus.4.0.5\lib\net20\EPPlus.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Extender">
       <HintPath>..\Extensions\bin\Release\Extender.dll</HintPath>
     </Reference>
@@ -101,6 +105,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Models\Bom.cs" />
+    <Compile Include="Models\IO\ExcelExporter.cs" />
     <Compile Include="Models\IO\ImperialSizes.cs" />
     <Compile Include="Models\PlateInfo.cs" />
     <Compile Include="Models\ThreadParameters\Pitch.cs" />

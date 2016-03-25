@@ -72,13 +72,14 @@ namespace Slate_EK.ViewModels
             (
                 () =>
                 {
-                    
+                    Models.IO.ExcelExporter.Test_Harness();
                 }
             );
 
             OpenInventoryViewCommand = new RelayCommand
             (
-                () => { WindowManager.OpenWindow(new InventoryView()); }
+                // TODOh Fix InventoryView window not closing when it was unable to open properly due to an exception
+                () => { WindowManager.OpenWindow(new InventoryView()); } 
             );
 
             LoadExistingCommand = new RelayCommand

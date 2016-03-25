@@ -565,5 +565,29 @@ namespace Slate_EK.Properties {
                 this["AlignDescriptionsTxtExport"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("bom")]
+        public string NewWorksheetName {
+            get {
+                return ((string)(this["NewWorksheetName"]));
+            }
+            set {
+                this["NewWorksheetName"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("DimGray")]
+        public global::System.Drawing.Color WorksheetHeaderColor {
+            get {
+                return ((global::System.Drawing.Color)(this["WorksheetHeaderColor"]));
+            }
+            set {
+                this["WorksheetHeaderColor"] = value;
+            }
+        }
     }
 }

@@ -1,11 +1,14 @@
-﻿using Extender.WPF;
+﻿using Extender.Debugging;
+using Extender.WPF;
+using Microsoft.Win32;
 using Slate_EK.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Debug = System.Diagnostics.Debug;
 
 namespace Slate_EK.Views
 {
@@ -77,6 +80,8 @@ namespace Slate_EK.Views
                     WindowsMenu.Items.Remove(item);
                 }
             };
+
+            CheckSqlServer();
         }
 
         public MainView(Window openWith) : this()
@@ -114,6 +119,35 @@ namespace Slate_EK.Views
             }
 
             return invWindow;
+        }
+
+        private void CheckSqlServer()
+        {
+            RegistryView registryView = Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32;
+
+            using (RegistryKey hklm = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, registryView))
+            {
+                RegistryKey instanceKey = hklm.OpenSubKey(@"SOFTWARE\Microsoft\Microsoft SQL Server Local DB\Installed Versions", false);
+
+                if (instanceKey == null)
+                {
+                    Extender.Debugging.Debug.WriteMessage($"SQL NOT found.", WarnLevel.Error);
+                    var result = MessageBox.Show
+                    (
+                        "This application won't function correctly unless SQL LocalDB v11 (2012) is installed.",
+                        "SQL Server Not Found",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Exclamation
+                    );
+                }
+                else
+                {
+                    foreach (var installedVersion in instanceKey.GetSubKeyNames())
+                    {
+                        Extender.Debugging.Debug.WriteMessage($"SQL Found: {Environment.MachineName}\\{installedVersion}", WarnLevel.Info);
+                    }
+                }
+            }
         }
 
         private void MainWindow_Drop(object sender, DragEventArgs e)

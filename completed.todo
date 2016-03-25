@@ -1,3 +1,5 @@
+- fixed copying / pasting from Inventory to BOM (inch lengths were treated as mm)
+- added exporting BOM to Excel
 - fixed SortBy not getting re-applied on ShowAllFastenersCommand
 - fixed editing fastener quantities in the inventory viewer
 - fixed (probably...) subtracting from Inventory on BOM finalize
