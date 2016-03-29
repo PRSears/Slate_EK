@@ -538,7 +538,7 @@ namespace Slate_EK.Models
             if (captures.Count == 5)
             {
                 Units unit = (captures[1].ToString().Contains("#") || captures[1].ToString().Contains(@"/")) ?
-                                 Units.Inches : Units.Millimeters;
+                              Units.Inches : Units.Millimeters;
 
                 return new UnifiedFastener
                 {
@@ -551,8 +551,7 @@ namespace Slate_EK.Models
                     PlateInfo     = new PlateInfo(unit)
                 };
             }
-            // TODOh Fix copy / pasting imperial fastener from Inventory to BOM not handling length units correctly 
-            //       (it seems to be treating inches as mm then converting to inches).
+
             return null;
         }
 

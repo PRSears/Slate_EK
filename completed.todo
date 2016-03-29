@@ -1,3 +1,6 @@
+- fixed some occurrences of incorrectly checking floating point value equality
+- added check and dialog on application launch for choosing an inventory file
+- added two-column csv export (callout, qty) -- toggleable
 - fixed copying / pasting from Inventory to BOM (inch lengths were treated as mm)
 - added exporting BOM to Excel
 - fixed SortBy not getting re-applied on ShowAllFastenersCommand

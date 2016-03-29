@@ -97,11 +97,12 @@ namespace Slate_EK.ViewModels
             }
         }
 
-        // Drop-down list data sources -- it shows no reference, but they're being bound to in the xaml
+        // Drop-down      list data sources -- it shows no reference, but they're being bound to in the xaml
         public Units[]    UnitsList            => (Units[])Enum.GetValues(typeof(Units));
         public Material[] MaterialsList        => Material.Materials.Where(m => !m.Equals(Material.Unspecified)).ToArray();
         public HoleType[] HoleTypesList        => HoleType.HoleTypes;
         public string[]   FastenerTypesList    => FastenerType.Types.Select(t => $"{t.Callout} ({t.Type})").ToArray();
+        public bool       IsEditable           => !Bom.IsFinalized;
         public string[]   SizeOptionsList
         {
             get { return _SizeOptionsList; }
@@ -125,6 +126,8 @@ namespace Slate_EK.ViewModels
         private Models.IO.Pitches        XmlPitches       { get; set; }
         private Models.IO.ImperialSizes  XmlImperialSizes { get; set; }
 
+        private const double TOL = 0.0001d; // tolerance to use when comparing floating point numbers
+
         public Bom Bom
         {
             get
@@ -137,8 +140,6 @@ namespace Slate_EK.ViewModels
                 OnPropertyChanged(nameof(Bom));
             }
         }
-
-        public bool IsEditable => !Bom.IsFinalized;
 
         public ObservableCollection<FastenerControl> ObservableFasteners
         {
@@ -537,9 +538,9 @@ namespace Slate_EK.ViewModels
                     // Look for possible substitutes
                     var canditates = inv.Fasteners.Where
                     (
-                        f => f.Size.Equals(fastener.Size)   &&
-                             f.Pitch.Equals(fastener.Pitch) &&
-                             f.Type.Equals(fastener.Type)   &&
+                        f => (Math.Abs(f.Size - fastener.Size) < TOL)   &&
+                             (Math.Abs(f.Pitch - fastener.Pitch) < TOL) &&
+                             f.Type.Equals(fastener.Type)               &&
                              f.Length <= fastener.Length
                     );
 
@@ -581,12 +582,12 @@ namespace Slate_EK.ViewModels
                     // Can't do a UID check because price and mass might not be set in BOM
                     var matches = inv.Fasteners.Where
                     (
-                        f => f.Size.Equals(item.Size)   &&
-                             f.Pitch.Equals(item.Pitch) &&
-                             f.Type.Equals(item.Type)   &&
-                             f.Length.Equals(item.Length)
+                        f => (Math.Abs(f.Size - item.Size) < TOL)   &&
+                             (Math.Abs(f.Pitch - item.Pitch) < TOL) &&
+                             f.Type.Equals(item.Type)               &&
+                             (Math.Abs(f.Length - item.Length) < TOL)
                     );
-                    
+
                     if (matches.Any())
                         matches.First().Quantity -= item.Quantity;
                     else
@@ -613,10 +614,10 @@ namespace Slate_EK.ViewModels
                     // Can't do a UID check because price and mass might not be set in BOM
                     var matches = inv.Fasteners.Where
                     (
-                        f => f.Size.Equals(item.Size)   &&
-                             f.Pitch.Equals(item.Pitch) &&
-                             f.Type.Equals(item.Type)   &&
-                             f.Length.Equals(item.Length)
+                        f => (Math.Abs(f.Size - item.Size) < TOL)   &&
+                             (Math.Abs(f.Pitch - item.Pitch) < TOL) &&
+                             f.Type.Equals(item.Type)               &&
+                             (Math.Abs(f.Length - item.Length) < TOL)
                     );
 
                     if (matches.Any())
@@ -795,7 +796,7 @@ namespace Slate_EK.ViewModels
 
         private bool SaveAs()
         {
-            // TODO_ crashes when saving as txt file. !! - can't reproduce...
+            // TODO_ sometimes crashes when saving as txt file. !! - can't reproduce...
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
                 Title           = "Save a copy of the BOM as...",
@@ -847,7 +848,7 @@ namespace Slate_EK.ViewModels
                     MessageBoxImage.Error
                 );
                 ExceptionTools.WriteExceptionText(e, true);
-                return false;
+                return false; 
             }
 
             return true;
@@ -881,12 +882,22 @@ namespace Slate_EK.ViewModels
 
             StringBuilder buffer = new StringBuilder();
 
-            buffer.AppendLine("quantity,size,pitch,length,type,total mass,unit price,sub total");
-            foreach (var item in Bom.SourceList)
+            // There's a switch for this in Properties.Settings, but as of 2016-03-28 there's nothing controlling it in the UI
+            if (TwoColumnCsv) 
             {
-                string len = ExportLengthFractions ? item.LengthFraction : item.LengthDisplay;
+                buffer.AppendLine("callout,qty");
+                foreach (var item in Bom.SourceList)
+                    buffer.AppendLine($"{(ExportLengthFractions ? item.DescriptionWithFrac : item.Description)},{item.Quantity}");
+            }
+            else
+            {
+                buffer.AppendLine("quantity,size,pitch,length,type,total mass,unit price,sub total");
+                foreach (var item in Bom.SourceList)
+                {
+                    string len = ExportLengthFractions ? item.LengthFraction : item.LengthDisplay;
 
-                buffer.AppendLine($"{item.Quantity},{item.SizeDisplay},{item.ShortPitchDisplay},{len},{item.Type},{item.Mass * item.Quantity},{item.Price},{item.Price * item.Quantity}");
+                    buffer.AppendLine($"{item.Quantity},{item.SizeDisplay},{item.ShortPitchDisplay},{len},{item.Type},{item.Mass * item.Quantity},{item.Price},{item.Price * item.Quantity}");
+                }
             }
 
             return buffer.ToString();
@@ -917,6 +928,7 @@ namespace Slate_EK.ViewModels
         private float  PrintPageHeight       => Properties.Settings.Default.PrintPageHeight;
         private bool   IncludePrintHeaders   => Properties.Settings.Default.IncludePrintHeaders;
         private bool   ExportLengthFractions => Properties.Settings.Default.ExportLengthFractions;
+        private bool   TwoColumnCsv          => Properties.Settings.Default.TwoColumnCsv;
     }
 
     public delegate void ShortcutEventHandler();

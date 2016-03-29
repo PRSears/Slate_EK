@@ -82,6 +82,7 @@ namespace Slate_EK.Views
             };
 
             CheckSqlServer();
+            CheckDefaultInv();
         }
 
         public MainView(Window openWith) : this()
@@ -147,6 +148,63 @@ namespace Slate_EK.Views
                         Extender.Debugging.Debug.WriteMessage($"SQL Found: {Environment.MachineName}\\{installedVersion}", WarnLevel.Info);
                     }
                 }
+            }
+        }
+
+        private void CheckDefaultInv()
+        {
+            if (!DefaultInventoryPath.StartsWith(@"choose a path")) return;
+
+            //
+            // If we don't have a path set, force the user to pick one
+
+            var mBoxResult = MessageBox.Show
+            (
+                "It looks like this is the first run of this application, or " +
+                "the settings file may have been reset.\n\n" +
+                "Press 'Yes' to select an inventory database file or to create a new one.\n" +
+                "Press 'No' to use the default at '" + CreateInvPath() + "'.",
+                "Browse for an inventory file?",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Exclamation
+            );
+
+            if (mBoxResult == MessageBoxResult.Yes)
+            {
+
+                var dialog = new Microsoft.Win32.OpenFileDialog()
+                {
+                    AddExtension = true,
+                    DefaultExt = "mdf",
+                    CheckFileExists = false,
+                    CheckPathExists = false,
+                    InitialDirectory = System.IO.Directory.GetCurrentDirectory()
+                };
+
+                var dialogResult = dialog.ShowDialog();
+                if (!dialogResult.HasValue || !dialogResult.Value)
+                    DefaultInventoryPath = CreateInvPath();
+
+                DefaultInventoryPath = dialog.FileName;
+            }
+            else
+            {
+                DefaultInventoryPath = CreateInvPath();
+            }
+        }
+
+        private string CreateInvPath()
+        {
+            return $"{System.IO.Directory.GetCurrentDirectory()}\\inventory.mdf";
+        }
+
+        private string DefaultInventoryPath
+        {
+            get { return Properties.Settings.Default.DefaultInventoryPath; }
+            set
+            {
+                Properties.Settings.Default.DefaultInventoryPath = value;
+                Properties.Settings.Default.Save();
             }
         }
 

@@ -589,5 +589,17 @@ namespace Slate_EK.Properties {
                 this["WorksheetHeaderColor"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool TwoColumnCsv {
+            get {
+                return ((bool)(this["TwoColumnCsv"]));
+            }
+            set {
+                this["TwoColumnCsv"] = value;
+            }
+        }
     }
 }

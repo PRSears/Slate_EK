@@ -409,7 +409,7 @@ namespace Slate_EK.ViewModels
             return $"{path}\\";
         }
 
-        private string DriveDoesNotExistMessage => "The drive specified in the path to the inventory database does not exist. " + 
+        private string DriveDoesNotExistMessage => "The drive specified in the path to the inventory database does not exist." + 
                                                    "\n\nMake sure the path is correct in the settings then try again.";
     }
 }

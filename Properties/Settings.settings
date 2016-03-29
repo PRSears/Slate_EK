@@ -146,5 +146,8 @@
     <Setting Name="WorksheetHeaderColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">DimGray</Value>
     </Setting>
+    <Setting Name="TwoColumnCsv" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
